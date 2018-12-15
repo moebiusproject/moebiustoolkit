@@ -84,7 +84,7 @@ void MainWindow::Private::newPage()
 
             result->setText(tr("Minimum/Maximum/Average: %1/%2/%3")
                             .arg(int(min)).arg(int(max))
-                            .arg(avg, 0, 'f', 2));
+                            .arg(avg, 0, 'f', 1));
         };
 
         connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
