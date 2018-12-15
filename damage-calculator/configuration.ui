@@ -536,43 +536,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="targetArmor">
-        <item>
-         <property name="text">
-          <string>Neutral</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Leather</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Studded Leather</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Chain Mail</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Splint Mail</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Plate Mail</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Full Plate Mail</string>
-         </property>
-        </item>
-       </widget>
+       <widget class="QComboBox" name="targetArmor"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="crushingModifierLabel">

@@ -10,6 +10,19 @@
 
 using namespace QtCharts;
 
+struct ArmorModifiers
+{
+    ArmorModifiers() = default;
+    explicit ArmorModifiers(int c, int m, int p, int s)
+        : crushing(c), missile(m), piercing(p), slashing(s)
+    {}
+    int crushing = 0;
+    int missile = 0;
+    int piercing = 0;
+    int slashing = 0;
+};
+Q_DECLARE_METATYPE(ArmorModifiers)
+
 struct MainWindow::Private
 {
     QTabWidget* tabs = nullptr;
@@ -92,4 +105,34 @@ void MainWindow::Private::newPage()
                     configuration.weaponDamageDiceSide2,
                     configuration.weaponDamageDiceBonus2,
                     configuration.damageDetail2);
+
+
+    configuration.targetArmor->addItem(tr("Neutral"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
+    configuration.targetArmor->addItem(tr("Leather"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
+    configuration.targetArmor->addItem(tr("Studded Leather"),
+                                       QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
+    configuration.targetArmor->addItem(tr("Chain Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
+    configuration.targetArmor->addItem(tr("Splint Mail"),
+                                       QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
+    configuration.targetArmor->addItem(tr("Plate Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
+    configuration.targetArmor->addItem(tr("Full Plate Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
+    // TODO: add more armors, or modifiers from creatures.
+
+
+    // FIXME: Review the captures. This can be fishy if there are removals
+    connect(configuration.targetArmor, &QComboBox::currentTextChanged,
+            [choice = configuration.targetArmor,
+            crushing = configuration.crushingModifier, missile = configuration.missileModifier,
+            piercing = configuration.piercingModifier, slashing = configuration.slashingModifier]
+    {
+        crushing->setValue(choice->currentData().value<ArmorModifiers>().crushing);
+        missile->setValue(choice->currentData().value<ArmorModifiers>().missile);
+        piercing->setValue(choice->currentData().value<ArmorModifiers>().piercing);
+        slashing->setValue(choice->currentData().value<ArmorModifiers>().slashing);
+    });
 }
