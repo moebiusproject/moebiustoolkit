@@ -45,7 +45,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="baseThac0"/>
+         <widget class="QSpinBox" name="baseThac0">
+          <property name="maximum">
+           <number>20</number>
+          </property>
+          <property name="value">
+           <number>20</number>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="strengthThac0BonusLabel">
@@ -118,7 +125,14 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="proficiencyThac0Modifier1"/>
+            <widget class="QSpinBox" name="proficiencyThac0Modifier1">
+             <property name="minimum">
+              <number>-5</number>
+             </property>
+             <property name="maximum">
+              <number>3</number>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="styleModifier1Label">
@@ -128,7 +142,14 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QSpinBox" name="styleModifier1"/>
+            <widget class="QSpinBox" name="styleModifier1">
+             <property name="minimum">
+              <number>-4</number>
+             </property>
+             <property name="maximum">
+              <number>0</number>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="weaponThac0Modifier1Label">
@@ -138,7 +159,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QSpinBox" name="weaponThac0Modifier1"/>
+            <widget class="QSpinBox" name="weaponThac0Modifier1">
+             <property name="maximum">
+              <number>6</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -159,46 +184,59 @@
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="proficiencyDamageModifier1"/>
+              <widget class="QSpinBox" name="proficiencyDamageModifier1">
+               <property name="minimum">
+                <number>-1</number>
+               </property>
+               <property name="maximum">
+                <number>5</number>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
            <item>
             <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDice1Label">
-               <property name="text">
-                <string>Weapon</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber1"/>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="weaponDamageDiceNumber1Label">
-               <property name="text">
-                <string>dice number</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceSide1"/>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="weaponDamageDiceSide1Label">
-               <property name="text">
-                <string>side</string>
+              <widget class="QSpinBox" name="weaponDamageDiceSide1">
+               <property name="suffix">
+                <string> sides</string>
+               </property>
+               <property name="minimum">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <number>20</number>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceBonus1"/>
+              <widget class="QSpinBox" name="weaponDamageDiceBonus1">
+               <property name="suffix">
+                <string> bonus</string>
+               </property>
+               <property name="maximum">
+                <number>10</number>
+               </property>
+              </widget>
              </item>
-             <item row="2" column="2">
-              <widget class="QLabel" name="weaponDamageDiceBonus1Label">
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="weaponDamageDiceNumber1">
+               <property name="suffix">
+                <string> dice</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="weaponDamageDice1Label">
                <property name="text">
-                <string>bonus</string>
+                <string>Weapon</string>
                </property>
               </widget>
              </item>
@@ -299,7 +337,14 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QSpinBox" name="proficiencyThac0Modifier2"/>
+            <widget class="QSpinBox" name="proficiencyThac0Modifier2">
+             <property name="minimum">
+              <number>-5</number>
+             </property>
+             <property name="maximum">
+              <number>3</number>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="styleModifier2Label">
@@ -309,7 +354,14 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QSpinBox" name="styleModifier2"/>
+            <widget class="QSpinBox" name="styleModifier2">
+             <property name="minimum">
+              <number>-8</number>
+             </property>
+             <property name="maximum">
+              <number>0</number>
+             </property>
+            </widget>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="weaponThac0Modifier2Label">
@@ -319,7 +371,11 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QSpinBox" name="weaponThac0Modifier2"/>
+            <widget class="QSpinBox" name="weaponThac0Modifier2">
+             <property name="maximum">
+              <number>6</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>
@@ -340,46 +396,59 @@
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="proficiencyDamageModifier2"/>
+              <widget class="QSpinBox" name="proficiencyDamageModifier2">
+               <property name="minimum">
+                <number>-1</number>
+               </property>
+               <property name="maximum">
+                <number>5</number>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
            <item>
             <layout class="QGridLayout" name="gridLayout_2">
-             <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDice2Label">
-               <property name="text">
-                <string>Weapon</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber2"/>
-             </item>
-             <item row="0" column="2">
-              <widget class="QLabel" name="weaponDamageDiceNumber2Label">
-               <property name="text">
-                <string>dice number</string>
-               </property>
-              </widget>
-             </item>
              <item row="1" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceSide2"/>
-             </item>
-             <item row="1" column="2">
-              <widget class="QLabel" name="weaponDamageDiceSide2Label">
-               <property name="text">
-                <string>side</string>
+              <widget class="QSpinBox" name="weaponDamageDiceSide2">
+               <property name="suffix">
+                <string> sides</string>
+               </property>
+               <property name="minimum">
+                <number>4</number>
+               </property>
+               <property name="maximum">
+                <number>20</number>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceBonus2"/>
+              <widget class="QSpinBox" name="weaponDamageDiceBonus2">
+               <property name="suffix">
+                <string> bonus</string>
+               </property>
+               <property name="maximum">
+                <number>10</number>
+               </property>
+              </widget>
              </item>
-             <item row="2" column="2">
-              <widget class="QLabel" name="weaponDamageDiceBonus2Label">
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="weaponDamageDiceNumber2">
+               <property name="suffix">
+                <string> dice</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0">
+              <widget class="QLabel" name="weaponDamageDice2Label">
                <property name="text">
-                <string>bonus</string>
+                <string>Weapon</string>
                </property>
               </widget>
              </item>
