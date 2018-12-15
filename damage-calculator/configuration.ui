@@ -280,7 +280,7 @@
            <item>
             <widget class="QLabel" name="damageDetail1">
              <property name="text">
-              <string>Average: %1</string>
+              <string/>
              </property>
             </widget>
            </item>
@@ -492,7 +492,7 @@
            <item>
             <widget class="QLabel" name="damageDetail2">
              <property name="text">
-              <string>Average: %1</string>
+              <string/>
              </property>
             </widget>
            </item>
