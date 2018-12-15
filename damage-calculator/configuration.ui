@@ -301,6 +301,9 @@
             <property name="decimals">
              <number>1</number>
             </property>
+            <property name="minimum">
+             <double>1.000000000000000</double>
+            </property>
             <property name="maximum">
              <double>10.000000000000000</double>
             </property>
@@ -510,6 +513,9 @@
           </item>
           <item>
            <widget class="QSpinBox" name="attacksPerRound2">
+            <property name="minimum">
+             <number>1</number>
+            </property>
             <property name="maximum">
              <number>2</number>
             </property>
