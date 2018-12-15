@@ -612,7 +612,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QSpinBox" name="piercingModifier">
+       <widget class="QSpinBox" name="missileModifier">
         <property name="minimum">
          <number>-10</number>
         </property>
@@ -642,7 +642,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QSpinBox" name="missileModifier">
+       <widget class="QSpinBox" name="piercingModifier">
         <property name="minimum">
          <number>-10</number>
         </property>
