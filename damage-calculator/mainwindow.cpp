@@ -179,6 +179,16 @@ void MainWindow::Private::generateChart(const Ui::configuration& c)
     const int mainThac0 = thac0 - c.proficiencyThac0Modifier1->value() - c.styleModifier1->value() - c.weaponThac0Modifier1->value();
     const int offThac0  = thac0 - c.proficiencyThac0Modifier2->value() - c.styleModifier2->value() - c.weaponThac0Modifier2->value();
 
+    // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
+    auto modifierFromUi = [&c](QComboBox* box) {
+        return ( box->currentIndex() == 0 ? c.crushingModifier->value()
+               : box->currentIndex() == 1 ? c.missileModifier->value()
+               : box->currentIndex() == 2 ? c.piercingModifier->value()
+                                          : c.slashingModifier->value() );
+    };
+    const int mainAcModifier = modifierFromUi(c.damageType1);
+    const int offAcModifier  = modifierFromUi(c.damageType2);
+
     // TODO: don't use an ugly property for this.
     const double mainDamage = c.damageDetail1->property("avg").toDouble();
     const double offDamage  = c.damageDetail2->property("avg").toDouble();
@@ -189,9 +199,8 @@ void MainWindow::Private::generateChart(const Ui::configuration& c)
     QLineSeries* series = new QLineSeries;
 
     for (const int ac : armorClasses) {
-        // TODO: consider AC modifiers (slashing, etc.)
-        const int mainToHit = mainThac0 - ac;
-        const int offToHit  = offThac0  - ac;
+        const int mainToHit = mainThac0 - ac - mainAcModifier;
+        const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = false; // TODO: add to UI
         const bool doubleCriticalChance = false; // TODO: add to UI
