@@ -190,8 +190,12 @@ void MainWindow::Private::generateChart(const Ui::configuration& c)
     const int offAcModifier  = modifierFromUi(c.damageType2);
 
     // TODO: don't use an ugly property for this.
-    const double mainDamage = c.damageDetail1->property("avg").toDouble();
-    const double offDamage  = c.damageDetail2->property("avg").toDouble();
+    const double mainDamage = c.damageDetail1->property("avg").toDouble()
+                            + c.strengthDamageBonus->value()
+                            + c.classDamageBonus->value();
+    const double offDamage  = c.damageDetail2->property("avg").toDouble()
+                            + c.strengthDamageBonus->value()
+                            + c.classDamageBonus->value();
 
     const double mainApr = c.attacksPerRound1->value();
     const int    offApr  = c.attacksPerRound2->value();
