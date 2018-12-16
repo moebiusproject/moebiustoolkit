@@ -38,14 +38,19 @@ struct MainWindow::Private
     void generateCharts()
     {
         chart->removeAllSeries();
-        for (int tab = 1; tab < tabs->count(); ++tab) {
-            generateChart(configurations.at(tab-1));
+        for (int tab = 0; tab < tabs->count(); ++tab) {
+            generateChart(configurations.at(tab));
         }
         chart->createDefaultAxes();
 
         if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
             axis->setTickCount(armorClasses.count());
             axis->setLabelFormat(QLatin1String("%i"));
+#if 0
+            QFont font = axis->labelsFont();
+            font.setPointSize(font.pointSize() - 2);
+            axis->setLabelsFont(font);
+#endif
             axis->setReverse(true);
         }
         if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
@@ -74,23 +79,21 @@ MainWindow::MainWindow(QWidget* parent)
     d->chartView = new QChartView(d->chart);
     d->chartView->setRenderHint(QPainter::Antialiasing);
 
-    d->tabs = new QTabWidget(this);
-    setCentralWidget(d->tabs);
+    d->tabs = new QTabWidget;
 
-    // TODO: investigate if QTabBar::setTabButton could be used to manually add
-    // a close button to the tabs that we want, and a "New..." to the chart.
-    d->tabs->tabBar()->setTabsClosable(true);
-    d->tabs->addTab(d->chartView, tr("Chart"));
-    connect(d->tabs, &QTabWidget::currentChanged, [this](int index){
-        if (index == 0)
-            d->generateCharts();
-    });
+    auto widget = new QWidget;
+    auto layout = new QHBoxLayout;
+    layout->addWidget(d->chartView, 1);
+    layout->addWidget(d->tabs, 0);
+    widget->setLayout(layout);
+    setCentralWidget(widget);
 
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
             std::bind(&MainWindow::Private::newPage, d));
     d->newPage();
+    d->generateCharts();
 }
 
 MainWindow::~MainWindow()
@@ -105,8 +108,20 @@ void MainWindow::Private::newPage()
     configurations.append(Ui::configuration());
     Ui::configuration& configuration = configurations.last();
     configuration.setupUi(widget);
-    tabs->addTab(widget, tr("Configuration %1").arg(tabs->count()));
+    tabs->addTab(widget, tr("Configuration %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
+
+    for (auto child : widget->findChildren<QSpinBox*>())
+        connect(child, qOverload<int>(&QSpinBox::valueChanged),
+                std::bind(&Private::generateCharts, this));
+    for (auto child : widget->findChildren<QDoubleSpinBox*>())
+        connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged),
+                std::bind(&Private::generateCharts, this));
+    for (auto child : widget->findChildren<QComboBox*>())
+        connect(child, &QComboBox::currentTextChanged,
+                std::bind(&Private::generateCharts, this));
+    connect(configuration.offHandGroup, &QGroupBox::toggled,
+            std::bind(&Private::generateCharts, this));
 
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
                               QSpinBox* bonus, QLabel* result)
@@ -119,7 +134,7 @@ void MainWindow::Private::newPage()
             const double avg = proficiency->value() + bonus->value()
                              + dice->value() * (0.5 + sides->value()/2.0);
 
-            result->setText(tr("Minimum/Maximum/Average: %1/%2/%3")
+            result->setText(tr("Min/Max/Avg: %1/%2/%3")
                             .arg(int(min)).arg(int(max))
                             .arg(avg, 0, 'f', 1));
             result->setProperty("avg", avg);
