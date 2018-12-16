@@ -69,6 +69,7 @@ MainWindow::MainWindow(QWidget* parent)
         d->armorClasses << i;
 
     d->chart = new QChart;
+    d->chart->setAnimationOptions(QChart::SeriesAnimations);
     d->chartView = new QChartView(d->chart);
     d->chartView->setRenderHint(QPainter::Antialiasing);
 
@@ -88,6 +89,7 @@ MainWindow::MainWindow(QWidget* parent)
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
             std::bind(&MainWindow::Private::newPage, d));
+    d->newPage();
 }
 
 MainWindow::~MainWindow()
