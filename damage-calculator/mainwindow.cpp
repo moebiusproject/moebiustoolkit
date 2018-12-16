@@ -7,6 +7,7 @@
 #include <QtCharts>
 
 #include <functional>
+#include <numeric>
 
 using namespace QtCharts;
 
@@ -25,6 +26,8 @@ Q_DECLARE_METATYPE(ArmorModifiers)
 
 struct MainWindow::Private
 {
+    QVector<int> armorClasses;
+
     QTabWidget* tabs = nullptr;
     QChart* chart = nullptr;
     QChartView* chartView = nullptr;
@@ -32,12 +35,36 @@ struct MainWindow::Private
     QVector<Ui::configuration> configurations;
 
     void newPage();
+    void generateCharts()
+    {
+        chart->removeAllSeries();
+        for (int tab = 1; tab < tabs->count(); ++tab) {
+            generateChart(configurations.at(tab-1));
+        }
+        chart->createDefaultAxes();
+
+        if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
+            axis->setTickCount(armorClasses.count());
+            axis->setLabelFormat(QLatin1String("%i"));
+        }
+        if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
+            axis->setMin(0);
+            const int rounded = int(std::ceil(axis->max()));
+            axis->setMax(rounded);
+            axis->setTickCount(rounded+1); // Because we have to count the one at 0
+            axis->setLabelFormat(QLatin1String("%i"));
+        }
+    }
+    void generateChart(const Ui::configuration &c);
 };
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , d(new MainWindow::Private)
 {
+    for (int i = 10; i >= -20; --i)
+        d->armorClasses << i;
+
     d->chart = new QChart;
     d->chartView = new QChartView(d->chart);
     d->chartView->setRenderHint(QPainter::Antialiasing);
@@ -49,6 +76,10 @@ MainWindow::MainWindow(QWidget* parent)
     // a close button to the tabs that we want, and a "New..." to the chart.
     d->tabs->tabBar()->setTabsClosable(true);
     d->tabs->addTab(d->chartView, tr("Chart"));
+    connect(d->tabs, &QTabWidget::currentChanged, [this](int index){
+        if (index == 0)
+            d->generateCharts();
+    });
 
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
@@ -66,7 +97,7 @@ void MainWindow::Private::newPage()
 {
     auto widget = new QWidget;
     configurations.append(Ui::configuration());
-    auto configuration = configurations.last();
+    Ui::configuration& configuration = configurations.last();
     configuration.setupUi(widget);
     tabs->addTab(widget, tr("Configuration %1").arg(tabs->count()));
     tabs->setCurrentWidget(widget);
@@ -85,6 +116,7 @@ void MainWindow::Private::newPage()
             result->setText(tr("Minimum/Maximum/Average: %1/%2/%3")
                             .arg(int(min)).arg(int(max))
                             .arg(avg, 0, 'f', 1));
+            result->setProperty("avg", avg);
         };
 
         connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
@@ -135,4 +167,59 @@ void MainWindow::Private::newPage()
         piercing->setValue(choice->currentData().value<ArmorModifiers>().piercing);
         slashing->setValue(choice->currentData().value<ArmorModifiers>().slashing);
     });
+}
+
+
+
+void MainWindow::Private::generateChart(const Ui::configuration& c)
+{
+    const bool offHand = c.offHandGroup->isChecked();
+
+    const int thac0 = c.baseThac0->value() - c.strengthThac0Bonus->value() - c.classThac0Bonus->value();
+    const int mainThac0 = thac0 - c.proficiencyThac0Modifier1->value() - c.styleModifier1->value() - c.weaponThac0Modifier1->value();
+    const int offThac0  = thac0 - c.proficiencyThac0Modifier2->value() - c.styleModifier2->value() - c.weaponThac0Modifier2->value();
+
+    // TODO: don't use an ugly property for this.
+    const double mainDamage = c.damageDetail1->property("avg").toDouble();
+    const double offDamage  = c.damageDetail2->property("avg").toDouble();
+
+    const double mainApr = c.attacksPerRound1->value();
+    const int    offApr  = c.attacksPerRound2->value();
+
+    QLineSeries* series = new QLineSeries;
+
+    for (const int ac : armorClasses) {
+        // TODO: consider AC modifiers (slashing, etc.)
+        const int mainToHit = mainThac0 - ac;
+        const int offToHit  = offThac0  - ac;
+
+        const bool doubleCriticalDamage = false; // TODO: add to UI
+        const bool doubleCriticalChance = false; // TODO: add to UI
+
+        auto chance = [](int toHit)
+        {
+            if (toHit <= 1) // Only critical failures fail: 95% chance of hitting
+                return 0.95;
+            // TODO: critical hits on 19 require changing this.
+            else if (toHit > 1 && toHit < 20) {
+                return 1 - (0.05 * toHit);
+            } else
+                return 0.05;
+        };
+
+        double damage = chance(mainToHit) * mainDamage * mainApr;
+        if (offHand)
+            damage += chance(offToHit) * offDamage * offApr;
+
+        if (doubleCriticalDamage) {
+            damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance);
+            if (offHand)
+                damage += offApr * offDamage * 0.05;
+        }
+
+        series->append(ac, damage);
+    }
+
+    series->setName(c.name->text());
+    chart->addSeries(series);
 }
