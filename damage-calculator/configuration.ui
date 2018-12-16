@@ -57,7 +57,7 @@
         <item>
          <widget class="QLabel" name="strengthThac0BonusLabel">
           <property name="text">
-           <string>Stregth bonus</string>
+           <string>Strength bonus</string>
           </property>
          </widget>
         </item>
