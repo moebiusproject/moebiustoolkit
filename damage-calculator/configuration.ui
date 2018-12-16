@@ -196,7 +196,20 @@
             </layout>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout">
+            <layout class="QGridLayout" name="damageDice1Layout">
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="weaponDamageDiceNumber1">
+               <property name="suffix">
+                <string> dice</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="weaponDamageDiceSide1">
                <property name="suffix">
@@ -220,21 +233,8 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber1">
-               <property name="suffix">
-                <string> dice</string>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>2</number>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDice1Label">
+              <widget class="QLabel" name="weaponDamageDiceLabel1">
                <property name="text">
                 <string>Weapon</string>
                </property>
@@ -411,7 +411,20 @@
             </layout>
            </item>
            <item>
-            <layout class="QGridLayout" name="gridLayout_2">
+            <layout class="QGridLayout" name="damageDice2Layout">
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="weaponDamageDiceNumber2">
+               <property name="suffix">
+                <string> dice</string>
+               </property>
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>2</number>
+               </property>
+              </widget>
+             </item>
              <item row="1" column="1">
               <widget class="QSpinBox" name="weaponDamageDiceSide2">
                <property name="suffix">
@@ -435,21 +448,8 @@
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber2">
-               <property name="suffix">
-                <string> dice</string>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>2</number>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDice2Label">
+              <widget class="QLabel" name="weaponDamageDiceLabel2">
                <property name="text">
                 <string>Weapon</string>
                </property>
