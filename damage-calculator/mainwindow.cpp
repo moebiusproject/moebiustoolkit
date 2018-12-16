@@ -49,10 +49,13 @@ struct MainWindow::Private
         }
         if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
             axis->setMin(0);
+            axis->applyNiceNumbers();
+#if 0 // Keep just in case. But the above seems to work well
             const int rounded = int(std::ceil(axis->max()));
             axis->setMax(rounded);
             axis->setTickCount(rounded+1); // Because we have to count the one at 0
-            axis->setLabelFormat(QLatin1String("%i"));
+#endif
+            axis->setLabelFormat(QLatin1String("%d"));
         }
     }
     void generateChart(const Ui::configuration &c);
