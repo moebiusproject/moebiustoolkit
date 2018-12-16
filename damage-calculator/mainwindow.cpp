@@ -46,6 +46,7 @@ struct MainWindow::Private
         if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
             axis->setTickCount(armorClasses.count());
             axis->setLabelFormat(QLatin1String("%i"));
+            axis->setReverse(true);
         }
         if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
             axis->setMin(0);
