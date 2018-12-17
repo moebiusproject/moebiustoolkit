@@ -70,6 +70,15 @@ MainWindow::MainWindow(QWidget* parent)
     connect(newButton, &QPushButton::clicked,
             std::bind(&MainWindow::Private::newPage, d));
 
+    d->tabs->setTabsClosable(true);
+    connect(d->tabs, &QTabWidget::tabCloseRequested, [this](int index) {
+        if (d->tabs->count() == 1)
+            return; // don't close the last one for now, to keep the "New" button
+        d->configurations.removeAt(index);
+        d->chart->removeSeries(d->chart->series().at(index));
+        delete d->tabs->widget(index);
+    });
+
     d->newPage();
 }
 
@@ -118,6 +127,8 @@ void MainWindow::Private::newPage()
         connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QComboBox*>())
         connect(child, &QComboBox::currentTextChanged, update);
+    for (auto child : widget->findChildren<QCheckBox*>())
+        connect(child, &QCheckBox::toggled, update);
     connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
