@@ -566,6 +566,9 @@
       </item>
       <item row="1" column="2">
        <widget class="QSpinBox" name="crushingResistance">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -596,6 +599,9 @@
       </item>
       <item row="2" column="2">
        <widget class="QSpinBox" name="missileResistance">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -626,6 +632,9 @@
       </item>
       <item row="3" column="2">
        <widget class="QSpinBox" name="piercingResistance">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -656,6 +665,9 @@
       </item>
       <item row="4" column="2">
        <widget class="QSpinBox" name="slashingResistance">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -664,6 +676,19 @@
         </property>
         <property name="singleStep">
          <number>5</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="helmet">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Helmet</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

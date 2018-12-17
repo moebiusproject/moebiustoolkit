@@ -237,7 +237,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const int mainToHit = mainThac0 - ac - mainAcModifier;
         const int offToHit  = offThac0  - ac - offAcModifier;
 
-        const bool doubleCriticalDamage = false; // TODO: add to UI
+        const bool doubleCriticalDamage = !c.helmet->isChecked();
         const bool doubleCriticalChance = false; // TODO: add to UI
 
         auto chance = [](int toHit) {
