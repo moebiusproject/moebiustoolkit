@@ -39,7 +39,7 @@ struct MainWindow::Private
     {
         chart->removeAllSeries();
         for (int tab = 0; tab < tabs->count(); ++tab) {
-            generateChart(configurations.at(tab));
+            chart->addSeries(generateChart(configurations.at(tab)));
         }
         chart->createDefaultAxes();
 
@@ -64,7 +64,7 @@ struct MainWindow::Private
             axis->setLabelFormat(QLatin1String("%d"));
         }
     }
-    void generateChart(const Ui::configuration &c);
+    QLineSeries* generateChart(const Ui::configuration &c);
 };
 
 MainWindow::MainWindow(QWidget* parent)
@@ -126,7 +126,7 @@ void MainWindow::Private::newPage()
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
                               QSpinBox* bonus, QLabel* result)
     {
-        auto calculateStats = [=](){
+        auto calculateStats = [=]() {
             const double min = proficiency->value() + bonus->value()
                              + dice->value();
             const double max = proficiency->value() + bonus->value()
@@ -192,7 +192,7 @@ void MainWindow::Private::newPage()
 
 
 
-void MainWindow::Private::generateChart(const Ui::configuration& c)
+QLineSeries* MainWindow::Private::generateChart(const Ui::configuration& c)
 {
     const bool offHand = c.offHandGroup->isChecked();
 
@@ -230,8 +230,7 @@ void MainWindow::Private::generateChart(const Ui::configuration& c)
         const bool doubleCriticalDamage = false; // TODO: add to UI
         const bool doubleCriticalChance = false; // TODO: add to UI
 
-        auto chance = [](int toHit)
-        {
+        auto chance = [](int toHit) {
             if (toHit <= 1) // Only critical failures fail: 95% chance of hitting
                 return 0.95;
             // TODO: critical hits on 19 require changing this.
@@ -255,5 +254,5 @@ void MainWindow::Private::generateChart(const Ui::configuration& c)
     }
 
     series->setName(c.name->text());
-    chart->addSeries(series);
+    return series;
 }
