@@ -35,36 +35,13 @@ struct MainWindow::Private
     QVector<Ui::configuration> configurations;
 
     void newPage();
-    void generateCharts()
-    {
-        chart->removeAllSeries();
-        for (int tab = 0; tab < tabs->count(); ++tab) {
-            chart->addSeries(generateChart(configurations.at(tab)));
-        }
-        chart->createDefaultAxes();
+    void setupAxes();
 
-        if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
-            axis->setTickCount(armorClasses.count());
-            axis->setLabelFormat(QLatin1String("%i"));
-#if 0
-            QFont font = axis->labelsFont();
-            font.setPointSize(font.pointSize() - 2);
-            axis->setLabelsFont(font);
-#endif
-            axis->setReverse(true);
-        }
-        if (QValueAxis* axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
-            axis->setMin(0);
-            axis->applyNiceNumbers();
-#if 0 // Keep just in case. But the above seems to work well
-            const int rounded = int(std::ceil(axis->max()));
-            axis->setMax(rounded);
-            axis->setTickCount(rounded+1); // Because we have to count the one at 0
-#endif
-            axis->setLabelFormat(QLatin1String("%d"));
-        }
+    void updateSeriesAt(int index) {
+        if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
+            updateSeries(configurations[index], series);
     }
-    QLineSeries* generateChart(const Ui::configuration &c);
+    void updateSeries(const Ui::configuration &c, QLineSeries* series);
 };
 
 MainWindow::MainWindow(QWidget* parent)
@@ -92,8 +69,8 @@ MainWindow::MainWindow(QWidget* parent)
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
             std::bind(&MainWindow::Private::newPage, d));
+
     d->newPage();
-    d->generateCharts();
 }
 
 MainWindow::~MainWindow()
@@ -105,23 +82,43 @@ MainWindow::~MainWindow()
 void MainWindow::Private::newPage()
 {
     auto widget = new QWidget;
+
     configurations.append(Ui::configuration());
     Ui::configuration& configuration = configurations.last();
     configuration.setupUi(widget);
     tabs->addTab(widget, tr("Configuration %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
+    configuration.targetArmor->addItem(tr("Neutral"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
+    configuration.targetArmor->addItem(tr("Leather"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
+    configuration.targetArmor->addItem(tr("Studded Leather"),
+                                       QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
+    configuration.targetArmor->addItem(tr("Chain Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
+    configuration.targetArmor->addItem(tr("Splint Mail"),
+                                       QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
+    configuration.targetArmor->addItem(tr("Plate Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
+    configuration.targetArmor->addItem(tr("Full Plate Mail"),
+                                       QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
+    // TODO: add more armors, or modifiers from creatures.
+
+
+     connect(configuration.name, &QLineEdit::textChanged,
+             [this, index = tabs->currentIndex()](const QString& text) {
+         chart->series().at(index)->setName(text);
+     });
+
+    auto update =  std::bind(&Private::updateSeriesAt, this, tabs->currentIndex());
     for (auto child : widget->findChildren<QSpinBox*>())
-        connect(child, qOverload<int>(&QSpinBox::valueChanged),
-                std::bind(&Private::generateCharts, this));
+        connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QDoubleSpinBox*>())
-        connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged),
-                std::bind(&Private::generateCharts, this));
+        connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QComboBox*>())
-        connect(child, &QComboBox::currentTextChanged,
-                std::bind(&Private::generateCharts, this));
-    connect(configuration.offHandGroup, &QGroupBox::toggled,
-            std::bind(&Private::generateCharts, this));
+        connect(child, &QComboBox::currentTextChanged, update);
+    connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
                               QSpinBox* bonus, QLabel* result)
@@ -160,23 +157,6 @@ void MainWindow::Private::newPage()
                     configuration.damageDetail2);
 
 
-    configuration.targetArmor->addItem(tr("Neutral"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
-    configuration.targetArmor->addItem(tr("Leather"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
-    configuration.targetArmor->addItem(tr("Studded Leather"),
-                                       QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
-    configuration.targetArmor->addItem(tr("Chain Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
-    configuration.targetArmor->addItem(tr("Splint Mail"),
-                                       QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
-    configuration.targetArmor->addItem(tr("Plate Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
-    configuration.targetArmor->addItem(tr("Full Plate Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
-    // TODO: add more armors, or modifiers from creatures.
-
-
     // FIXME: Review the captures. This can be fishy if there are removals
     connect(configuration.targetArmor, &QComboBox::currentTextChanged,
             [choice = configuration.targetArmor,
@@ -188,12 +168,44 @@ void MainWindow::Private::newPage()
         piercing->setValue(choice->currentData().value<ArmorModifiers>().piercing);
         slashing->setValue(choice->currentData().value<ArmorModifiers>().slashing);
     });
+
+    // TODO: Decouple this, from setting the UI to setting the whole configuration.
+    chart->addSeries(new QLineSeries);
+    updateSeriesAt(tabs->currentIndex());
+}
+
+void MainWindow::Private::setupAxes()
+{
+    chart->createDefaultAxes();
+
+    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
+        axis->setTickCount(armorClasses.count());
+        axis->setLabelFormat(QLatin1String("%i"));
+#if 0
+        QFont font = axis->labelsFont();
+        font.setPointSize(font.pointSize() - 2);
+        axis->setLabelsFont(font);
+#endif
+        axis->setReverse(true);
+    }
+    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
+        axis->applyNiceNumbers();
+#if 0 // Keep just in case. But the above seems to work well
+        const int rounded = int(std::ceil(axis->max()));
+        axis->setMax(rounded);
+        axis->setTickCount(rounded+1); // Because we have to count the one at 0
+#endif
+        axis->setMinorTickCount(1);
+        axis->setLabelFormat(QLatin1String("%d"));
+    }
 }
 
 
 
-QLineSeries* MainWindow::Private::generateChart(const Ui::configuration& c)
+void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
 {
+    series->clear();
+
     const bool offHand = c.offHandGroup->isChecked();
 
     const int thac0 = c.baseThac0->value() - c.strengthThac0Bonus->value() - c.classThac0Bonus->value();
@@ -220,8 +232,6 @@ QLineSeries* MainWindow::Private::generateChart(const Ui::configuration& c)
 
     const double mainApr = c.attacksPerRound1->value();
     const int    offApr  = c.attacksPerRound2->value();
-
-    QLineSeries* series = new QLineSeries;
 
     for (const int ac : armorClasses) {
         const int mainToHit = mainThac0 - ac - mainAcModifier;
@@ -253,6 +263,10 @@ QLineSeries* MainWindow::Private::generateChart(const Ui::configuration& c)
         series->append(ac, damage);
     }
 
-    series->setName(c.name->text());
-    return series;
+    // TODO: Uuuuuugly workaround for the axis not updating themselves well.
+    // Works smoothly with animations included, but patching QtCharts.
+    chart->removeSeries(series);
+    chart->addSeries(series);
+
+    setupAxes();
 }
