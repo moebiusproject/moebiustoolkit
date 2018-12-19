@@ -37,7 +37,12 @@ struct MainWindow::Private
     void newPage();
     void setupAxes();
 
-    void updateSeriesAt(int index) {
+    // TODO: previously this accepted the index as parameter, which is better,
+    // but requires knowing the proper index of a series/configuration. This was
+    // causing a crash when deleting tabs. But I will have to support something
+    // if I want to allow moving tabs around.
+    void updateSeriesAtCurrentIndex() {
+        const int index = tabs->currentIndex();
         if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
             updateSeries(configurations[index], series);
     }
@@ -116,11 +121,11 @@ void MainWindow::Private::newPage()
 
 
      connect(configuration.name, &QLineEdit::textChanged,
-             [this, index = tabs->currentIndex()](const QString& text) {
-         chart->series().at(index)->setName(text);
+             [this](const QString& text) {
+         chart->series().at(tabs->currentIndex())->setName(text);
      });
 
-    auto update =  std::bind(&Private::updateSeriesAt, this, tabs->currentIndex());
+    auto update =  std::bind(&Private::updateSeriesAtCurrentIndex, this);
     for (auto child : widget->findChildren<QSpinBox*>())
         connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QDoubleSpinBox*>())
@@ -182,7 +187,7 @@ void MainWindow::Private::newPage()
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     chart->addSeries(new QLineSeries);
-    updateSeriesAt(tabs->currentIndex());
+    updateSeriesAtCurrentIndex();
 }
 
 void MainWindow::Private::setupAxes()
