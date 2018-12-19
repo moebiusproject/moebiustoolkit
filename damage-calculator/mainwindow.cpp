@@ -279,10 +279,12 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         series->append(ac, damage);
     }
 
+#if 0
     // TODO: Uuuuuugly workaround for the axis not updating themselves well.
     // Works smoothly with animations included, but patching QtCharts.
     chart->removeSeries(series);
     chart->addSeries(series);
+#endif
 
     setupAxes();
 }
