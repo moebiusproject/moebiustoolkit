@@ -31,8 +31,79 @@ struct MainWindow::Private
     QTabWidget* tabs = nullptr;
     QChart* chart = nullptr;
     QChartView* chartView = nullptr;
+    QMenu* entriesMenu = nullptr;
 
     QVector<Ui::configuration> configurations;
+    QVector<QVariantHash> savedConfigurations;
+
+    void load(QWidget* tab, QVariantHash data);
+    QVariantHash save(QWidget* tab);
+
+    void loadSavedConfigurations()
+    {
+        QSettings settings;
+        const int size = settings.beginReadArray(QLatin1String("configurations"));
+        for (int index = 0; index < size; ++index) {
+            settings.setArrayIndex(index);
+            QVariantHash loadedData;
+            for (auto entry : settings.childKeys())
+                loadedData.insert(entry, settings.value(entry));
+            savedConfigurations.append(loadedData);
+        }
+        settings.endArray();
+    }
+
+    // Due to how QSettings works, this actually saves them all, but we need to
+    // ensure the current one is added to the list (or that it updates the list)
+    // that are going to be saved.
+    void saveCurrentConfiguration()
+    {
+        const QVariantHash toSave = save(tabs->currentWidget());
+
+        // Check for duplicates, to allow changing a configuration already saved
+        const QString name = toSave.value(QLatin1String("name")).toString();
+        bool alreadySaved = false;
+        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
+            QVariantHash& entry = savedConfigurations[index];
+            const QString savedName = entry.value(QLatin1String("name")).toString();
+            if (savedName == name) { // Then overwrite, and done.
+                entry = toSave;
+                alreadySaved = true;
+                break;
+            }
+        }
+        if (!alreadySaved)
+            savedConfigurations.append(toSave);
+
+        QSettings settings;
+        settings.beginWriteArray(QLatin1String("configurations"));
+        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
+            settings.setArrayIndex(index);
+            const QVariantHash& entry = savedConfigurations.at(index);
+            for (auto record = entry.begin(), last = entry.end(); record != last; ++record) {
+                settings.setValue(record.key(), record.value());
+            }
+        }
+        settings.endArray();
+
+        populateEntriesMenu();
+    }
+
+    void populateEntriesMenu()
+    {
+        entriesMenu->clear();
+        auto loadEntry = [this](int index) {
+            newPage();
+            load(tabs->currentWidget(), savedConfigurations.at(index));
+        };
+
+        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
+            const auto& entry = savedConfigurations.at(index);
+            const QString name = entry.value(QLatin1String("name")).toString();
+            entriesMenu->addAction(name, std::bind(loadEntry, index));
+        }
+        entriesMenu->setEnabled(savedConfigurations.size() > 0);
+    }
 
     void newPage();
     void setupAxes();
@@ -55,6 +126,31 @@ MainWindow::MainWindow(QWidget* parent)
 {
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
+
+    d->loadSavedConfigurations();
+
+    QMenu* configurationsMenu = menuBar()->addMenu(tr("Configurations"));
+
+    auto action = new QAction(tr("Save current"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    configurationsMenu->addAction(action);
+
+    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentConfiguration, d));
+
+    action = new QAction(tr("Duplicate current"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    configurationsMenu->addAction(action);
+
+    connect(action, &QAction::triggered, [this] {
+        const QVariantHash saved = d->save(d->tabs->currentWidget());
+        d->newPage();
+        // TODO: block signals recursively, load UI values, then update chart.
+        d->load(d->tabs->currentWidget(), saved);
+    });
+
+    d->entriesMenu = new QMenu(tr("Saved entries"));
+    d->populateEntriesMenu();
+    configurationsMenu->addMenu(d->entriesMenu);
 
     d->chart = new QChart;
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
@@ -91,6 +187,66 @@ MainWindow::~MainWindow()
 {
     delete d;
     d = nullptr;
+}
+
+void MainWindow::Private::load(QWidget *tab, QVariantHash data)
+{
+    for (auto child : tab->findChildren<QWidget*>()) {
+        if (qobject_cast<QLabel*>(child))
+            continue;
+        else if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
+            spinbox1->setValue(data.take(child->objectName()).toInt());
+        } else if (auto spinbox2 = qobject_cast<QDoubleSpinBox*>(child)) {
+            spinbox2->setValue(data.take(child->objectName()).toDouble());
+        }
+        else if (auto combobox = qobject_cast<QComboBox*>(child)) {
+            combobox->setCurrentIndex(data.take(child->objectName()).toInt());
+        }
+        else if (auto checkbox = qobject_cast<QCheckBox*>(child)) {
+            checkbox->setChecked(data.take(child->objectName()).toBool());
+        }
+        else if (auto line = qobject_cast<QLineEdit*>(child)) {
+            if (child->objectName() == QLatin1String("name"))
+                line->setText(data.take(child->objectName()).toString());
+        }
+        else if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
+            if (groupbox->isCheckable())
+                groupbox->setChecked(data.take(child->objectName()).toBool());
+        }
+    }
+
+    if (!data.isEmpty())
+        qWarning() << "This data was not loaded:\n" << data;
+}
+
+QVariantHash MainWindow::Private::save(QWidget *tab)
+{
+    QVariantHash result;
+    for (auto child : tab->findChildren<QWidget*>()) {
+        if (qobject_cast<QLabel*>(child) || child->objectName().isEmpty()
+                || child->objectName().startsWith(QLatin1String("qt_")))
+            continue;
+        else if (auto spinbox1 = qobject_cast<QSpinBox*>(child))
+            result.insert(child->objectName(), spinbox1->value());
+        else if (auto spinbox2 = qobject_cast<QDoubleSpinBox*>(child))
+            result.insert(child->objectName(), spinbox2->value());
+        else if (auto combobox = qobject_cast<QComboBox*>(child))
+            result.insert(child->objectName(), combobox->currentIndex());
+        else if (auto checkbox = qobject_cast<QCheckBox*>(child))
+            result.insert(child->objectName(), checkbox->isChecked());
+        else if (auto line = qobject_cast<QLineEdit*>(child)) {
+            if (line->objectName() == QLatin1String("name"))
+                result.insert(line->objectName(), line->text());
+        }
+        else if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
+            if (groupbox->isCheckable())
+                result.insert(child->objectName(), groupbox->isChecked());
+        }
+        else
+            qWarning() << "Not serialized:" << child;
+    }
+
+    return result;
 }
 
 void MainWindow::Private::newPage()
