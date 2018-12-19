@@ -30,7 +30,6 @@ struct MainWindow::Private
 
     QTabWidget* tabs = nullptr;
     QChart* chart = nullptr;
-    QChartView* chartView = nullptr;
     QMenu* entriesMenu = nullptr;
 
     QVector<Ui::configuration> configurations;
@@ -154,14 +153,14 @@ MainWindow::MainWindow(QWidget* parent)
 
     d->chart = new QChart;
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
-    d->chartView = new QChartView(d->chart);
-    d->chartView->setRenderHint(QPainter::Antialiasing);
+    auto chartView = new QChartView(d->chart);
+    chartView->setRenderHint(QPainter::Antialiasing);
 
     d->tabs = new QTabWidget;
 
     auto widget = new QWidget;
     auto layout = new QHBoxLayout;
-    layout->addWidget(d->chartView, 1);
+    layout->addWidget(chartView, 1);
     layout->addWidget(d->tabs, 0);
     widget->setLayout(layout);
     setCentralWidget(widget);
