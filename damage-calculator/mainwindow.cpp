@@ -280,17 +280,8 @@ void MainWindow::Private::newPage()
          chart->series().at(tabs->currentIndex())->setName(text);
      });
 
-    auto update =  std::bind(&Private::updateSeriesAtCurrentIndex, this);
-    for (auto child : widget->findChildren<QSpinBox*>())
-        connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
-    for (auto child : widget->findChildren<QDoubleSpinBox*>())
-        connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
-    for (auto child : widget->findChildren<QComboBox*>())
-        connect(child, &QComboBox::currentTextChanged, update);
-    for (auto child : widget->findChildren<QCheckBox*>())
-        connect(child, &QCheckBox::toggled, update);
-    connect(configuration.offHandGroup, &QGroupBox::toggled, update);
-
+    // Make this connections BEFORE the ones that update the chart! Since the
+    // calculations of the chart rely on the value set here.
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
                               QSpinBox* bonus, QLabel* result)
     {
@@ -327,6 +318,16 @@ void MainWindow::Private::newPage()
                     configuration.weaponDamageDiceBonus2,
                     configuration.damageDetail2);
 
+    auto update =  std::bind(&Private::updateSeriesAtCurrentIndex, this);
+    for (auto child : widget->findChildren<QSpinBox*>())
+        connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
+    for (auto child : widget->findChildren<QDoubleSpinBox*>())
+        connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
+    for (auto child : widget->findChildren<QComboBox*>())
+        connect(child, &QComboBox::currentTextChanged, update);
+    for (auto child : widget->findChildren<QCheckBox*>())
+        connect(child, &QCheckBox::toggled, update);
+    connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
     // FIXME: Review the captures. This can be fishy if there are removals
     connect(configuration.targetArmor, &QComboBox::currentTextChanged,
