@@ -262,6 +262,8 @@ MainWindow::MainWindow(QWidget* parent)
         d->configurations.removeAt(index);
         d->chart->removeSeries(d->chart->series().at(index));
         delete d->tabs->widget(index);
+        for (int tab = index ; tab <= d->tabs->count(); ++tab)
+            d->tabs->setTabText(index, tr("Configuration %1").arg(tab));
     });
 
     // Layout grouping the configurations and the enemy controls ///////////////
