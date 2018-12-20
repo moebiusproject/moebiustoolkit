@@ -13,4 +13,4 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
 
-FORMS += configuration.ui
+FORMS += configuration.ui enemy.ui

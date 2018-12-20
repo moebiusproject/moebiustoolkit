@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 
 #include "ui_configuration.h"
+#include "ui_enemy.h"
 
 #include <QtCore>
 #include <QtWidgets>
@@ -26,11 +27,21 @@ Q_DECLARE_METATYPE(ArmorModifiers)
 
 struct MainWindow::Private
 {
+    Private(MainWindow& window)
+        : q(window)
+    {}
+    MainWindow& q;
     QVector<int> armorClasses;
 
-    QTabWidget* tabs = nullptr;
-    QChart* chart = nullptr;
     QMenu* entriesMenu = nullptr;
+
+    QChart* chart = nullptr;
+    QSpinBox* minimumX = nullptr;
+    QSpinBox* maximumX = nullptr;
+
+    Ui::Enemy enemy;
+
+    QTabWidget* tabs = nullptr;
 
     QVector<Ui::configuration> configurations;
     QVector<QVariantHash> savedConfigurations;
@@ -107,6 +118,12 @@ struct MainWindow::Private
     void newPage();
     void setupAxes();
 
+    void updateAllSeries() {
+        for (int index = 0; index < tabs->count(); ++index) {
+            if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
+                updateSeries(configurations[index], series);
+        }
+    }
     // TODO: previously this accepted the index as parameter, which is better,
     // but requires knowing the proper index of a series/configuration. This was
     // causing a crash when deleting tabs. But I will have to support something
@@ -121,13 +138,14 @@ struct MainWindow::Private
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , d(new MainWindow::Private)
+    , d(new MainWindow::Private(*this))
 {
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
 
     d->loadSavedConfigurations();
 
+    // Menus ///////////////////////////////////////////////////////////////////
     QMenu* configurationsMenu = menuBar()->addMenu(tr("Configurations"));
 
     auto action = new QAction(tr("Save current"), this);
@@ -151,20 +169,75 @@ MainWindow::MainWindow(QWidget* parent)
     d->populateEntriesMenu();
     configurationsMenu->addMenu(d->entriesMenu);
 
+    // Chart controls //////////////////////////////////////////////////////////
+    auto chartControlsLayout = new QHBoxLayout;
+    chartControlsLayout->addWidget(new QLabel(tr("Minimum X:")));
+    d->minimumX = new QSpinBox;
+    d->minimumX->setMinimum(d->armorClasses.last());
+    d->minimumX->setMaximum(d->armorClasses.first());
+    d->minimumX->setValue(d->minimumX->minimum());
+    chartControlsLayout->addWidget(d->minimumX);
+    chartControlsLayout->addWidget(new QLabel(tr("Maximum X:")));
+    d->maximumX = new QSpinBox;
+    d->maximumX->setMinimum(d->armorClasses.last());
+    d->maximumX->setMaximum(d->armorClasses.first());
+    d->maximumX->setValue(d->maximumX->maximum());
+    chartControlsLayout->addWidget(d->maximumX);
+    // FIXME: improve min/max spinbox values (to disallow crossed values).
+    connect(d->minimumX, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+
+    // The chart itself ////////////////////////////////////////////////////////
     d->chart = new QChart;
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
     auto chartView = new QChartView(d->chart);
     chartView->setRenderHint(QPainter::Antialiasing);
 
+    // The chart layout grouping the two ///////////////////////////////////////
+    auto chartViewLayout = new QVBoxLayout;
+    chartViewLayout->addLayout(chartControlsLayout);
+    chartViewLayout->addWidget(chartView);
+
+    // The common enemy controls ///////////////////////////////////////////////
+    auto enemyControls = new QWidget;
+    d->enemy.setupUi(enemyControls);
+    d->enemy.armor->addItem(tr("Neutral"),
+                            QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
+    d->enemy.armor->addItem(tr("Leather"),
+                            QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
+    d->enemy.armor->addItem(tr("Studded Leather"),
+                            QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
+    d->enemy.armor->addItem(tr("Chain Mail"),
+                            QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
+    d->enemy.armor->addItem(tr("Splint Mail"),
+                            QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
+    d->enemy.armor->addItem(tr("Plate Mail"),
+                            QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
+    d->enemy.armor->addItem(tr("Full Plate Mail"),
+                            QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
+    // TODO: add more armors, or modifiers from creatures.
+
+    connect(d->enemy.armor, &QComboBox::currentTextChanged,
+            [choice = d->enemy.armor, this] {
+        d->enemy.crushingModifier->setValue(choice->currentData().value<ArmorModifiers>().crushing);
+        d->enemy.missileModifier ->setValue(choice->currentData().value<ArmorModifiers>().missile);
+        d->enemy.piercingModifier->setValue(choice->currentData().value<ArmorModifiers>().piercing);
+        d->enemy.slashingModifier->setValue(choice->currentData().value<ArmorModifiers>().slashing);
+    });
+    connect(d->enemy.crushingModifier, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.missileModifier, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.piercingModifier, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.slashingModifier, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.helmet, &QCheckBox::toggled, std::bind(&Private::updateAllSeries, d));
+
+    // Tab widget with configurations //////////////////////////////////////////
     d->tabs = new QTabWidget;
-
-    auto widget = new QWidget;
-    auto layout = new QHBoxLayout;
-    layout->addWidget(chartView, 1);
-    layout->addWidget(d->tabs, 0);
-    widget->setLayout(layout);
-    setCentralWidget(widget);
-
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
@@ -178,6 +251,19 @@ MainWindow::MainWindow(QWidget* parent)
         d->chart->removeSeries(d->chart->series().at(index));
         delete d->tabs->widget(index);
     });
+
+    // Layout grouping the configurations and the enemy controls ///////////////
+    auto inputLayout = new QVBoxLayout;
+    inputLayout->addWidget(enemyControls);
+    inputLayout->addWidget(d->tabs);
+
+    // Now group everything together ///////////////////////////////////////////
+    auto widget = new QWidget;
+    auto layout = new QHBoxLayout;
+    widget->setLayout(layout);
+    setCentralWidget(widget);
+    layout->addLayout(chartViewLayout, 1);
+    layout->addLayout(inputLayout, 0);
 
     d->newPage();
 }
@@ -258,27 +344,10 @@ void MainWindow::Private::newPage()
     tabs->addTab(widget, tr("Configuration %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
-    configuration.targetArmor->addItem(tr("Neutral"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
-    configuration.targetArmor->addItem(tr("Leather"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
-    configuration.targetArmor->addItem(tr("Studded Leather"),
-                                       QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
-    configuration.targetArmor->addItem(tr("Chain Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
-    configuration.targetArmor->addItem(tr("Splint Mail"),
-                                       QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
-    configuration.targetArmor->addItem(tr("Plate Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
-    configuration.targetArmor->addItem(tr("Full Plate Mail"),
-                                       QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
-    // TODO: add more armors, or modifiers from creatures.
-
-
-     connect(configuration.name, &QLineEdit::textChanged,
-             [this](const QString& text) {
-         chart->series().at(tabs->currentIndex())->setName(text);
-     });
+    connect(configuration.name, &QLineEdit::textChanged,
+            [this](const QString& text) {
+        chart->series().at(tabs->currentIndex())->setName(text);
+    });
 
     // Make this connections BEFORE the ones that update the chart! Since the
     // calculations of the chart rely on the value set here.
@@ -329,17 +398,6 @@ void MainWindow::Private::newPage()
         connect(child, &QCheckBox::toggled, update);
     connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
-    // FIXME: Review the captures. This can be fishy if there are removals
-    connect(configuration.targetArmor, &QComboBox::currentTextChanged,
-            [choice = configuration.targetArmor,
-            crushing = configuration.crushingModifier, missile = configuration.missileModifier,
-            piercing = configuration.piercingModifier, slashing = configuration.slashingModifier]
-    {
-        crushing->setValue(choice->currentData().value<ArmorModifiers>().crushing);
-        missile->setValue(choice->currentData().value<ArmorModifiers>().missile);
-        piercing->setValue(choice->currentData().value<ArmorModifiers>().piercing);
-        slashing->setValue(choice->currentData().value<ArmorModifiers>().slashing);
-    });
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     chart->addSeries(new QLineSeries);
@@ -351,8 +409,10 @@ void MainWindow::Private::setupAxes()
     chart->createDefaultAxes();
 
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
-        axis->setTickCount(armorClasses.count());
         axis->setLabelFormat(QLatin1String("%i"));
+        axis->setMin(minimumX->value());
+        axis->setMax(maximumX->value());
+        axis->setTickCount(maximumX->value() - minimumX->value() + 1);
 #if 0
         QFont font = axis->labelsFont();
         font.setPointSize(font.pointSize() - 2);
@@ -385,11 +445,11 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     const int offThac0  = thac0 - c.proficiencyThac0Modifier2->value() - c.styleModifier2->value() - c.weaponThac0Modifier2->value();
 
     // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
-    auto modifierFromUi = [&c](QComboBox* box) {
-        return ( box->currentIndex() == 0 ? c.crushingModifier->value()
-               : box->currentIndex() == 1 ? c.missileModifier->value()
-               : box->currentIndex() == 2 ? c.piercingModifier->value()
-                                          : c.slashingModifier->value() );
+    auto modifierFromUi = [this](QComboBox* box) {
+        return ( box->currentIndex() == 0 ? enemy.crushingModifier->value()
+               : box->currentIndex() == 1 ? enemy.missileModifier->value()
+               : box->currentIndex() == 2 ? enemy.piercingModifier->value()
+                                          : enemy.slashingModifier->value() );
     };
     const int mainAcModifier = modifierFromUi(c.damageType1);
     const int offAcModifier  = modifierFromUi(c.damageType2);
@@ -409,7 +469,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const int mainToHit = mainThac0 - ac - mainAcModifier;
         const int offToHit  = offThac0  - ac - offAcModifier;
 
-        const bool doubleCriticalDamage = !c.helmet->isChecked();
+        const bool doubleCriticalDamage = !enemy.helmet->isChecked();
         const bool doubleCriticalChance = false; // TODO: add to UI
 
         auto chance = [](int toHit) {
