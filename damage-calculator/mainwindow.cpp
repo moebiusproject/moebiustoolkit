@@ -38,6 +38,7 @@ struct MainWindow::Private
     QChart* chart = nullptr;
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
+    QCheckBox* pointLabels = nullptr;
 
     Ui::Enemy enemy;
 
@@ -188,6 +189,17 @@ MainWindow::MainWindow(QWidget* parent)
             std::bind(&Private::updateAllSeries, d));
     connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged),
             std::bind(&Private::updateAllSeries, d));
+    d->pointLabels = new QCheckBox(tr("Show point labels"));
+    chartControlsLayout->addWidget(d->pointLabels);
+    d->pointLabels->setChecked(true);
+    connect(d->pointLabels, &QCheckBox::toggled, [this](bool value) {
+        for (auto series : d->chart->series()) {
+            if (auto line = qobject_cast<QLineSeries*>(series)) {
+                line->setPointsVisible(value);
+                line->setPointLabelsVisible(value);
+            }
+        }
+    });
 
     // The chart itself ////////////////////////////////////////////////////////
     d->chart = new QChart;
@@ -400,7 +412,13 @@ void MainWindow::Private::newPage()
 
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
-    chart->addSeries(new QLineSeries);
+    auto series = new QLineSeries;
+    series->setPointsVisible(pointLabels->isChecked());
+    series->setPointLabelsVisible(pointLabels->isChecked());
+    series->setPointLabelsClipping(false);
+    series->setPointLabelsFormat(QLatin1String("@yPoint"));
+    chart->addSeries(series);
+
     updateSeriesAtCurrentIndex();
 }
 
