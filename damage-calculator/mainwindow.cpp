@@ -39,6 +39,7 @@ struct MainWindow::Private
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
     QCheckBox* pointLabels = nullptr;
+    QCheckBox* reverse = nullptr;
 
     Ui::Enemy enemy;
 
@@ -197,6 +198,14 @@ MainWindow::MainWindow(QWidget* parent)
             if (auto line = qobject_cast<QLineSeries*>(series)) {
                 line->setPointLabelsVisible(value);
             }
+        }
+    });
+    d->reverse = new QCheckBox(tr("Reverse AC axis"));
+    chartControlsLayout->addWidget(d->reverse);
+    d->reverse->setChecked(true);
+    connect(d->reverse, &QCheckBox::toggled, [this](bool value) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).first())) {
+            axis->setReverse(value);
         }
     });
 
@@ -449,8 +458,7 @@ void MainWindow::Private::setupAxes()
     chart->createDefaultAxes();
 
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
-        // TODO customize
-        axis->setReverse(true);
+        axis->setReverse(reverse->isChecked());
         axis->setMin(minimumX->value());
         axis->setMax(maximumX->value());
         axis->setTickCount(maximumX->value() - minimumX->value() + 1);
