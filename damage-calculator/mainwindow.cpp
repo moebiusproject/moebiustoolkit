@@ -277,9 +277,10 @@ MainWindow::MainWindow(QWidget* parent)
             return; // don't close the last one for now, to keep the "New" button
         d->configurations.removeAt(index);
         d->chart->removeSeries(d->chart->series().at(index));
+        d->setupAxes();
         delete d->tabs->widget(index);
-        for (int tab = index ; tab <= d->tabs->count(); ++tab)
-            d->tabs->setTabText(index, tr("Configuration %1").arg(tab));
+        for (int tab = index ; tab < d->tabs->count(); ++tab)
+            d->tabs->setTabText(tab, tr("Configuration %1").arg(tab + 1));
     });
 
     // Layout grouping the configurations and the enemy controls ///////////////
