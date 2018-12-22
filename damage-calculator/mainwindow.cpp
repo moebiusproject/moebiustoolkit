@@ -33,7 +33,8 @@ struct MainWindow::Private
     MainWindow& q;
     QVector<int> armorClasses;
 
-    QMenu* entriesMenu = nullptr;
+    QMenu* loadSavedMenu = nullptr;
+    QMenu* deleteSavedMenu = nullptr;
 
     QChart* chart = nullptr;
     QSpinBox* minimumX = nullptr;
@@ -87,6 +88,12 @@ struct MainWindow::Private
         if (!alreadySaved)
             savedConfigurations.append(toSave);
 
+        saveConfigurationsToDisk();
+        populateEntriesMenu();
+    }
+
+    void saveConfigurationsToDisk()
+    {
         QSettings settings;
         settings.beginWriteArray(QLatin1String("configurations"));
         for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
@@ -97,24 +104,30 @@ struct MainWindow::Private
             }
         }
         settings.endArray();
-
-        populateEntriesMenu();
     }
 
     void populateEntriesMenu()
     {
-        entriesMenu->clear();
+        loadSavedMenu->clear();
+        deleteSavedMenu->clear();
         auto loadEntry = [this](int index) {
             newPage();
             load(tabs->currentWidget(), savedConfigurations.at(index));
+        };
+        auto deleteEntry = [this](int index) {
+            savedConfigurations.remove(index);
+            saveConfigurationsToDisk();
+            populateEntriesMenu();
         };
 
         for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
             const auto& entry = savedConfigurations.at(index);
             const QString name = entry.value(QLatin1String("name")).toString();
-            entriesMenu->addAction(name, std::bind(loadEntry, index));
+            loadSavedMenu->addAction(name, std::bind(loadEntry, index));
+            deleteSavedMenu->addAction(name, std::bind(deleteEntry, index));
         }
-        entriesMenu->setEnabled(savedConfigurations.size() > 0);
+        loadSavedMenu->setEnabled(savedConfigurations.size() > 0);
+        deleteSavedMenu->setEnabled(savedConfigurations.size() > 0);
     }
 
     void newPage();
@@ -167,9 +180,11 @@ MainWindow::MainWindow(QWidget* parent)
         d->load(d->tabs->currentWidget(), saved);
     });
 
-    d->entriesMenu = new QMenu(tr("Saved entries"));
+    d->loadSavedMenu = new QMenu(tr("Load saved"));
+    configurationsMenu->addMenu(d->loadSavedMenu);
+    d->deleteSavedMenu = new QMenu(tr("Delete saved"));
+    configurationsMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
-    configurationsMenu->addMenu(d->entriesMenu);
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
