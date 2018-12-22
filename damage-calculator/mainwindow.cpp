@@ -254,6 +254,14 @@ MainWindow::MainWindow(QWidget* parent)
             std::bind(&Private::updateAllSeries, d));
     connect(d->enemy.slashingModifier, qOverload<int>(&QSpinBox::valueChanged),
             std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.crushingResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.missileResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.piercingResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.slashingResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
     connect(d->enemy.helmet, &QCheckBox::toggled, std::bind(&Private::updateAllSeries, d));
 
     // Tab widget with configurations //////////////////////////////////////////
@@ -532,14 +540,24 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
                 return 0.05;
         };
 
-        double damage = chance(mainToHit) * mainDamage * mainApr;
+        // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
+        auto resistanceFromUi = [this](QComboBox* box) {
+            return ( box->currentIndex() == 0 ? enemy.crushingResistance->value()
+                   : box->currentIndex() == 1 ? enemy.missileResistance->value()
+                   : box->currentIndex() == 2 ? enemy.piercingResistance->value()
+                                              : enemy.slashingResistance->value() );
+        };
+        const double mainResistance = (100.0 - resistanceFromUi(c.damageType1)) / 100.0;
+        const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
+
+        double damage = chance(mainToHit) * mainDamage * mainApr * mainResistance;
         if (offHand)
-            damage += chance(offToHit) * offDamage * offApr;
+            damage += chance(offToHit) * offDamage * offApr * offResistance;
 
         if (doubleCriticalDamage) {
-            damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance);
+            damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance) * mainResistance;
             if (offHand)
-                damage += offApr * offDamage * 0.05;
+                damage += offApr * offDamage * 0.05 * offResistance;
         }
 
         series->append(ac, damage);

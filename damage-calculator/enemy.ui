@@ -49,9 +49,6 @@
       </item>
       <item row="1" column="2">
        <widget class="QSpinBox" name="crushingResistance">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -82,9 +79,6 @@
       </item>
       <item row="2" column="2">
        <widget class="QSpinBox" name="missileResistance">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -115,9 +109,6 @@
       </item>
       <item row="3" column="2">
        <widget class="QSpinBox" name="piercingResistance">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="suffix">
          <string>%</string>
         </property>
@@ -148,9 +139,6 @@
       </item>
       <item row="4" column="2">
        <widget class="QSpinBox" name="slashingResistance">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
         <property name="suffix">
          <string>%</string>
         </property>
