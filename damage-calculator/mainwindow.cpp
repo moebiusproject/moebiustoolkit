@@ -172,13 +172,13 @@ MainWindow::MainWindow(QWidget* parent)
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
-    chartControlsLayout->addWidget(new QLabel(tr("Minimum X:")));
+    chartControlsLayout->addWidget(new QLabel(tr("Best AC:")));
     d->minimumX = new QSpinBox;
     d->minimumX->setMinimum(d->armorClasses.last());
     d->minimumX->setMaximum(d->armorClasses.first());
     d->minimumX->setValue(d->minimumX->minimum());
     chartControlsLayout->addWidget(d->minimumX);
-    chartControlsLayout->addWidget(new QLabel(tr("Maximum X:")));
+    chartControlsLayout->addWidget(new QLabel(tr("Worst AC:")));
     d->maximumX = new QSpinBox;
     d->maximumX->setMinimum(d->armorClasses.last());
     d->maximumX->setMaximum(d->armorClasses.first());
@@ -195,7 +195,6 @@ MainWindow::MainWindow(QWidget* parent)
     connect(d->pointLabels, &QCheckBox::toggled, [this](bool value) {
         for (auto series : d->chart->series()) {
             if (auto line = qobject_cast<QLineSeries*>(series)) {
-                line->setPointsVisible(value);
                 line->setPointLabelsVisible(value);
             }
         }
@@ -278,6 +277,7 @@ MainWindow::MainWindow(QWidget* parent)
     setCentralWidget(widget);
     layout->addLayout(chartViewLayout, 1);
     layout->addLayout(inputLayout, 0);
+    statusBar()->showMessage(tr("Hover the lines to see the value"));
 
     d->newPage();
 }
@@ -415,10 +415,30 @@ void MainWindow::Private::newPage()
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     auto series = new QLineSeries;
-    series->setPointsVisible(pointLabels->isChecked());
+    series->setPointsVisible(true);
     series->setPointLabelsVisible(pointLabels->isChecked());
     series->setPointLabelsClipping(false);
     series->setPointLabelsFormat(QLatin1String("@yPoint"));
+    auto closestSeriesPoint = [](const QVector<QPointF> realPoints, const QPointF &domainPoint)
+    {
+        QPointF closest;
+        qreal minimum = qInf();
+        for (const auto& point : realPoints) {
+            const QPointF delta = domainPoint - point;
+            const qreal distance = qAbs(delta.manhattanLength());
+            if (distance < minimum) {
+                minimum = distance;
+                closest = point;
+            }
+        }
+        return closest;
+    };
+    connect(series, &QLineSeries::hovered,
+            [this, series, closestSeriesPoint](QPointF point, bool over) {
+        point = closestSeriesPoint(series->pointsVector(), point);
+        if (over)
+            q.statusBar()->showMessage(tr("Damage: %1").arg(point.y()), 2000);
+    });
     chart->addSeries(series);
 
     updateSeriesAtCurrentIndex();
@@ -429,16 +449,18 @@ void MainWindow::Private::setupAxes()
     chart->createDefaultAxes();
 
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
-        axis->setLabelFormat(QLatin1String("%i"));
+        // TODO customize
+        axis->setReverse(true);
         axis->setMin(minimumX->value());
         axis->setMax(maximumX->value());
         axis->setTickCount(maximumX->value() - minimumX->value() + 1);
+
+        axis->setLabelFormat(QLatin1String("%i"));
 #if 0
         QFont font = axis->labelsFont();
         font.setPointSize(font.pointSize() - 2);
         axis->setLabelsFont(font);
 #endif
-        axis->setReverse(true);
     }
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
         axis->applyNiceNumbers();
