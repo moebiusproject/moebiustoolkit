@@ -470,7 +470,7 @@ void MainWindow::Private::newPage()
             [this, series, closestSeriesPoint](QPointF point, bool over) {
         point = closestSeriesPoint(series->pointsVector(), point);
         if (over)
-            q.statusBar()->showMessage(tr("Damage: %1").arg(point.y()), 2000);
+            q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
     });
     chart->addSeries(series);
 
