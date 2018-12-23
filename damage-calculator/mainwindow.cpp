@@ -37,6 +37,7 @@ struct MainWindow::Private
     QMenu* deleteSavedMenu = nullptr;
 
     QChart* chart = nullptr;
+    QChartView* chartView = nullptr;
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
     QCheckBox* pointLabels = nullptr;
@@ -161,9 +162,21 @@ MainWindow::MainWindow(QWidget* parent)
     d->loadSavedConfigurations();
 
     // Menus ///////////////////////////////////////////////////////////////////
+    QMenu* fileMenu = menuBar()->addMenu(tr("File"));
+
+    auto action = new QAction(tr("Copy chart to clipboard"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    fileMenu->addAction(action);
+
+    connect(action, &QAction::triggered, [this] {
+        const QPixmap pixmap = d->chartView->grab();
+        QClipboard* clipboard = QGuiApplication::clipboard();
+        clipboard->setPixmap(pixmap);
+    });
+
     QMenu* configurationsMenu = menuBar()->addMenu(tr("Configurations"));
 
-    auto action = new QAction(tr("Save current"), this);
+    action = new QAction(tr("Save current"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     configurationsMenu->addAction(action);
 
@@ -227,13 +240,13 @@ MainWindow::MainWindow(QWidget* parent)
     // The chart itself ////////////////////////////////////////////////////////
     d->chart = new QChart;
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
-    auto chartView = new QChartView(d->chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    d->chartView = new QChartView(d->chart);
+    d->chartView->setRenderHint(QPainter::Antialiasing);
 
     // The chart layout grouping the two ///////////////////////////////////////
     auto chartViewLayout = new QVBoxLayout;
     chartViewLayout->addLayout(chartControlsLayout);
-    chartViewLayout->addWidget(chartView);
+    chartViewLayout->addWidget(d->chartView);
 
     // The common enemy controls ///////////////////////////////////////////////
     auto enemyControls = new QWidget;
