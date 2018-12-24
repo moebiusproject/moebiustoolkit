@@ -174,10 +174,23 @@ MainWindow::MainWindow(QWidget* parent)
         clipboard->setPixmap(pixmap);
     });
 
+    action = new QAction(tr("Save chart as..."), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    fileMenu->addAction(action);
+
+    connect(action, &QAction::triggered, [this] {
+        const QPixmap pixmap = d->chartView->grab();
+        auto dialog = new QFileDialog(this);
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
+        connect(dialog, &QFileDialog::fileSelected, [pixmap](const QString& name) {
+            pixmap.save(name, "png");
+        });
+        dialog->open();
+    });
+
     QMenu* configurationsMenu = menuBar()->addMenu(tr("Configurations"));
 
     action = new QAction(tr("Save current"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     configurationsMenu->addAction(action);
 
     connect(action, &QAction::triggered, std::bind(&Private::saveCurrentConfiguration, d));
@@ -228,7 +241,7 @@ MainWindow::MainWindow(QWidget* parent)
             }
         }
     });
-    d->reverse = new QCheckBox(tr("Reverse AC axis"));
+    d->reverse = new QCheckBox(tr("AC: worst to best"));
     chartControlsLayout->addWidget(d->reverse);
     d->reverse->setChecked(true);
     connect(d->reverse, &QCheckBox::toggled, [this](bool value) {
