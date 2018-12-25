@@ -8,7 +8,7 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000 \
 
 QMAKE_CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 
-SOURCES += main.cpp \
+SOURCES += damage-calculator.cpp \
            mainwindow.cpp \
 
 HEADERS += mainwindow.h \
