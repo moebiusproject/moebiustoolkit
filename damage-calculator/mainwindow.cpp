@@ -41,6 +41,7 @@ struct MainWindow::Private
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
     QCheckBox* pointLabels = nullptr;
+    QCheckBox* pointLabelsClipping = nullptr;
     QCheckBox* reverse = nullptr;
 
     Ui::Enemy enemy;
@@ -238,6 +239,16 @@ MainWindow::MainWindow(QWidget* parent)
         for (auto series : d->chart->series()) {
             if (auto line = qobject_cast<QLineSeries*>(series)) {
                 line->setPointLabelsVisible(value);
+            }
+        }
+    });
+    d->pointLabelsClipping = new QCheckBox(tr("Clip point labels"));
+    chartControlsLayout->addWidget(d->pointLabelsClipping);
+    d->pointLabelsClipping->setChecked(false);
+    connect(d->pointLabelsClipping, &QCheckBox::toggled, [this](bool value) {
+        for (auto series : d->chart->series()) {
+            if (auto line = qobject_cast<QLineSeries*>(series)) {
+                line->setPointLabelsClipping(value);
             }
         }
     });
@@ -476,7 +487,7 @@ void MainWindow::Private::newPage()
     auto series = new QLineSeries;
     series->setPointsVisible(true);
     series->setPointLabelsVisible(pointLabels->isChecked());
-    series->setPointLabelsClipping(false);
+    series->setPointLabelsClipping(pointLabelsClipping->isChecked());
     series->setPointLabelsFormat(QLatin1String("@yPoint"));
     auto closestSeriesPoint = [](const QVector<QPointF> realPoints, const QPointF &domainPoint)
     {
