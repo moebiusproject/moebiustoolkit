@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
-    <height>614</height>
+    <width>579</width>
+    <height>747</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -314,6 +314,13 @@
           </item>
          </layout>
         </item>
+        <item>
+         <widget class="QCheckBox" name="doubleCriticalChance">
+          <property name="text">
+           <string>Critical hit on 19</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>
@@ -525,6 +532,22 @@
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <spacer name="spacer">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>10</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

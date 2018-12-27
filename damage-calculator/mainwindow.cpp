@@ -581,16 +581,16 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const bool doubleCriticalChance = false; // TODO: add to UI
+        const bool doubleCriticalChance = c.doubleCriticalChance->isChecked();
 
-        auto chance = [](int toHit) {
-            if (toHit <= 1) // Only critical failures fail: 95% chance of hitting
+        auto chance = [doubleCriticalChance](int toHit) {
+            const int firstCriticalRoll = doubleCriticalChance ? 19 : 20;
+            if (toHit <= 2) // Only critical failures fail: 95% chance of hitting
                 return 0.95;
-            // TODO: critical hits on 19 require changing this.
-            else if (toHit > 1 && toHit < 20) {
-                return 1 - (0.05 * toHit);
+            else if (toHit > 2 && toHit < firstCriticalRoll) {
+                return 1 - (0.05 * (toHit-1));
             } else
-                return 0.05;
+                return doubleCriticalChance ? 0.10 : 0.05;
         };
 
         // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
