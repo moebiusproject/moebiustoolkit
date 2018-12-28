@@ -482,6 +482,12 @@ void MainWindow::Private::newPage()
         connect(child, &QCheckBox::toggled, update);
     connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
+    // Don't allow critical hits on 19 if using an off-hand. This can't be done
+    // with any proficiency combination that I know of in the unmodded game, and
+    // neither with any mods I've seen that alter proficiencies.
+    connect(configuration.offHandGroup, &QGroupBox::toggled, [configuration](bool offhand) {
+        configuration.doubleCriticalChance->setEnabled(!offhand);
+    });
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     auto series = new QLineSeries;
@@ -581,7 +587,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const bool doubleCriticalChance = c.doubleCriticalChance->isChecked();
+        const bool doubleCriticalChance = c.doubleCriticalChance->isChecked() && c.doubleCriticalChance->isEnabled();
 
         auto chance = [doubleCriticalChance](int toHit) {
             const int firstCriticalRoll = doubleCriticalChance ? 19 : 20;
