@@ -568,8 +568,18 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
                : box->currentIndex() == 2 ? enemy.piercingModifier->value()
                                           : enemy.slashingModifier->value() );
     };
+    auto resistanceFromUi = [this](QComboBox* box) {
+        return ( box->currentIndex() == 0 ? enemy.crushingResistance->value()
+               : box->currentIndex() == 1 ? enemy.missileResistance->value()
+               : box->currentIndex() == 2 ? enemy.piercingResistance->value()
+                                          : enemy.slashingResistance->value() );
+    };
+
     const int mainAcModifier = modifierFromUi(c.damageType1);
     const int offAcModifier  = modifierFromUi(c.damageType2);
+
+    const double mainResistance = (100.0 - resistanceFromUi(c.damageType1)) / 100.0;
+    const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
 
     // TODO: don't use an ugly property for this.
     const double mainDamage = c.damageDetail1->property("avg").toDouble()
@@ -598,16 +608,6 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
             } else
                 return doubleCriticalChance ? 0.10 : 0.05;
         };
-
-        // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
-        auto resistanceFromUi = [this](QComboBox* box) {
-            return ( box->currentIndex() == 0 ? enemy.crushingResistance->value()
-                   : box->currentIndex() == 1 ? enemy.missileResistance->value()
-                   : box->currentIndex() == 2 ? enemy.piercingResistance->value()
-                                              : enemy.slashingResistance->value() );
-        };
-        const double mainResistance = (100.0 - resistanceFromUi(c.damageType1)) / 100.0;
-        const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
 
         double damage = chance(mainToHit) * mainDamage * mainApr * mainResistance;
         if (offHand)
