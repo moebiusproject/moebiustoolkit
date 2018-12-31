@@ -336,7 +336,14 @@ MainWindow::MainWindow(QWidget* parent)
     });
 
     // Layout grouping the configurations and the enemy controls ///////////////
-    auto inputLayout = new QVBoxLayout;
+    auto inputWidget = new QWidget;
+    auto inputLayout = new QVBoxLayout(inputWidget);
+    inputWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    auto inputArea = new QScrollArea;
+    inputArea->setWidget(inputWidget);
+    // TODO: Better looking when no scrollbar only... re-consider it.
+    // inputArea->setFrameShape(QFrame::NoFrame);
+    inputArea->setWidgetResizable(true);
     inputLayout->addWidget(enemyControls);
     inputLayout->addWidget(d->tabs);
 
@@ -346,7 +353,7 @@ MainWindow::MainWindow(QWidget* parent)
     widget->setLayout(layout);
     setCentralWidget(widget);
     layout->addLayout(chartViewLayout, 1);
-    layout->addLayout(inputLayout, 0);
+    layout->addWidget(inputArea, 0);
     statusBar()->showMessage(tr("Hover the lines to see the value"));
 
     d->newPage();
