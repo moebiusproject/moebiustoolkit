@@ -329,6 +329,7 @@ MainWindow::MainWindow(QWidget* parent)
             return; // don't close the last one for now, to keep the "New" button
         d->configurations.removeAt(index);
         d->chart->removeSeries(d->chart->series().at(index));
+        // TODO: with the new approach, this might be a tad heavy. Review.
         d->setupAxes();
         delete d->tabs->widget(index);
         for (int tab = index ; tab < d->tabs->count(); ++tab)
@@ -529,7 +530,8 @@ void MainWindow::Private::newPage()
 
 void MainWindow::Private::setupAxes()
 {
-    chart->createDefaultAxes();
+    if (chart->axes().size() == 0)
+        chart->createDefaultAxes();
 
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
         axis->setReverse(reverse->isChecked());
@@ -545,7 +547,17 @@ void MainWindow::Private::setupAxes()
 #endif
     }
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
+        double min = +qInf();
+        double max = -qInf();
+        for (auto series : chart->series()) {
+            for (auto point : qobject_cast<QLineSeries*>(series)->pointsVector()) {
+                min = qMin(point.y(), min);
+                max = qMax(point.y(), max);
+            }
+        }
+        axis->setRange(min, max);
         axis->applyNiceNumbers();
+
 #if 0 // Keep just in case. But the above seems to work well
         const int rounded = int(std::ceil(axis->max()));
         axis->setMax(rounded);
@@ -637,4 +649,10 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
 #endif
 
     setupAxes();
+    if (series->attachedAxes().size() == 0) {
+        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first()))
+            series->attachAxis(axis);
+        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first()))
+            series->attachAxis(axis);
+    }
 }
