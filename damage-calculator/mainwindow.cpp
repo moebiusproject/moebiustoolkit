@@ -458,6 +458,7 @@ void MainWindow::Private::newPage()
                             .arg(int(min)).arg(int(max))
                             .arg(avg, 0, 'f', 1));
             result->setProperty("avg", avg);
+            result->setProperty("max", max);
         };
 
         connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
@@ -601,10 +602,13 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
 
     // TODO: don't use an ugly property for this.
-    const double mainDamage = c.damageDetail1->property("avg").toDouble()
+    const bool maximumDamage = c.maximumDamage->isChecked();
+    const double weapon1 = c.damageDetail1->property(maximumDamage ? "max" : "avg").toDouble();
+    const double weapon2 = c.damageDetail2->property(maximumDamage ? "max" : "avg").toDouble();
+    const double mainDamage = weapon1
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
-    const double offDamage  = c.damageDetail2->property("avg").toDouble()
+    const double offDamage  = weapon2
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
 
