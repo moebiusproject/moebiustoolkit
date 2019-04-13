@@ -576,8 +576,6 @@ void MainWindow::Private::setupAxes()
 
 void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
 {
-    series->clear();
-
     const bool offHand = c.offHandGroup->isChecked();
 
     const int thac0 = c.baseThac0->value() - c.strengthThac0Bonus->value() - c.classThac0Bonus->value();
@@ -623,6 +621,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     const double mainApr = c.attacksPerRound1->value();
     const int    offApr  = c.attacksPerRound2->value();
 
+    QVector<QPointF> points;
     for (const int ac : armorClasses) {
         const int mainToHit = mainThac0 - ac - mainAcModifier;
         const int offToHit  = offThac0  - ac - offAcModifier;
@@ -650,8 +649,9 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
                 damage += offApr * offDamage * 0.05 * offResistance;
         }
 
-        series->append(ac, damage);
+        points.append(QPointF(ac, damage));
     }
+    series->replace(points);
 
 #if 0
     // TODO: Uuuuuugly workaround for the axis not updating themselves well.
