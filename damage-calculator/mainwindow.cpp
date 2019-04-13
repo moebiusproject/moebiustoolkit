@@ -135,6 +135,18 @@ struct MainWindow::Private
     void newPage();
     void setupAxes();
 
+    static auto weaponDamage(QSpinBox* proficiency, QSpinBox* dices,
+                             QSpinBox* sides,       QSpinBox* bonus)
+    {
+        const int    min = proficiency->value() + bonus->value()
+                         + dices->value();
+        const int    max = proficiency->value() + bonus->value()
+                         + dices->value() * sides->value();
+        const double avg = proficiency->value() + bonus->value()
+                         + dices->value() * (0.5 + sides->value()/2.0);
+        return std::make_tuple(min, avg, max);
+    }
+
     void updateAllSeries() {
         for (int index = 0; index < tabs->count(); ++index) {
             if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
@@ -441,24 +453,15 @@ void MainWindow::Private::newPage()
         chart->series().at(tabs->currentIndex())->setName(text);
     });
 
-    // Make this connections BEFORE the ones that update the chart! Since the
-    // calculations of the chart rely on the value set here.
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
                               QSpinBox* bonus, QLabel* result)
     {
         auto calculateStats = [=]() {
-            const double min = proficiency->value() + bonus->value()
-                             + dice->value();
-            const double max = proficiency->value() + bonus->value()
-                             + dice->value() * sides->value();
-            const double avg = proficiency->value() + bonus->value()
-                             + dice->value() * (0.5 + sides->value()/2.0);
-
-            result->setText(tr("Min/Max/Avg: %1/%2/%3")
-                            .arg(int(min)).arg(int(max))
-                            .arg(avg, 0, 'f', 1));
-            result->setProperty("avg", avg);
-            result->setProperty("max", max);
+            auto damage = Private::weaponDamage(proficiency, dice, sides, bonus);
+            result->setText(tr("Min/Avg/Max: %1/%2/%3")
+                            .arg(std::get<0>(damage))
+                            .arg(std::get<1>(damage), 0, 'f', 1)
+                            .arg(std::get<2>(damage)));
         };
 
         connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
@@ -601,14 +604,19 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     const double mainResistance = (100.0 - resistanceFromUi(c.damageType1)) / 100.0;
     const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
 
-    // TODO: don't use an ugly property for this.
     const bool maximumDamage = c.maximumDamage->isChecked();
-    const double weapon1 = c.damageDetail1->property(maximumDamage ? "max" : "avg").toDouble();
-    const double weapon2 = c.damageDetail2->property(maximumDamage ? "max" : "avg").toDouble();
-    const double mainDamage = weapon1
+    const auto weapon1 = Private::weaponDamage(c.proficiencyDamageModifier1,
+                                               c.weaponDamageDiceNumber1,
+                                               c.weaponDamageDiceSide1,
+                                               c.weaponDamageDiceBonus1);
+    const auto weapon2 = Private::weaponDamage(c.proficiencyDamageModifier2,
+                                               c.weaponDamageDiceNumber2,
+                                               c.weaponDamageDiceSide2,
+                                               c.weaponDamageDiceBonus2);
+    const double mainDamage = (maximumDamage ? std::get<2>(weapon1) : std::get<1>(weapon1))
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
-    const double offDamage  = weapon2
+    const double offDamage  = (maximumDamage ? std::get<2>(weapon2) : std::get<1>(weapon2))
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
 
