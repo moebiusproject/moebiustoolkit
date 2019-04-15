@@ -554,7 +554,10 @@ void MainWindow::Private::setupAxes()
         double min = +qInf();
         double max = -qInf();
         for (auto series : chart->series()) {
-            for (auto point : qobject_cast<QLineSeries*>(series)->pointsVector()) {
+            const QVector<QPointF> points = qobject_cast<QLineSeries*>(series)->pointsVector();
+            for (auto point : points) {
+                if (point.x() > maximumX->value() || point.x() < minimumX->value())
+                    continue;
                 min = qMin(point.y(), min);
                 max = qMax(point.y(), max);
             }
