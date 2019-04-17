@@ -595,6 +595,14 @@ void MainWindow::Private::newPage()
             q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
     });
     chart->addSeries(series);
+    QLegendMarker* marker = chart->legend()->markers(series).first();
+    connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
+        series->setVisible(!series->isVisible());
+        marker->setVisible(true);
+        QFont font = marker->font();
+        font.setStrikeOut(!series->isVisible());
+        marker->setFont(font);
+    });
 
     updateSeriesAtCurrentIndex();
 }
