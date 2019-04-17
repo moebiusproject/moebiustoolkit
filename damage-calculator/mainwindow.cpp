@@ -25,6 +25,51 @@ struct ArmorModifiers
 };
 Q_DECLARE_METATYPE(ArmorModifiers)
 
+class ManageDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    explicit ManageDialog(QWidget* parent = nullptr)
+        : QDialog(parent)
+    {
+        setLayout(new QVBoxLayout);
+        layout()->addWidget(&m_table);
+        m_table.setColumnCount(2);
+        // Ideas for changing style.
+//        m_table.setShowGrid(false);
+//        m_table.setFrameStyle(QFrame::NoFrame);
+        m_table.setSelectionMode(QAbstractItemView::NoSelection);
+        m_table.setFocusPolicy(Qt::NoFocus);
+        m_table.verticalHeader()->hide();
+        m_table.horizontalHeader()->hide();
+    }
+
+    void setNames(const QStringList& names)
+    {
+        m_table.clear();
+        m_table.setRowCount(names.size());
+        // TODO: see QTableWidget::setItem on sorting
+        m_table.setSortingEnabled(false);
+        for (int i = 0, size = names.size(); i < size; ++i) {
+            m_table.setItem(i, 0, new QTableWidgetItem(names[i]));
+            auto button = new QPushButton(tr("Show"));
+            connect(button, &QPushButton::clicked, this, [this, i]() {
+                emit showClicked(i);
+            });
+            m_table.setCellWidget(i, 1, button);
+        }
+        m_table.setSortingEnabled(true);
+        m_table.resizeColumnsToContents();
+        m_table.setVerticalHeaderLabels(QStringList());
+    }
+
+signals:
+    void showClicked(int i);
+
+private:
+    QTableWidget m_table;
+};
+
 struct MainWindow::Private
 {
     Private(MainWindow& window)
@@ -35,6 +80,8 @@ struct MainWindow::Private
 
     QMenu* loadSavedMenu = nullptr;
     QMenu* deleteSavedMenu = nullptr;
+
+    ManageDialog* manageDialog = nullptr;
 
     QChart* chart = nullptr;
     QChartView* chartView = nullptr;
@@ -224,6 +271,26 @@ MainWindow::MainWindow(QWidget* parent)
     d->deleteSavedMenu = new QMenu(tr("Delete saved"));
     configurationsMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
+
+    action = new QAction(tr("Manage entries"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
+    configurationsMenu->addAction(action);
+
+    d->manageDialog = new ManageDialog(this);
+    // TODO: pick something reasonable, yet not hardcoded?
+    d->manageDialog->setMinimumWidth(600);
+    connect(action, &QAction::triggered, [this] {
+        QStringList names;
+        for (const auto& entry : qAsConst(d->savedConfigurations)) {
+            names << entry.value(QLatin1String("name")).toString();
+        }
+        d->manageDialog->setNames(names);
+        d->manageDialog->show();
+    });
+    connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
+        d->newPage();
+        d->load(d->tabs->currentWidget(), d->savedConfigurations.at(index));
+    });
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
@@ -665,3 +732,5 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
             series->attachAxis(axis);
     }
 }
+
+#include "mainwindow.moc"
