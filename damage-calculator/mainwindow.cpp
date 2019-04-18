@@ -574,7 +574,8 @@ void MainWindow::Private::newPage()
     series->setPointLabelsVisible(pointLabels->isChecked());
     series->setPointLabelsClipping(pointLabelsClipping->isChecked());
     series->setPointLabelsFormat(QLatin1String("@yPoint"));
-    auto closestSeriesPoint = [](const QVector<QPointF> realPoints, const QPointF &domainPoint)
+    auto closestSeriesPoint = [](const QVector<QPointF>& realPoints,
+                                 const QPointF& domainPoint)
     {
         QPointF closest;
         qreal minimum = qInf();
