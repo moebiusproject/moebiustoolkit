@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>579</width>
-    <height>747</height>
+    <height>766</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -104,6 +104,13 @@
        <widget class="QCheckBox" name="maximumDamage">
         <property name="text">
          <string>Maximum damage (Kai, Righteous Magic, etc.)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="criticalStrike">
+        <property name="text">
+         <string>Critical Strike HLA</string>
         </property>
        </widget>
       </item>

@@ -685,6 +685,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
 
     const bool maximumDamage = c.maximumDamage->isChecked();
+    const bool criticalStrike = c.criticalStrike->isChecked();
     const auto weapon1 = Private::weaponDamage(c.proficiencyDamageModifier1,
                                                c.weaponDamageDiceNumber1,
                                                c.weaponDamageDiceSide1,
@@ -711,7 +712,9 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
         const bool doubleCriticalChance = c.doubleCriticalChance->isChecked() && c.doubleCriticalChance->isEnabled();
 
-        auto chance = [doubleCriticalChance](int toHit) {
+        auto chance = [doubleCriticalChance, criticalStrike](int toHit) {
+            if (criticalStrike)
+                return 1.0;
             const int firstCriticalRoll = doubleCriticalChance ? 19 : 20;
             if (toHit <= 2) // Only critical failures fail: 95% chance of hitting
                 return 0.95;
@@ -725,10 +728,14 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         if (offHand)
             damage += chance(offToHit) * offDamage * offApr * offResistance;
 
-        if (doubleCriticalDamage) {
-            damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance) * mainResistance;
-            if (offHand)
-                damage += offApr * offDamage * 0.05 * offResistance;
+        if (doubleCriticalDamage) { // Unprotected against critical hits.
+            if (criticalStrike) // All damage doubled!
+                damage *= 2;
+            else { // Then 1 of each 20, or 2 of each 20 do extra damage.
+                damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance) * mainResistance;
+                if (offHand)
+                    damage += offApr * offDamage * 0.05 * offResistance;
+            }
         }
 
         points.append(QPointF(ac, damage));
