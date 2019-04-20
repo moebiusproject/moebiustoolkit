@@ -96,6 +96,7 @@ struct MainWindow::Private
     QTabWidget* tabs = nullptr;
 
     QVector<Ui::configuration> configurations;
+    QVector<QLineSeries*> lineSeries;
     QVector<QVariantHash> savedConfigurations;
 
     void load(QWidget* tab, QVariantHash data);
@@ -196,8 +197,7 @@ struct MainWindow::Private
 
     void updateAllSeries() {
         for (int index = 0; index < tabs->count(); ++index) {
-            if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
-                updateSeries(configurations[index], series);
+            updateSeries(configurations[index], lineSeries[index]);
         }
     }
     // TODO: previously this accepted the index as parameter, which is better,
@@ -206,8 +206,7 @@ struct MainWindow::Private
     // if I want to allow moving tabs around.
     void updateSeriesAtCurrentIndex() {
         const int index = tabs->currentIndex();
-        if (auto series = qobject_cast<QLineSeries*>(chart->series().at(index)))
-            updateSeries(configurations[index], series);
+        updateSeries(configurations[index], lineSeries[index]);
     }
     void updateSeries(const Ui::configuration &c, QLineSeries* series);
 };
@@ -335,6 +334,7 @@ MainWindow::MainWindow(QWidget* parent)
     chartControlsLayout->addWidget(d->reverse);
     d->reverse->setChecked(true);
     connect(d->reverse, &QCheckBox::toggled, [this](bool value) {
+        // FIXME: assumption on QLineSeries
         if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).first())) {
             axis->setReverse(value);
         }
@@ -407,7 +407,8 @@ MainWindow::MainWindow(QWidget* parent)
         if (d->tabs->count() == 1)
             return; // don't close the last one for now, to keep the "New" button
         d->configurations.removeAt(index);
-        d->chart->removeSeries(d->chart->series().at(index));
+        d->chart->removeSeries(d->lineSeries[index]);
+        delete d->lineSeries.takeAt(index);
         // TODO: with the new approach, this might be a tad heavy. Review.
         d->setupAxes();
         delete d->tabs->widget(index);
@@ -517,7 +518,7 @@ void MainWindow::Private::newPage()
 
     connect(configuration.name, &QLineEdit::textChanged,
             [this](const QString& text) {
-        chart->series().at(tabs->currentIndex())->setName(text);
+        lineSeries.at(tabs->currentIndex())->setName(text);
     });
 
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
@@ -570,6 +571,7 @@ void MainWindow::Private::newPage()
 
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     auto series = new QLineSeries;
+    lineSeries.append(series);
     series->setPointsVisible(true);
     series->setPointLabelsVisible(pointLabels->isChecked());
     series->setPointLabelsClipping(pointLabelsClipping->isChecked());
@@ -626,11 +628,12 @@ void MainWindow::Private::setupAxes()
         axis->setLabelsFont(font);
 #endif
     }
+    // FIXME: assumption on QLineSeries
     if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
         double min = +qInf();
         double max = -qInf();
-        for (auto series : chart->series()) {
-            const QVector<QPointF> points = qobject_cast<QLineSeries*>(series)->pointsVector();
+        for (auto series : lineSeries) {
+            const QVector<QPointF> points = series->pointsVector();
             for (auto point : points) {
                 if (point.x() > maximumX->value() || point.x() < minimumX->value())
                     continue;
@@ -735,6 +738,7 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     setupAxes();
 
     if (series->attachedAxes().size() == 0) {
+        // FIXME: assumption on QLineSeries
         if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first()))
             series->attachAxis(axis);
         if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first()))
