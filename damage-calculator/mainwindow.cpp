@@ -3,6 +3,8 @@
 #include "ui_configuration.h"
 #include "ui_enemy.h"
 
+#include "attackbonuses.h"
+
 #include <QtCore>
 #include <QtWidgets>
 #include <QtCharts>
@@ -289,6 +291,15 @@ MainWindow::MainWindow(QWidget* parent)
     connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
         d->newPage();
         d->load(d->tabs->currentWidget(), d->savedConfigurations.at(index));
+    });
+
+    QMenu* extrasMenu = menuBar()->addMenu(tr("Extras"));
+    action = new QAction(tr("Attack bonuses"), this);
+    extrasMenu->addAction(action);
+
+    connect(action, &QAction::triggered, this, [this] {
+        auto dialog = new AttackBonuses(this);
+        dialog->showMaximized();
     });
 
     // Chart controls //////////////////////////////////////////////////////////

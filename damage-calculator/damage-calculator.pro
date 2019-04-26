@@ -9,8 +9,10 @@ DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000 \
 QMAKE_CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 
 SOURCES += damage-calculator.cpp \
+           attackbonuses.cpp \
            mainwindow.cpp \
 
-HEADERS += mainwindow.h \
+HEADERS += attackbonuses.h \
+           mainwindow.h \
 
 FORMS += configuration.ui enemy.ui
