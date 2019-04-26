@@ -372,10 +372,11 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(d->enemy.armor, &QComboBox::currentTextChanged,
             [choice = d->enemy.armor, this] {
-        d->enemy.crushingModifier->setValue(choice->currentData().value<ArmorModifiers>().crushing);
-        d->enemy.missileModifier ->setValue(choice->currentData().value<ArmorModifiers>().missile);
-        d->enemy.piercingModifier->setValue(choice->currentData().value<ArmorModifiers>().piercing);
-        d->enemy.slashingModifier->setValue(choice->currentData().value<ArmorModifiers>().slashing);
+        const auto modifiers = choice->currentData().value<ArmorModifiers>();
+        d->enemy.crushingModifier->setValue(modifiers.crushing);
+        d->enemy.missileModifier ->setValue(modifiers.missile);
+        d->enemy.piercingModifier->setValue(modifiers.piercing);
+        d->enemy.slashingModifier->setValue(modifiers.slashing);
     });
     connect(d->enemy.crushingModifier, qOverload<int>(&QSpinBox::valueChanged),
             std::bind(&Private::updateAllSeries, d));
