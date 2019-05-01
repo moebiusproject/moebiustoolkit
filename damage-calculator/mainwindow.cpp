@@ -4,6 +4,7 @@
 #include "ui_enemy.h"
 
 #include "attackbonuses.h"
+#include "rollprobabilities.h"
 
 #include <QtCore>
 #include <QtWidgets>
@@ -300,6 +301,16 @@ MainWindow::MainWindow(QWidget* parent)
     connect(action, &QAction::triggered, this, [this] {
         auto dialog = new AttackBonuses(this);
         dialog->showMaximized();
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+    });
+
+    action = new QAction(tr("Repeated roll probability"), this);
+    extrasMenu->addAction(action);
+
+    connect(action, &QAction::triggered, this, [this] {
+        auto dialog = new RollProbabilities(this);
+        dialog->showMaximized();
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
     });
 
     // Chart controls //////////////////////////////////////////////////////////

@@ -11,8 +11,10 @@ QMAKE_CXXFLAGS += -Wall -Wextra -Werror -Wshadow
 SOURCES += damage-calculator.cpp \
            attackbonuses.cpp \
            mainwindow.cpp \
+           rollprobabilities.cpp \
 
 HEADERS += attackbonuses.h \
            mainwindow.h \
+           rollprobabilities.h \
 
 FORMS += configuration.ui enemy.ui
