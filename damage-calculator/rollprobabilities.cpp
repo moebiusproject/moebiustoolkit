@@ -33,6 +33,8 @@ RollProbabilities::RollProbabilities(QWidget* parent)
 
     enum { Sets = 9, From = 0, To = 100, Step = 5, Steps = (To-From)/Step +1 };
 
+    // TODO: QBarSet::append only takes a QList, not a QVector like the line series.
+    // Consider improving upstream.
     std::array<QList<double>, Sets> results;
     QStringList axisTexts;
 
