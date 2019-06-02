@@ -9,6 +9,8 @@
 #include <QValueAxis>
 #include <QtMath>
 
+#include <array>
+
 using namespace QtCharts;
 
 static unsigned long factorial(unsigned n)
