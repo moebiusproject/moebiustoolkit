@@ -1,0 +1,25 @@
+defineTest(projectGlobals) {
+    DEFINES += QT_NO_CAST_FROM_ASCII
+    DEFINES += QT_NO_CAST_TO_ASCII
+    DEFINES += QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+    # TODO: not sure what I want yet.
+    # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x051200
+    DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
+    export(DEFINES)
+
+    QMAKE_CXXFLAGS += -Werror
+    QMAKE_CXXFLAGS += -Wall
+    QMAKE_CXXFLAGS += -Wshadow
+    QMAKE_CXXFLAGS += -Wextra
+    export(QMAKE_CXXFLAGS)
+}
+
+defineTest(useLibMoebius) {
+    INCLUDEPATH += $$SOURCE_TREE/src
+    DEPENDPATH  += $$SOURCE_TREE/src
+    LIBS += -L$$BUILD_TREE/lib
+    LIBS += -lmoebius
+    export(INCLUDEPATH)
+    export(DEPENDPATH)
+    export(LIBS)
+}
