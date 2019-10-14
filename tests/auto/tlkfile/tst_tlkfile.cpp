@@ -14,11 +14,23 @@ private slots:
 void tst_TlkFile::test_data()
 {
     QTest::addColumn<QString>("fileName");
+    QTest::addColumn<quint16>("languageId");
+    QTest::addColumn<quint32>("stringsCount");
+    QTest::addColumn<quint32>("stringsStart");
+
+    QTest::addColumn<QString>("text42");
+    QTest::addColumn<QString>("text242");
 
     QTest::newRow("BG1 classic")
-            << QFINDTESTDATA("../../data/tlk/bg1/dialog.tlk");
+            << QFINDTESTDATA("../../data/tlk/bg1/dialog.tlk")
+            << quint16(0) << quint32(24124) << quint32(627242)
+            << QString("Back so soon.  How did your battle fare?")
+            << QString("I prefer to manage on my own.");
     QTest::newRow("BG1 EE")
-            << QFINDTESTDATA("../../data/tlk/bg1ee/dialog.tlk");
+            << QFINDTESTDATA("../../data/tlk/bg1ee/dialog.tlk")
+            << quint16(0) << quint32(71375) << quint32(1855768)
+            << QString("Back so soon! How did your battle fare?")
+            << QString("I prefer to manage on my own.");
 }
 
 void tst_TlkFile::test()
@@ -28,7 +40,32 @@ void tst_TlkFile::test()
         QSKIP("File not found, skipping test.");
     qDebug() << QTest::currentDataTag() << fileName;
 
-    TlkFile file;
+    QFile file(fileName);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+
+    QDataStream stream(&file);
+    TlkFile tlk;
+
+    QCOMPARE(tlk.version, 0);
+    QVERIFY(!tlk.isValid());
+
+    stream >> tlk;
+
+    QCOMPARE(tlk.version, 1);
+    QVERIFY(tlk.isValid());
+
+    QFETCH(quint16, languageId);
+    QFETCH(quint32, stringsCount);
+    QFETCH(quint32, stringsStart);
+    QCOMPARE(tlk.languageId, languageId);
+    QCOMPARE(tlk.stringsCount, stringsCount);
+    QCOMPARE(tlk.stringsStart, stringsStart);
+
+    QFETCH(QString, text42);
+    QFETCH(QString, text242);
+
+    QCOMPARE(tlk.text(42), text42);
+    QCOMPARE(tlk.text(242), text242);
 }
 
 QTEST_MAIN(tst_TlkFile)
