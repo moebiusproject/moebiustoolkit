@@ -1,6 +1,7 @@
 #include "tlkfile.h"
 
 #include <QDebug>
+#include <QScopeGuard>
 
 bool TlkFile::isValid() const
 {
@@ -15,6 +16,12 @@ QString TlkFile::text(quint32 id) const
 
 QDataStream& operator>>(QDataStream& stream, TlkFile& file)
 {
+    auto onFailure = qScopeGuard([&file] {
+        file.version = 0;
+        file.index.clear();
+        file.strings.clear();
+    });
+
     stream.setByteOrder(QDataStream::LittleEndian);
 
     char header[8];
@@ -31,10 +38,8 @@ QDataStream& operator>>(QDataStream& stream, TlkFile& file)
     stream >> file.languageId >> file.stringsCount >> file.stringsStart;
 #endif
 
-    if (stream.status() != QDataStream::Ok) {
-        file.version = 0;
+    if (stream.status() != QDataStream::Ok)
         return stream;
-    }
 
     file.index.clear();
     file.index.resize(file.stringsCount);
@@ -51,16 +56,16 @@ QDataStream& operator>>(QDataStream& stream, TlkFile& file)
     }
 #endif
 
-    if (stream.status() != QDataStream::Ok) {
-        file.version = 0;
-        file.index.clear();
+    if (stream.status() != QDataStream::Ok)
         return stream;
-    }
 
     file.strings.clear();
     const auto stringSize = stream.device()->size() - file.stringsStart;
     file.strings.resize(stringSize);
     stream.readRawData(file.strings.data(), stringSize);
+
+    if (stream.status() == QDataStream::Ok)
+        onFailure.dismiss();
 
     return stream;
 }
