@@ -33,7 +33,8 @@ QDataStream& operator>>(QDataStream& stream, TlkFile& file)
         return stream;
 
 #if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(&file.languageId), sizeof(quint16)+2*sizeof(quint32));
+    stream.readRawData(reinterpret_cast<char*>(&file.languageId),
+                       sizeof(quint16) + sizeof(quint32) + sizeof(quint32));
 #else
     stream >> file.languageId >> file.stringsCount >> file.stringsStart;
 #endif
