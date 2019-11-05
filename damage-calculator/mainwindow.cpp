@@ -585,13 +585,6 @@ void MainWindow::Private::newPage()
         connect(child, &QCheckBox::toggled, update);
     connect(configuration.offHandGroup, &QGroupBox::toggled, update);
 
-    // Don't allow critical hits on 19 if using an off-hand. This can't be done
-    // with any proficiency combination that I know of in the unmodded game, and
-    // neither with any mods I've seen that alter proficiencies.
-    connect(configuration.offHandGroup, &QGroupBox::toggled, [configuration](bool offhand) {
-        configuration.doubleCriticalChance->setEnabled(!offhand);
-    });
-
     // TODO: Decouple this, from setting the UI to setting the whole configuration.
     auto series = new QLineSeries;
     lineSeries.append(series);
@@ -733,31 +726,39 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
         const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const bool doubleCriticalChance = c.doubleCriticalChance->isChecked() && c.doubleCriticalChance->isEnabled();
+        const auto criticalHitChance1 = c.criticalHitChance1->value() / 100.0;
+        const auto criticalHitChance2 = c.criticalHitChance2->value() / 100.0;
 
-        auto chance = [doubleCriticalChance, criticalStrike](int toHit) {
+        // TODO: move this to a unit testable place, remove criticalChance
+        // capture and rework to support 100% criical hit chance.
+        auto chanceToHit = [criticalStrike](int toHit, double criticalChance) {
             if (criticalStrike)
                 return 1.0;
-            const int firstCriticalRoll = doubleCriticalChance ? 19 : 20;
+            // FIXME: this doesn't really support a critical chance of 100%
+            // because it evolved from when only 5 or 10% were allowed. Use
+            // critical strike for 100%.
+            const int firstCriticalRoll = (21 - criticalChance*20);
+            // Equivalent to:
+            // const int firstCriticalRoll = (105 - criticalChance*100) / 5;
             if (toHit <= 2) // Only critical failures fail: 95% chance of hitting
                 return 0.95;
             else if (toHit > 2 && toHit < firstCriticalRoll) {
                 return 1 - (0.05 * (toHit-1));
-            } else
-                return doubleCriticalChance ? 0.10 : 0.05;
+            } else // Only critical hits work.
+                return criticalChance;
         };
 
-        double damage = chance(mainToHit) * mainDamage * mainApr * mainResistance;
+        double damage = chanceToHit(mainToHit, criticalHitChance1) * mainDamage * mainApr * mainResistance;
         if (offHand)
-            damage += chance(offToHit) * offDamage * offApr * offResistance;
+            damage += chanceToHit(offToHit, criticalHitChance2) * offDamage * offApr * offResistance;
 
         if (doubleCriticalDamage) { // Unprotected against critical hits.
             if (criticalStrike) // All damage doubled!
                 damage *= 2;
             else { // Then 1 of each 20, or 2 of each 20 do extra damage.
-                damage += mainApr * mainDamage * (0.05 + 0.05 * doubleCriticalChance) * mainResistance;
+                damage += mainApr * mainDamage * criticalHitChance1 * mainResistance;
                 if (offHand)
-                    damage += offApr * offDamage * 0.05 * offResistance;
+                    damage += offApr * offDamage * criticalHitChance2 * offResistance;
             }
         }
 

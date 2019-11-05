@@ -329,11 +329,31 @@
          </layout>
         </item>
         <item>
-         <widget class="QCheckBox" name="doubleCriticalChance">
-          <property name="text">
-           <string>Critical hit on 19</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QLabel" name="criticalHitChance1Label">
+            <property name="text">
+             <string>Critical hit chance</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="criticalHitChance1">
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -548,20 +568,31 @@
          </layout>
         </item>
         <item>
-         <spacer name="spacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeType">
-           <enum>QSizePolicy::MinimumExpanding</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>10</height>
-           </size>
-          </property>
-         </spacer>
+         <layout class="QHBoxLayout" name="horizontalLayout_12">
+          <item>
+           <widget class="QLabel" name="criticalHitChance2Label">
+            <property name="text">
+             <string>Critical hit chance</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="criticalHitChance2">
+            <property name="suffix">
+             <string>%</string>
+            </property>
+            <property name="minimum">
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="singleStep">
+             <number>5</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
