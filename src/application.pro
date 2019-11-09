@@ -1,4 +1,5 @@
 TEMPLATE = app
+TARGET = moebiustoolkit
 QT = core gui widgets
 
 projectGlobals()
