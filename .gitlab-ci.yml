@@ -1,0 +1,16 @@
+image: ruby:2.3
+
+before_script:
+  - gem install asciidoctor
+
+pages:
+  stage: deploy
+  script:
+  - make -f Asciidoctor.mk
+  artifacts:
+    paths:
+    - public
+  only:
+  - pages
+
+# https://docs.gitlab.com/ee/user/project/pages/getting_started_part_four.html

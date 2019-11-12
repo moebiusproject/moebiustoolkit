@@ -1,0 +1,45 @@
+= Moebius Toolkit
+
+Moebius Tookit is an application to help players, modders, and hopefully even
+developers of one of the best videogames of all time, the Baldur's Gate saga
+(based on Advanced Dungeons and Dragons 2nd edition, another very successful
+product which also gave me much joy in my youth).
+
+Given the richness, depth and complexity of the rules of these games, I ended up
+starting this project, which is the home of a humble personal initiative to
+address some issues:
+
+. The lack of charts, specially interactive ones, of some interesting data for
+power gamers or new players. Some excellent tables are provided by the
+https://baldursgate.fandom.com/wiki/Baldur's_Gate_Wiki[Baldur's Gate wiki], but
+there is a lot more room to fill.
+
+. The lack of an editor for the saved game files (like ShadowKeeper or EEKeeper)
+which works on Linux, that is in a maintained state, and with a suitable license.
+
+. The unsatisfactory at a times experience of using NearInfinity (extremely
+useful and with many features, but a bit slow, and sometimes buggy, without any
+tagged release since 2017).
+
+. The interest in programming and trying new technologies that complement what I
+already do or have done for paid work, like trying out chart libraries or
+https://en.wikipedia.org/wiki/WebAssembly[WebAssembly] for redistributing the
+application to users, Test Driven Development, and learning about game
+engines.
+
+== Roadmap and current status
+
+The current status is vaporware. I have started a shared library with support
+for reading a few file formats of the engine, and that's almost all of it. But
+to achieve the feature of just the very basic opening of a saved game, the same
+amount of work which has been done will have to be performed tenfold.
+
+I had a separate repository with an actual fully working application which I
+called "Damage Calculator", and where I added some extras. I plan to roll that
+functionality to the application, to at least achieve some initial milestone
+so that the project is no longer a totally empty promise, and something is
+delivered.
+
+That Damage Calculator never had a proper public release, so the first step is
+addressing that: Moebius Toolkit will be done from the ground up to be properly
+tested and be released to the world.
