@@ -12,9 +12,11 @@ HEADERS = \
     diceroll.h \
     keyfile.h \
     packed.h \
+    tdafile.h \
     tlkfile.h \
 
 SOURCES = \
     diceroll.cpp \
     keyfile.cpp \
+    tdafile.cpp \
     tlkfile.cpp \
