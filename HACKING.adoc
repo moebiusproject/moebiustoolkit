@@ -1,0 +1,28 @@
+= Hacking
+
+This is mostly a collection of notes to self, on ideas of where to look at
+interesting stuff. Eventually I will add, if needed, the typical notes on code
+style, project structure, etc.
+
+== 2DA files
+
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/index.htm[General list
+  of 2DA files where to find for tables to plot]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/wspecial.htm[Proficiency
+  impact on damage, to-hit, speed]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/wspatck.htm[Attacks
+  per round based on level (caution, oddities in it)]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/weapprof.htm[Allowed
+  proficiency points per class/kit]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/clswpbon.htm[Whether a
+  class gets bonus attack with proficiency, penalty when not proficiency, and
+  APR rate for unarmed attacks]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/thiefscl.htm[Allowed
+  thief skills per class/kit]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/thiefskl.htm[Starting
+  thieving skills per class/kit]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/strmod.htm[Modifiers
+  to damage and hit according to Strength] and the complementary for
+  https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/strmodex.htm[extraordinary
+  Strength]
+
