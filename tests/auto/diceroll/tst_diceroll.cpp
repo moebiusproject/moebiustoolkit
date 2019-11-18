@@ -86,6 +86,10 @@ void tst_DiceRoll::test_data()
                                    << 3  << 3  << 3.0 << 0.0;
     QTest::newRow("1d3+0@-2")      << 1  << 3  << 0 << -2
                                    << 1  << 1  << 1.0 << 0.0;
+    QTest::newRow("1d8+2")         << 1  << 8  << 2 << 0
+                                   << 10 << 3  << 6.5 << qSqrt(5.25);
+    QTest::newRow("1d10+1")        << 1  << 10 << 1 << 0
+                                   << 11 << 2  << 6.5 << qSqrt(8.25);
 
     // +2 luck (or +3 with other sources of luck) inspired on Alora.
     QTest::newRow("1d8+0@+2")      << 1  << 8  << 0 << 2
