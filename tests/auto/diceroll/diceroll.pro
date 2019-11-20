@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = tst_diceroll
 
-QT += testlib
+QT = core testlib
 CONFIG += testcase
 CONFIG -= app_bundle
 
