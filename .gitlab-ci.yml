@@ -6,11 +6,12 @@ before_script:
 pages:
   stage: deploy
   script:
-  - make -f Asciidoctor.mk
+  - make -C docs
   artifacts:
     paths:
     - public
   only:
   - master
+  - pages
 
 # https://docs.gitlab.com/ee/user/project/pages/getting_started_part_four.html

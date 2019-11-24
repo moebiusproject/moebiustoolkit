@@ -43,3 +43,17 @@ delivered.
 That Damage Calculator never had a proper public release, so the first step is
 addressing that: Moebius Toolkit will be done from the ground up to be properly
 tested and be released to the world.
+
+ifdef::env-github,env-gitlab[]
+https://moebiusproject.gitlab.io/moebiustoolkit[See more at the website].
+endif::[]
+ifndef::env-github,env-gitlab[]
+
+== More reading
+
+This project is not only about an application, but also some focused articles
+that don't fit elsewhere:
+
+* <<damage_comparisons#,Damage dealing comparisons>>
+
+endif::[]
