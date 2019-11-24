@@ -26,3 +26,16 @@ style, project structure, etc.
   https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/strmodex.htm[extraordinary
   Strength]
 
+== Table/chart ideas
+
+- Number of spells (and at which levels) per XP. As in, to see how many spells
+  per day a Bard can cast, and at which level. Would be interesting to see the
+  character level as well, to see the efficiency of spells like Remove Magic.
+  Also remember to consider multi-classes, to see the number of spells per day
+  of e.g. a Bard vs a Fighter/Mage.
+
+- Number of HP per XP. As in Imoen at 20K XP is level 6, and with the bonus on
+  Constitution, she has 48 HP, while a Cleric would be level 8, so without bonus
+  from Constitution would have less HP.
+
+- THAC0 per XP. Would be interesting to see the THAC0 of a Fighter/Mage vs Bard.
