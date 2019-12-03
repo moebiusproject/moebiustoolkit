@@ -58,6 +58,9 @@ void tst_DiceRoll::luckified()
     QCOMPARE(dice.luckified(10), 8);
 }
 
+// Average is easy to calculate by hand, but for standard deviation another
+// source is useful, for example:
+// https://www.rapidtables.com/calc/math/variance-calculator.html
 void tst_DiceRoll::test_data()
 {
     QTest::addColumn<int>("number");
@@ -69,6 +72,11 @@ void tst_DiceRoll::test_data()
     QTest::addColumn<int>("minimum");
     QTest::addColumn<double>("average");
     QTest::addColumn<double>("sigma");
+
+    // FIXME: To avoid errors due to lack of precision, even if the value tested
+    // is the standard deviation, I use the variance value, then make the square
+    // root of it, as this way we can store in the test a finite number of
+    // decimals. But there is room for improvement with numbers such as 2.222...
 
     QTest::newRow("1d4")           << 1  << 4  << 0 << 0
                                    << 4  << 1  << 2.5 << qSqrt(1.25);
@@ -90,6 +98,13 @@ void tst_DiceRoll::test_data()
                                    << 10 << 3  << 6.5 << qSqrt(5.25);
     QTest::newRow("1d10+1")        << 1  << 10 << 1 << 0
                                    << 11 << 2  << 6.5 << qSqrt(8.25);
+
+    // Weapons with average damage 4.5 but in different form, e.g. Flail/Mace vs
+    // Long Sword/Axe/Scimitar/... Is one better when luck gets into play?
+    QTest::newRow("1d6+1@+1")      << 1  << 6  << 1 << 1
+                                   << 7  << 3  << 5.0+1.0/3 << qSqrt(2.2222222222222);
+    QTest::newRow("1d8@+1")        << 1  << 8  << 0 << 1
+                                   << 8  << 2  << 5.375 << qSqrt(4.484375);
 
     // +2 luck (or +3 with other sources of luck) inspired on Alora.
     QTest::newRow("1d8+0@+2")      << 1  << 8  << 0 << 2
