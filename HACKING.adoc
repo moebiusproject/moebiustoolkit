@@ -39,3 +39,8 @@ style, project structure, etc.
   from Constitution would have less HP.
 
 - THAC0 per XP. Would be interesting to see the THAC0 of a Fighter/Mage vs Bard.
+
+- Backstab multiplier per XP. There is a post on Beamdog Forums that compares
+  somewhat the damage done with an Assassin and with a Fighter/Thief. They seem
+  to be roughly on par, even though at levels where the Assassin is not reaching
+  multiplier beyond 5. Also would be interesting to compare against Stalker.
