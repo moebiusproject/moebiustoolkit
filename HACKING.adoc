@@ -46,6 +46,65 @@ style, project structure, etc.
   multiplier beyond 5. Also would be interesting to compare against Stalker.
 
 
+== Probability 1 vs probability 2 on a weapon effect
+
+```
+[ 8:50 PM ] Daeros_Trollkiller : ok, I got another one for you, that I havent
+been able to completely wrap my head around when it comes to items
+[ 8:50 PM ] Daeros_Trollkiller : Probability 1 and Probability 2.  I don't
+really get how they work completely
+[ 8:51 PM ] Daeros_Trollkiller : For instance, lets say I want to have a weapon
+hit with fire 50% of the time and hit with cold the other 50%.  How would I set
+that so they dont overlap?
+[ 8:52 PM ] Daeros_Trollkiller : what I mean is that I dont want the weapon to
+hit with both sometimes, and none at other times
+[ 8:56 PM ] Angel : Oh, that's very easy.  Every time an item- or spell ability
+is activated, the engine generates a random number between 0 and 99, then
+compares that number to the probabilities of the effects defined for that
+ability.  Normally they are set to 0 and 100 respectively, so they happen no
+matter what number the engine rolls.
+[ 8:57 PM ] Angel : But if you set the one that is normally set to 100 to 49, it
+will only happen if the engine rolls between 0 and 49.  So if it rolls a 25 it
+would happen, if it rolls a 55 it would not.
+[ 8:58 PM ] Angel : You can then add a second effect to that ability, and set
+the probability that is normally at 0 to 50.  Then your first effect would
+happen if the engine rolls between 0 and 49, and the second if it rolls between
+50 and 99 (the engine cannot roll 100).
+[ 8:59 PM ] Angel : I actually have an item that uses this, for my
+implementation of the Faerie Sword spell.  One moment, let me look it up.
+[ 8:59 PM ] Daeros_Trollkiller : ok
+[ 9:01 PM ] Angel : Attachment file type: unknown mhfaesd.itm 650 bytes
+[ 9:03 PM ] Angel : That's a sword that does 5d4 slashing damage on a hit 50% of
+the time, and has a randomly chosen magical effect (fire, acid, petrification or
+maze) the other 50% of the time.  It's part of a spell from Elves of Evermeet.
+[ 9:05 PM ] Daeros_Trollkiller : ok, looking it it now
+[ 9:08 PM ] Daeros_Trollkiller : Ok, I think I understand now, let me see:
+[ 9:10 PM ] Daeros_Trollkiller : So, the engine rolls between 0-99 for these
+effects, meaning that if I set Prob 2 to 0, and Prob 1 to 50 for fire, and then
+set Prob 2 to 51 and Prob 1 to 99 for cold, it would only hit one of the other,
+but always one, and never both?
+[ 9:10 PM ] Angel : Yes.  The thing to keep in mind is that the engine rolls
+only once, and then uses the same number for every effect attached to an
+ability.
+[ 9:11 PM ] Angel : And for a perfect 50-50 split, you'll want to use 0-49 and
+50-99.  Because the number generated is between 0 and 99, it cannot roll 100.
+[ 9:11 PM ] Daeros_Trollkiller : I see, so it operates on a scale of 0-99, and
+if you dont want any effects to hit at the same time, you have to make sure they
+have their own range within that scale that doesnt overlap with other effects
+[ 9:13 PM ] Daeros_Trollkiller : does it matter how you set prob1 and prob2?
+Meaning that, could I set prob 1 to 50 and prob 2 to 0 for on effect, and prob1
+to 99 and prob 2 to 51?
+[ 9:13 PM ] Daeros_Trollkiller : for the other effect
+[ 9:14 PM ] Daeros_Trollkiller : ok, I get it, 0 counts as a number that can be
+rolled, so you have to do 0-49 for 50%
+[ 9:16 PM ] Angel : It has to be in order.  The one normally set to 0 is the
+"low" one, the effect only happens if the engine rolls that number or higher.
+The one normally set to 100 is the "high" one, the effect only happens if the
+engine rolls that number or lower.   If you for example set the low one to 60
+and the high one to 40, the effect will never happen.  (And DLTCEP will complain
+about it, not sure about NI.)
+```
+
 == Historical notes from EEKeeper
 
 Some quotes scavenged from forum posts, or elsewhere.
