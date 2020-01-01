@@ -44,3 +44,157 @@ style, project structure, etc.
   somewhat the damage done with an Assassin and with a Fighter/Thief. They seem
   to be roughly on par, even though at levels where the Assassin is not reaching
   multiplier beyond 5. Also would be interesting to compare against Stalker.
+
+
+== Historical notes from EEKeeper
+
+Some quotes scavenged from forum posts, or elsewhere.
+
+https://forums.beamdog.com/discussion/comment/273155/#Comment_273155
+
+[quote]
+____
+ As a heads up to any other developers interested in assisting @Troodon80 with
+ the project, I'm stepping in and attempting to port the current code (and any
+ additions made in the meantime) over to Qt to make it cross-platform capable.
+ I've gotten a substantial amount of the GUI ported over, and I'm just getting
+ ready to port over the actual "nuts and bolts" code, so hopefully I have
+ something somewhat working soon.
+
+Some since things about porting to Qt:
+
+1. Unicode is handled by default, so non-Ascii, especially Asian, languages
+should be handled 2. Translations for the GUI are extremely simple, so community
+members can help translate the actual interface for non-English speakers 3. Qt
+works with Windows, Mac, and Linux (if Beamdog are able to release on that
+platform)
+
+I wouldn't expect a full-conversion for a while, but I just finished mid-terms
+and the girlfriend is out of town for the weekend, so I should be able to make
+some decent headway in the coming week :D
+____
+
+https://forums.beamdog.com/discussion/comment/279460/#Comment_279460
+
+[quote]
+____
+As soon as it's in at least an Alpha-worthy state, I'll see about creating a
+fork on the EE:Keeper sourceforge page and repository for now while testing, etc
+is done to ensure full compatibility. All that will be worked out with
+@Troodon80, of course. Another consideration is updating the license present in
+all the source code, etc, to determine what the best way is of ensuring
+up-to-date credit is maintained, which is a pretty substantial portion of OS
+licensing, etc. But, again, that can be worked out.
+____
+
+https://forums.beamdog.com/discussion/comment/286799/#Comment_286799
+
+____
+ For anyone interested in the Qt stuff, it's currently under a branch called qt
+ on the Sourceforge repository, if it's generally accessible now. Hopefully it
+ finishes up relatively quickly now that it's out there.
+
+Not the sexiest code by any means, but it's getting there!
+____
+
+
+
+https://forums.beamdog.com/discussion/comment/287439/#Comment_287439
+
+[quote]
+ @Parasprite I've been looking at some of the structures from the original
+ Shadow Keeper during conversion, and there a quite a few places that were
+ "unknown" during original creation that are now documented at IEDSP. One of
+ those is the name, where an "unknown" section after the name in the structure
+ for PCs is actually the rest of the 32-byte max length.
+
+https://forums.beamdog.com/discussion/comment/396662/#Comment_396662[Release
+v1.0.2.1 published, on 2013]. Doesn't seem Qt based.
+
+
+https://forums.beamdog.com/discussion/comment/398847/#Comment_398847
+
+[quote]
+What happens is the game, and EE Keeper, looks at the game table and reads
+"PALADIN". That's the class. For example: When the table reads "FIGHTER_MAGE",
+it means there can be a potential dual class or multiclass because there is more
+than one class available; either of the two classes can be set as the 'original'
+class. That's not actually how it works, but it's the easiest and least
+confusing way I can explain it.
+
+
+https://forums.beamdog.com/discussion/comment/423357/#Comment_423357[v1.0.2.2]
+
+
+https://forums.beamdog.com/discussion/comment/430879/#Comment_430879[Source code
+not yet published:]
+
+[quote]
+@oskargargas, it is open source. However, due to not having the time to
+actually update the source code online I suppose you could consider it closed
+source. There are a number of things I want to do before updating the soruce,
+though. It is currently quite messy with compiler flags, etc., and I want to
+trim it down and clean it up before releasing it.
+
+https://forums.beamdog.com/discussion/comment/432646/#Comment_432646[lame
+excuse...]
+
+[quote]
+@oskargargas, or the compiler flags I use on a daily basis as part of my work.
+EE Keeper is only a small program, but I would still like to clean some of it
+up. There's some redundant functions there that I rewrote and didn't get rid of
+at the time (compiler flags to disable). I have no idea when I'll get a chance
+to do update the source, but it probably won't be before the new year.
+
+
+https://forums.beamdog.com/discussion/comment/493334/#Comment_493334
+
+[quote]
+@crimsonknight, no, sorry. Even if I completely rewrote the code to be
+compatible with Android, I would probably have to remove myself from the game
+developers' official forum (due to being a moderator). Google/Android's terms of
+use are quite draconian with regards to one application editing the files from
+another, and if it appears that Beamdog are condoning the use of this
+application in conjunction with their game then the game itself might end up
+dropped from the store.
+
+
+https://forums.beamdog.com/discussion/comment/495695/#Comment_495695[First
+mention of the Qt port being workable, and that he seems to pick up where the
+other dude left it]
+
+This is a large, important post with screenshots, and several explanations.
+
+
+https://forums.beamdog.com/discussion/comment/508682/#Comment_508682[About the
+detection of games]
+
+[quote]
+The old versions of Keeper, like Shadow Keeper, tried to detect the game via
+executable. This was to try and prevent the user opening a BG1 saved game in
+Keeper when only BG2 saved games were expected. In retrospect, this could have
+been handled by including the structures for both games and making an all-in-one
+editor. However, since both Enhanced Editions use the same executable name, that
+is now pointless. If you happen to be using a very early version of Keeper, then
+you will need to update to avoid issues.
+
+
+https://forums.beamdog.com/discussion/comment/520554/#Comment_520554
+
+[quote]
+As for the code, you should only need to log in to SourceForge in order to view.
+Note that it's the Qt code and not the MFC code; i.e. the one that I am
+dedicated to here on the forum—I am chipping away at the Qt version in my spare
+time, but since it is basically from the ground up, it gets less attention than
+the one that is tried and tested (whether it works or not is a different thing
+:D). I have done more on the Qt version but haven't bothered updating the
+repository since mattinm apparently left (probably too busy).
+
+
+https://forums.beamdog.com/discussion/comment/539920/#Comment_539920
+
+A lengthy post from Troodon80 with thought on how to setup "profiles" for
+different games, including EE vs classic, continued by himself and with some
+answers a bit below, in the same page.
+
+
