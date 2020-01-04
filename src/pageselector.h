@@ -25,6 +25,7 @@ class PageSelector : public QFrame
     Q_OBJECT
 public:
     explicit PageSelector(QWidget* parent = nullptr);
+    ~PageSelector();
 
     void addButton(const QString& text);
 

@@ -53,6 +53,12 @@ PageSelector::PageSelector(QWidget* parent)
     setLayout(d->layout);
 }
 
+PageSelector::~PageSelector()
+{
+    delete d;
+    d = nullptr;
+}
+
 void PageSelector::addButton(const QString& text)
 {
     auto button = new QPushButton(this);

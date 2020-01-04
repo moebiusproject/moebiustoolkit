@@ -213,14 +213,12 @@ struct DamageCalculatorPage::Private
         const int index = tabs->currentIndex();
         updateSeries(configurations[index], lineSeries[index]);
     }
-    void updateSeries(const Ui::configuration &c, QLineSeries* series);
+    void updateSeries(const Ui::configuration& c, QLineSeries* series);
 };
-
-// TODO: remove this porting workaround.
 
 DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     : QWidget(parent)
-    , d(new DamageCalculatorPage::Private(*this))
+    , d(new Private(*this))
 {
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
@@ -429,7 +427,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
-            std::bind(&DamageCalculatorPage::Private::newPage, d));
+            std::bind(&Private::newPage, d));
 
     d->tabs->setTabsClosable(true);
     connect(d->tabs, &QTabWidget::tabCloseRequested, [this](int index) {
@@ -496,7 +494,7 @@ QStatusBar* DamageCalculatorPage::statusBar()
     return nullptr;
 }
 
-void DamageCalculatorPage::Private::load(QWidget *tab, QVariantHash data)
+void DamageCalculatorPage::Private::load(QWidget* tab, QVariantHash data)
 {
     for (auto child : tab->findChildren<QWidget*>()) {
         if (qobject_cast<QLabel*>(child))
@@ -536,7 +534,7 @@ void DamageCalculatorPage::Private::load(QWidget *tab, QVariantHash data)
         qWarning() << "This data was not loaded:\n" << data;
 }
 
-QVariantHash DamageCalculatorPage::Private::save(QWidget *tab)
+QVariantHash DamageCalculatorPage::Private::save(QWidget* tab)
 {
     QVariantHash result;
     for (auto child : tab->findChildren<QWidget*>()) {
@@ -611,7 +609,7 @@ void DamageCalculatorPage::Private::newPage()
                     configuration.weaponDamageDiceBonus2,
                     configuration.damageDetail2);
 
-    auto update =  std::bind(&Private::updateSeriesAtCurrentIndex, this);
+    auto update = std::bind(&Private::updateSeriesAtCurrentIndex, this);
     for (auto child : widget->findChildren<QSpinBox*>())
         connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QDoubleSpinBox*>())

@@ -11,7 +11,7 @@ class DamageCalculatorPage : public QWidget
     Q_OBJECT
 
 public:
-    DamageCalculatorPage(QWidget* parent = 0);
+    explicit DamageCalculatorPage(QWidget* parent = nullptr);
     ~DamageCalculatorPage();
 
 private:

@@ -39,3 +39,9 @@ WelcomePage::WelcomePage(QWidget* parent)
     connect(d->ui.repeatedProbability, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::RepeatedProbability); });
 }
+
+WelcomePage::~WelcomePage()
+{
+    delete d;
+    d = nullptr;
+}
