@@ -18,9 +18,10 @@
 
 #include "mainwindow.h"
 
-#include "pagetype.h"
+#include "backstabcalculatorpage.h"
 #include "damagecalculatorpage.h"
 #include "pageselector.h"
+#include "pagetype.h"
 #include "welcomepage.h"
 
 #include <QDebug>
@@ -81,6 +82,8 @@ void MainWindow::Private::addNewPage(PageType type)
         break;
     }
     case PageType::BackstabCalculator:
+        view->addWidget(new BackstabCalculatorPage(&parent));
+        selector->addButton(tr("Backstab\nCalculator"));
         break;
     case PageType::RepeatedProbability:
         break;
