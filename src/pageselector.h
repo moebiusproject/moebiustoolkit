@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019 Alejandro Exojo Piqueras
+ * Copyright (C) 2019-2020 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,21 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
+#pragma once
 
-#include "mainwindow.h"
+#include <QFrame>
 
-int main(int argc, char *argv[])
+class PageSelector : public QFrame
 {
-    QApplication application(argc, argv);
+    Q_OBJECT
+public:
+    explicit PageSelector(QWidget* parent = nullptr);
 
-    // TODO: rethink this, I don't like it much...
-    QCoreApplication::setOrganizationName(QLatin1String("MoebiusProject"));
-    QCoreApplication::setOrganizationDomain(QLatin1String("moebiusproject.gitlab.io"));
-    QCoreApplication::setApplicationName(QLatin1String("MoebiusToolkit"));
+    void addButton(const QString& text);
 
-    MainWindow window;
-    window.showMaximized();
+signals:
+    void buttonActivated(int index);
 
-    return application.exec();
-}
+private:
+    struct Private;
+    Private* d;
+};

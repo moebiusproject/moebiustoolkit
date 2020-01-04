@@ -16,21 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
+#include "pagetype.h"
+#include "welcomepage.h"
 
-#include "mainwindow.h"
+#include "ui_welcomepage.h"
 
-int main(int argc, char *argv[])
+struct WelcomePage::Private
 {
-    QApplication application(argc, argv);
+    Ui::WelcomePage ui;
+};
 
-    // TODO: rethink this, I don't like it much...
-    QCoreApplication::setOrganizationName(QLatin1String("MoebiusProject"));
-    QCoreApplication::setOrganizationDomain(QLatin1String("moebiusproject.gitlab.io"));
-    QCoreApplication::setApplicationName(QLatin1String("MoebiusToolkit"));
+WelcomePage::WelcomePage(QWidget* parent)
+    : QWidget(parent)
+    , d(new Private)
+{
+    d->ui.setupUi(this);
 
-    MainWindow window;
-    window.showMaximized();
-
-    return application.exec();
+    connect(d->ui.damageCalculator, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::DamageCalculator); });
+    connect(d->ui.backstabCalculator, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::BackstabCalculator); });
+    connect(d->ui.repeatedProbability, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::RepeatedProbability); });
 }

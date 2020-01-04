@@ -1,10 +1,12 @@
-#include "mainwindow.h"
+#include "damagecalculatorpage.h"
 
+// TODO: rename this forms, classes, etc, to something specific for this page.
 #include "ui_configuration.h"
 #include "ui_enemy.h"
 
-#include "attackbonuses.h"
-#include "rollprobabilities.h"
+// TODO: make their own pages.
+// #include "attackbonuses.h"
+// #include "rollprobabilities.h"
 
 #include <QtCore>
 #include <QtWidgets>
@@ -73,12 +75,12 @@ private:
     QTableWidget m_table;
 };
 
-struct MainWindow::Private
+struct DamageCalculatorPage::Private
 {
-    Private(MainWindow& window)
+    Private(DamageCalculatorPage& window)
         : q(window)
     {}
-    MainWindow& q;
+    DamageCalculatorPage& q;
     QVector<int> armorClasses;
 
     QMenu* loadSavedMenu = nullptr;
@@ -214,9 +216,11 @@ struct MainWindow::Private
     void updateSeries(const Ui::configuration &c, QLineSeries* series);
 };
 
-MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent)
-    , d(new MainWindow::Private(*this))
+// TODO: remove this porting workaround.
+
+DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
+    : QWidget(parent)
+    , d(new DamageCalculatorPage::Private(*this))
 {
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
@@ -294,6 +298,7 @@ MainWindow::MainWindow(QWidget* parent)
         d->load(d->tabs->currentWidget(), d->savedConfigurations.at(index));
     });
 
+#if 0 // TODO: migrate to its own page
     QMenu* extrasMenu = menuBar()->addMenu(tr("Extras"));
     action = new QAction(tr("Attack bonuses"), this);
     extrasMenu->addAction(action);
@@ -312,6 +317,7 @@ MainWindow::MainWindow(QWidget* parent)
         dialog->showMaximized();
         dialog->setAttribute(Qt::WA_DeleteOnClose);
     });
+#endif
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
@@ -423,7 +429,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
     connect(newButton, &QPushButton::clicked,
-            std::bind(&MainWindow::Private::newPage, d));
+            std::bind(&DamageCalculatorPage::Private::newPage, d));
 
     d->tabs->setTabsClosable(true);
     connect(d->tabs, &QTabWidget::tabCloseRequested, [this](int index) {
@@ -452,10 +458,8 @@ MainWindow::MainWindow(QWidget* parent)
     inputLayout->addWidget(d->tabs);
 
     // Now group everything together ///////////////////////////////////////////
-    auto widget = new QWidget;
     auto layout = new QHBoxLayout;
-    widget->setLayout(layout);
-    setCentralWidget(widget);
+    setLayout(layout);
     layout->addLayout(chartViewLayout, 1);
     layout->addWidget(inputArea, 0);
     statusBar()->showMessage(tr("Hover the lines to see the value"));
@@ -463,13 +467,36 @@ MainWindow::MainWindow(QWidget* parent)
     d->newPage();
 }
 
-MainWindow::~MainWindow()
+DamageCalculatorPage::~DamageCalculatorPage()
 {
     delete d;
     d = nullptr;
 }
 
-void MainWindow::Private::load(QWidget *tab, QVariantHash data)
+// TODO: REMOVE this porting workaround.
+QMenuBar* DamageCalculatorPage::menuBar()
+{
+    QWidget* widget = this;
+    while ((widget = widget->parentWidget())) {
+        if (QMainWindow* window = qobject_cast<QMainWindow*>(widget))
+            return window->menuBar();
+    }
+    qFatal("Should not happen...");
+    return nullptr;
+}
+
+QStatusBar* DamageCalculatorPage::statusBar()
+{
+    QWidget* widget = this;
+    while ((widget = widget->parentWidget())) {
+        if (QMainWindow* window = qobject_cast<QMainWindow*>(widget))
+            return window->statusBar();
+    }
+    qFatal("Should not happen...");
+    return nullptr;
+}
+
+void DamageCalculatorPage::Private::load(QWidget *tab, QVariantHash data)
 {
     for (auto child : tab->findChildren<QWidget*>()) {
         if (qobject_cast<QLabel*>(child))
@@ -495,11 +522,21 @@ void MainWindow::Private::load(QWidget *tab, QVariantHash data)
         }
     }
 
+    // TODO: remove for any kind of release. Is just a backwards compatibility
+    // addition to easy my testing.
+    if (data.contains(QLatin1String("doubleCriticalChance"))) {
+        if (data.take(QLatin1String("doubleCriticalChance")).toBool()) {
+            if (QSpinBox* box = tab->findChild<QSpinBox*>(QLatin1String("criticalHitChance1"))) {
+                box->setValue(10);
+            }
+        }
+    }
+
     if (!data.isEmpty())
         qWarning() << "This data was not loaded:\n" << data;
 }
 
-QVariantHash MainWindow::Private::save(QWidget *tab)
+QVariantHash DamageCalculatorPage::Private::save(QWidget *tab)
 {
     QVariantHash result;
     for (auto child : tab->findChildren<QWidget*>()) {
@@ -529,7 +566,7 @@ QVariantHash MainWindow::Private::save(QWidget *tab)
     return result;
 }
 
-void MainWindow::Private::newPage()
+void DamageCalculatorPage::Private::newPage()
 {
     auto widget = new QWidget;
 
@@ -626,7 +663,7 @@ void MainWindow::Private::newPage()
     updateSeriesAtCurrentIndex();
 }
 
-void MainWindow::Private::setupAxes()
+void DamageCalculatorPage::Private::setupAxes()
 {
     if (chart->axes().size() == 0)
         chart->createDefaultAxes();
@@ -672,7 +709,7 @@ void MainWindow::Private::setupAxes()
 
 
 
-void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
+void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
 {
     const bool offHand = c.offHandGroup->isChecked();
 
@@ -777,4 +814,4 @@ void MainWindow::Private::updateSeries(const Ui::configuration& c, QLineSeries* 
     }
 }
 
-#include "mainwindow.moc"
+#include "damagecalculatorpage.moc"
