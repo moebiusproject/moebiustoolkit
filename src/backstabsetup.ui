@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>366</width>
+    <width>368</width>
     <height>454</height>
    </rect>
   </property>
@@ -154,7 +154,15 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Reminder: Gauntlets (+2), Bless (+1), Attack of opportunity (+4)</string>
+      <string>&lt;p&gt;Examples:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Gauntlets (+2)&lt;/li&gt;
+&lt;li&gt;Bless (+1)&lt;/li&gt;
+&lt;li&gt;Attack of opportunity (+4)&lt;/li&gt;
+&lt;/ul&gt;</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
      </property>
     </widget>
    </item>
