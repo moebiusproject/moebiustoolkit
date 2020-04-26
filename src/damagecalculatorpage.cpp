@@ -83,6 +83,7 @@ struct DamageCalculatorPage::Private
     DamageCalculatorPage& q;
     QVector<int> armorClasses;
 
+    QMenu* fileMenu = nullptr;
     QMenu* mainMenu = nullptr;
     QMenu* loadSavedMenu = nullptr;
     QMenu* deleteSavedMenu = nullptr;
@@ -228,11 +229,11 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->loadSavedConfigurations();
 
     // Menus ///////////////////////////////////////////////////////////////////
-    QMenu* fileMenu = menuBar()->addMenu(tr("File"));
+    d->fileMenu = menuBar()->addMenu(tr("File"));
 
     auto action = new QAction(tr("Copy chart to clipboard"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
-    fileMenu->addAction(action);
+    d->fileMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
         const QPixmap pixmap = d->chartView->grab();
@@ -242,7 +243,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 
     action = new QAction(tr("Save chart as..."), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-    fileMenu->addAction(action);
+    d->fileMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
         const QPixmap pixmap = d->chartView->grab();
@@ -279,6 +280,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     action = new QAction(tr("Manage entries"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
     d->mainMenu->addAction(action);
+    d->mainMenu->setEnabled(false);
 
     d->manageDialog = new ManageDialog(this);
     // TODO: pick something reasonable, yet not hardcoded?
@@ -469,6 +471,21 @@ DamageCalculatorPage::~DamageCalculatorPage()
 {
     delete d;
     d = nullptr;
+}
+
+bool DamageCalculatorPage::event(QEvent* event)
+{
+    // FIXME: Doesn't work... debug why.
+    if (event->type() == QEvent::Hide) {
+        d->fileMenu->menuAction()->setVisible(false);
+        d->mainMenu->menuAction()->setVisible(false);
+    }
+    if (event->type() == QEvent::Show) {
+        d->fileMenu->menuAction()->setVisible(true);
+        d->mainMenu->menuAction()->setVisible(true);
+    }
+
+    return QWidget::event(event);
 }
 
 // TODO: REMOVE this porting workaround.

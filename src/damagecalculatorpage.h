@@ -14,6 +14,9 @@ public:
     explicit DamageCalculatorPage(QWidget* parent = nullptr);
     ~DamageCalculatorPage();
 
+protected:
+    bool event(QEvent* event) override;
+
 private:
     // TODO: REMOVE this porting workaround.
     QMenuBar* menuBar();
