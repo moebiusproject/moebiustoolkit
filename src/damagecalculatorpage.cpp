@@ -92,6 +92,8 @@ struct DamageCalculatorPage::Private
 
     QChart* chart = nullptr;
     QChartView* chartView = nullptr;
+
+    QLineEdit* titleLine = nullptr;
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
     QCheckBox* pointLabels = nullptr;
@@ -166,12 +168,18 @@ struct DamageCalculatorPage::Private
 
     void saveConfigurationsToFile(const QString& fileName)
     {
+        QJsonObject root;
         QJsonArray array;
+        const QString title = chart->title();
+        if (!title.isEmpty()) {
+            root.insert(QLatin1String("title"), title);
+        }
         for (int index = 0, last = tabs->count(); index < last; ++index) {
             const QVariantHash toSave = serialize(tabs->widget(index));
             array.append(QJsonValue::fromVariant(toSave));
         }
-        QJsonDocument document(array);
+        root.insert(QLatin1String("configurations"), array);
+        QJsonDocument document(root);
         QFile file(fileName);
         file.open(QIODevice::WriteOnly);
         file.write(document.toJson(QJsonDocument::Indented));
@@ -179,20 +187,35 @@ struct DamageCalculatorPage::Private
 
     void loadConfigurationsFromFile(const QString& fileName)
     {
-        QFile file(fileName);
-        file.open(QIODevice::ReadOnly);
-        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
-        if (!document.isArray()) {
+        auto errorOut = [this](const char* text) {
             q.statusBar()->showMessage(tr("The file can not be loaded"));
-            qWarning() << "Cannot load JSON: root not an array";
+            qWarning() << text;
+        };
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadOnly)) {
+            errorOut("File could not be opened");
             return;
         }
-        const QJsonArray array = document.array();
+        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
+        if (!document.isObject()) {
+            errorOut("Cannot load JSON: root not an object");
+            return;
+        }
+        const QJsonObject root = document.object();
+        const QJsonValue title = root.value(QLatin1String("title"));
+        if (title.isString())
+            titleLine->setText(title.toString());
+
+        if (!root.contains(QLatin1String("configurations"))) {
+            errorOut("Cannot load JSON: root not an object");
+            return;
+        }
+        const QJsonArray array = root.value(QLatin1String("configurations")).toArray();
         for (int index = 0, last = array.count(); index < last; ++index) {
             const QJsonValue value = array.at(index);
             if (!value.isObject()) {
-                q.statusBar()->showMessage(tr("The file can not be loaded"));
-                qWarning() << "Cannot load JSON: element is not an object";
+                errorOut("Cannot load JSON: element is not an object");
                 continue;
             }
             newPage();
@@ -380,12 +403,12 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
     chartControlsLayout->addWidget(new QLabel(tr("Title:")));
-    auto title = new QLineEdit;
-    title->setPlaceholderText(tr("Optional. Set a title for the chart. Accepts some HTML."));
-    connect(title, &QLineEdit::textChanged, [this](const QString& text) {
+    d->titleLine = new QLineEdit;
+    d->titleLine->setPlaceholderText(tr("Optional. Set a title for the chart. Accepts some HTML."));
+    connect(d->titleLine, &QLineEdit::textChanged, [this](const QString& text) {
         d->chart->setTitle(text);
     });
-    chartControlsLayout->addWidget(title);
+    chartControlsLayout->addWidget(d->titleLine);
     chartControlsLayout->addWidget(new QLabel(tr("Best AC:")));
     d->minimumX = new QSpinBox;
     d->minimumX->setMinimum(d->armorClasses.last());
