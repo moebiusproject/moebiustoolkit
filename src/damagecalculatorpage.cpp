@@ -164,6 +164,42 @@ struct DamageCalculatorPage::Private
         settings.endArray();
     }
 
+    void saveConfigurationsToFile(const QString& fileName)
+    {
+        QJsonArray array;
+        for (int index = 0, last = tabs->count(); index < last; ++index) {
+            const QVariantHash toSave = serialize(tabs->widget(index));
+            array.append(QJsonValue::fromVariant(toSave));
+        }
+        QJsonDocument document(array);
+        QFile file(fileName);
+        file.open(QIODevice::WriteOnly);
+        file.write(document.toJson(QJsonDocument::Indented));
+    }
+
+    void loadConfigurationsFromFile(const QString& fileName)
+    {
+        QFile file(fileName);
+        file.open(QIODevice::ReadOnly);
+        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
+        if (!document.isArray()) {
+            q.statusBar()->showMessage(tr("The file can not be loaded"));
+            qWarning() << "Cannot load JSON: root not an array";
+            return;
+        }
+        const QJsonArray array = document.array();
+        for (int index = 0, last = array.count(); index < last; ++index) {
+            const QJsonValue value = array.at(index);
+            if (!value.isObject()) {
+                q.statusBar()->showMessage(tr("The file can not be loaded"));
+                qWarning() << "Cannot load JSON: element is not an object";
+                continue;
+            }
+            newPage();
+            deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
+        }
+    }
+
     void populateEntriesMenu()
     {
         loadSavedMenu->clear();
@@ -231,7 +267,29 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     // Menus ///////////////////////////////////////////////////////////////////
     d->fileMenu = menuBar()->addMenu(tr("File"));
 
-    auto action = new QAction(tr("Copy chart to clipboard"), this);
+    auto action = new QAction(tr("Save visible configurations as..."), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    d->fileMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        auto dialog = new QFileDialog(this);
+        dialog->setFileMode(QFileDialog::AnyFile);
+        connect(dialog, &QFileDialog::fileSelected, this,
+            std::bind(&Private::saveConfigurationsToFile, d, std::placeholders::_1));
+        dialog->show();
+    });
+
+    action = new QAction(tr("Load configurations from..."), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+    d->fileMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        auto dialog = new QFileDialog(this);
+        dialog->setFileMode(QFileDialog::AnyFile);
+        connect(dialog, &QFileDialog::fileSelected, this,
+            std::bind(&Private::loadConfigurationsFromFile, d, std::placeholders::_1));
+        dialog->show();
+    });
+
+    action = new QAction(tr("Copy chart to clipboard"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
     d->fileMenu->addAction(action);
 
@@ -242,7 +300,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
 
     action = new QAction(tr("Save chart as..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
     d->fileMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
