@@ -3,6 +3,7 @@ TARGET = moebiustoolkit
 QT = core gui widgets charts
 
 projectGlobals()
+useLibMoebius()
 
 HEADERS = \
     backstabcalculatorpage.h \

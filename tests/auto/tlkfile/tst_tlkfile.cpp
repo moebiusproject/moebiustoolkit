@@ -42,13 +42,13 @@ void tst_TlkFile::test_data()
     QTest::newRow("BG1 classic")
             << QFINDTESTDATA("../../data/tlk/bg1/dialog.tlk")
             << quint16(0) << quint32(24124) << quint32(627242)
-            << QString("Back so soon.  How did your battle fare?")
-            << QString("I prefer to manage on my own.");
+            << QString(QLatin1String("Back so soon.  How did your battle fare?"))
+            << QString(QLatin1String("I prefer to manage on my own."));
     QTest::newRow("BG1 EE")
             << QFINDTESTDATA("../../data/tlk/bg1ee/dialog.tlk")
             << quint16(0) << quint32(71375) << quint32(1855768)
-            << QString("Back so soon! How did your battle fare?")
-            << QString("I prefer to manage on my own.");
+            << QString(QLatin1String("Back so soon! How did your battle fare?"))
+            << QString(QLatin1String("I prefer to manage on my own."));
 }
 
 void tst_TlkFile::test()
