@@ -104,8 +104,9 @@ struct DamageCalculatorPage::Private
     QVector<QLineSeries*> lineSeries;
     QVector<QVariantHash> savedConfigurations;
 
-    void load(QWidget* tab, QVariantHash data);
-    QVariantHash save(QWidget* tab);
+    // TODO: move to their own location, to make them testable.
+    static void deserialize(QWidget* tab, QVariantHash data);
+    static QVariantHash serialize(QWidget* tab);
 
     void loadSavedConfigurations()
     {
@@ -126,7 +127,7 @@ struct DamageCalculatorPage::Private
     // that are going to be saved.
     void saveCurrentConfiguration()
     {
-        const QVariantHash toSave = save(tabs->currentWidget());
+        const QVariantHash toSave = serialize(tabs->currentWidget());
 
         // Check for duplicates, to allow changing a configuration already saved
         const QString name = toSave.value(QLatin1String("name")).toString();
@@ -167,7 +168,7 @@ struct DamageCalculatorPage::Private
         deleteSavedMenu->clear();
         auto loadEntry = [this](int index) {
             newPage();
-            load(tabs->currentWidget(), savedConfigurations.at(index));
+            deserialize(tabs->currentWidget(), savedConfigurations.at(index));
         };
         auto deleteEntry = [this](int index) {
             savedConfigurations.remove(index);
@@ -264,10 +265,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     configurationsMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
-        const QVariantHash saved = d->save(d->tabs->currentWidget());
+        const QVariantHash saved = d->serialize(d->tabs->currentWidget());
         d->newPage();
         // TODO: block signals recursively, load UI values, then update chart.
-        d->load(d->tabs->currentWidget(), saved);
+        d->deserialize(d->tabs->currentWidget(), saved);
     });
 
     d->loadSavedMenu = new QMenu(tr("Load saved"));
@@ -293,7 +294,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
     connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
         d->newPage();
-        d->load(d->tabs->currentWidget(), d->savedConfigurations.at(index));
+        d->deserialize(d->tabs->currentWidget(), d->savedConfigurations.at(index));
     });
 
 #if 0 // TODO: migrate to its own page
@@ -494,39 +495,62 @@ QStatusBar* DamageCalculatorPage::statusBar()
     return nullptr;
 }
 
-void DamageCalculatorPage::Private::load(QWidget* tab, QVariantHash data)
+void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data)
 {
-    for (auto child : tab->findChildren<QWidget*>()) {
-        if (qobject_cast<QLabel*>(child))
-            continue;
-        else if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
-            spinbox1->setValue(data.take(child->objectName()).toInt());
-        } else if (auto spinbox2 = qobject_cast<QDoubleSpinBox*>(child)) {
-            spinbox2->setValue(data.take(child->objectName()).toDouble());
-        }
-        else if (auto combobox = qobject_cast<QComboBox*>(child)) {
-            combobox->setCurrentIndex(data.take(child->objectName()).toInt());
-        }
-        else if (auto checkbox = qobject_cast<QCheckBox*>(child)) {
-            checkbox->setChecked(data.take(child->objectName()).toBool());
-        }
-        else if (auto line = qobject_cast<QLineEdit*>(child)) {
-            if (child->objectName() == QLatin1String("name"))
-                line->setText(data.take(child->objectName()).toString());
-        }
-        else if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
-            if (groupbox->isCheckable())
-                groupbox->setChecked(data.take(child->objectName()).toBool());
-        }
-    }
-
     // TODO: remove for any kind of release. Is just a backwards compatibility
-    // addition to easy my testing.
+    // addition to ease my testing with the old configuration.
     if (data.contains(QLatin1String("doubleCriticalChance"))) {
         if (data.take(QLatin1String("doubleCriticalChance")).toBool()) {
-            if (QSpinBox* box = tab->findChild<QSpinBox*>(QLatin1String("criticalHitChance1"))) {
+            if (QSpinBox* box = root->findChild<QSpinBox*>(QLatin1String("criticalHitChance1"))) {
                 box->setValue(10);
             }
+        }
+    }
+    // TODO: ditto. Inject some values for the new features not in the old saves.
+    if (!data.contains(QLatin1String("criticalHitChance1")))
+        data.insert(QLatin1String("criticalHitChance1"), 5);
+    if (!data.contains(QLatin1String("criticalHitChance2")))
+        data.insert(QLatin1String("criticalHitChance2"), 5);
+    if (!data.contains(QLatin1String("criticalStrike")))
+        data.insert(QLatin1String("criticalStrike"), false);
+    if (!data.contains(QLatin1String("maximumDamage")))
+        data.insert(QLatin1String("maximumDamage"), false);
+
+    for (auto child : root->findChildren<QWidget*>()) {
+        if (qobject_cast<QLabel*>(child))
+            continue;
+        if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
+            if (!groupbox->isCheckable())
+                continue;
+        }
+
+        const QString name = child->objectName();
+        if (name.startsWith(QLatin1String("qt_")))
+            continue;
+
+        const QVariant value = data.take(name);
+        if (!value.isValid()) {
+            qInfo() << child << "not loaded with serialized data";
+            continue;
+        }
+        if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
+            spinbox1->setValue(value.toInt());
+        } else if (auto spinbox2 = qobject_cast<QDoubleSpinBox*>(child)) {
+            spinbox2->setValue(value.toDouble());
+        }
+        else if (auto combobox = qobject_cast<QComboBox*>(child)) {
+            combobox->setCurrentIndex(value.toInt());
+        }
+        else if (auto checkbox = qobject_cast<QCheckBox*>(child)) {
+            checkbox->setChecked(value.toBool());
+        }
+        else if (auto line = qobject_cast<QLineEdit*>(child)) {
+            // Skip several "fake" line edits used in spinboxes, etc.
+            if (name == QLatin1String("name"))
+                line->setText(value.toString());
+        }
+        else if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
+            groupbox->setChecked(value.toBool());
         }
     }
 
@@ -534,28 +558,29 @@ void DamageCalculatorPage::Private::load(QWidget* tab, QVariantHash data)
         qWarning() << "This data was not loaded:\n" << data;
 }
 
-QVariantHash DamageCalculatorPage::Private::save(QWidget* tab)
+QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
 {
     QVariantHash result;
-    for (auto child : tab->findChildren<QWidget*>()) {
-        if (qobject_cast<QLabel*>(child) || child->objectName().isEmpty()
-                || child->objectName().startsWith(QLatin1String("qt_")))
+    for (auto child : root->findChildren<QWidget*>()) {
+        const QString name = child->objectName();
+        if (qobject_cast<QLabel*>(child) || name.isEmpty()
+                || name.startsWith(QLatin1String("qt_")))
             continue;
         else if (auto spinbox1 = qobject_cast<QSpinBox*>(child))
-            result.insert(child->objectName(), spinbox1->value());
+            result.insert(name, spinbox1->value());
         else if (auto spinbox2 = qobject_cast<QDoubleSpinBox*>(child))
-            result.insert(child->objectName(), spinbox2->value());
+            result.insert(name, spinbox2->value());
         else if (auto combobox = qobject_cast<QComboBox*>(child))
-            result.insert(child->objectName(), combobox->currentIndex());
+            result.insert(name, combobox->currentIndex());
         else if (auto checkbox = qobject_cast<QCheckBox*>(child))
-            result.insert(child->objectName(), checkbox->isChecked());
+            result.insert(name, checkbox->isChecked());
         else if (auto line = qobject_cast<QLineEdit*>(child)) {
-            if (line->objectName() == QLatin1String("name"))
-                result.insert(line->objectName(), line->text());
+            if (name == QLatin1String("name"))
+                result.insert(name, line->text());
         }
         else if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
             if (groupbox->isCheckable())
-                result.insert(child->objectName(), groupbox->isChecked());
+                result.insert(name, groupbox->isChecked());
         }
         else
             qWarning() << "Not serialized:" << child;
