@@ -64,6 +64,23 @@ struct WeaponArrangement {
     DamageType physicalDamageType() const;
 };
 
+struct Backstab {
+    struct Other {
+        int multiplier = 2;
+        int kit = 0;
+        int bonus = 0;
+        int strength = 0;
+    };
+
+    explicit Backstab(WeaponArrangement weapon_, Backstab::Other other_)
+        : weapon(weapon_)
+        , other(other_)
+    {}
+
+    WeaponArrangement weapon;
+    Other other;
+};
+
 class Damage {
 public:
     struct Common {

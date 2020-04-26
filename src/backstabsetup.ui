@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>454</height>
+    <height>632</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,10 +25,27 @@
      </item>
      <item>
       <widget class="QLineEdit" name="name">
+       <property name="text">
+        <string>Default</string>
+       </property>
        <property name="placeholderText">
         <string>Give a name to this calculation (e.g. &quot;Assassin/21 Staff of the Ram&quot;)</string>
        </property>
       </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="strengthLabel">
+       <property name="text">
+        <string>Strength bonus (not multiplied)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="strength"/>
      </item>
     </layout>
    </item>
@@ -57,109 +74,36 @@
     </layout>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="0">
-      <widget class="QLabel" name="weaponDamageDiceLabel">
-       <property name="text">
-        <string>Weapon</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QSpinBox" name="weaponDamageDiceNumber">
-       <property name="suffix">
-        <string> dice</string>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>20</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="weaponDamageDiceSide">
-       <property name="suffix">
-        <string> sides</string>
-       </property>
-       <property name="minimum">
-        <number>4</number>
-       </property>
-       <property name="maximum">
-        <number>20</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="weaponDamageDiceBonus">
-       <property name="suffix">
-        <string> bonus</string>
-       </property>
-       <property name="maximum">
-        <number>10</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="WeaponArrangementWidget" name="weapon" native="true"/>
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="proficiencyLabel">
-       <property name="text">
-        <string>Proficiency modifier</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="1">
-      <widget class="QSpinBox" name="proficiency">
-       <property name="maximum">
-        <number>5</number>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="styleLabel">
-       <property name="text">
-        <string>Style modifier</string>
-       </property>
-      </widget>
+      <widget class="QSpinBox" name="kit"/>
      </item>
      <item row="1" column="1">
-      <widget class="QSpinBox" name="style"/>
+      <widget class="QSpinBox" name="other"/>
      </item>
-     <item row="2" column="0">
+     <item row="0" column="0">
       <widget class="QLabel" name="kitLabel">
        <property name="text">
         <string>Kit bonus</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="kit"/>
-     </item>
-     <item row="3" column="0">
+     <item row="1" column="0">
       <widget class="QLabel" name="otherLabel">
        <property name="text">
         <string>Other</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QSpinBox" name="other"/>
-     </item>
     </layout>
    </item>
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>&lt;p&gt;Examples:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Gauntlets (+2)&lt;/li&gt;
-&lt;li&gt;Bless (+1)&lt;/li&gt;
-&lt;li&gt;Attack of opportunity (+4)&lt;/li&gt;
-&lt;/ul&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Examples of other bonuses:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Gauntlets (+2)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Bless (+1)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Single Weapon Style (+1)&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Attack of opportunity (+4)&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="textFormat">
       <enum>Qt::RichText</enum>
@@ -181,6 +125,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>WeaponArrangementWidget</class>
+   <extends>QWidget</extends>
+   <header>damagecalculatorpage.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

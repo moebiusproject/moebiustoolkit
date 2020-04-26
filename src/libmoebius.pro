@@ -15,6 +15,7 @@ win32:!win32-g++:QMAKE_CXXFLAGS += /Zi
 HEADERS = \
     bifffile.h \
     calculators.h \
+    backstabstats.h \
     diceroll.h \
     keyfile.h \
     packed.h \
@@ -25,6 +26,7 @@ HEADERS = \
 SOURCES = \
     bifffile.cpp \
     calculators.cpp \
+    backstabstats.cpp \
     diceroll.cpp \
     keyfile.cpp \
     tdafile.cpp \

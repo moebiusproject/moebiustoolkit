@@ -1,18 +1,26 @@
 #include "backstabcalculatorpage.h"
 
+#include <QBarCategoryAxis>
+#include <QBarSet>
 #include <QBoxLayout>
 #include <QChart>
 #include <QChartView>
+#include <QDebug>
 #include <QHorizontalStackedBarSeries>
 #include <QLabel>
 #include <QPushButton>
 #include <QTabWidget>
+#include <QValueAxis>
 
+#include "backstabstats.h"
+#include "calculators.h"
+#include "diceroll.h"
 #include "ui_backstabsetup.h"
+#include "ui_weaponarrangementwidget.h"
+#include "weaponarrangementwidget.h"
 
+using namespace Calculators;
 using namespace QtCharts;
-
-using Series = QHorizontalStackedBarSeries;
 
 struct BackstabCalculatorPage::Private
 {
@@ -27,17 +35,17 @@ struct BackstabCalculatorPage::Private
     QTabWidget* tabs = nullptr;
 
     QVector<Ui::BackstabSetup> setups;
-    QVector<Series*> series;
 
+    QHorizontalStackedBarSeries* series = nullptr;
+    QBarSet* setStrength = nullptr;
+    QBarSet* setBase = nullptr;
+    QBarSet* setMultiplied = nullptr;
+    QStringList names;
+
+    void setupChart();
     void newPage();
-    void updateSeriesAtCurrentIndex() {
-#if 0
-        const int index = tabs->currentIndex();
-        Series* series = this->series[index];
-        Ui::BackstabSetup setup = setups[index];
-        // TODO: Calculate here, and assign to the series the values.
-#endif
-    }
+    void setupAxes();
+    void updateCurrentSeries();
 };
 
 BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
@@ -45,7 +53,8 @@ BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
     , d(new Private(*this))
 {
     auto chartControlsLayout = new QHBoxLayout;
-    chartControlsLayout->addWidget(new QLabel(tr("TODO")));
+    // This is just unused for now.
+//    chartControlsLayout->addWidget(new QLabel(tr("TODO")));
 
     d->chart = new QChart;
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
@@ -65,12 +74,12 @@ BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
     d->tabs->setTabsClosable(true);
     connect(d->tabs, &QTabWidget::tabCloseRequested, [this](int index) {
         if (d->tabs->count() == 1)
-            return; // don't close the last one for now, to keep the "New" button
+            return;
         d->setups.removeAt(index);
-        d->chart->removeSeries(d->series[index]);
-        delete d->series.takeAt(index);
-//        // TODO: with the new approach, this might be a tad heavy. Review.
-//        d->setupAxes();
+        // TODO: implement instead of crash
+//        d->chart->removeSeries(d->series[index]);
+//        delete d->series.takeAt(index);
+        d->setupAxes();
         delete d->tabs->widget(index);
         for (int tab = index ; tab < d->tabs->count(); ++tab)
             d->tabs->setTabText(tab, tr("Configuration %1").arg(tab + 1));
@@ -83,8 +92,7 @@ BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
     inputWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     auto inputArea = new QScrollArea;
     inputArea->setWidget(inputWidget);
-    // TODO: Better looking when no scrollbar only... re-consider it.
-    // inputArea->setFrameShape(QFrame::NoFrame);
+    inputArea->setFrameShape(QFrame::NoFrame);
     inputArea->setWidgetResizable(true);
     inputLayout->addWidget(d->tabs);
 
@@ -93,6 +101,7 @@ BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
     layout->addLayout(chartViewLayout, 1);
     layout->addWidget(inputArea, 0);
 
+    d->setupChart();
     d->newPage();
 }
 
@@ -102,6 +111,23 @@ BackstabCalculatorPage::~BackstabCalculatorPage()
     d = nullptr;
 }
 
+void BackstabCalculatorPage::Private::setupChart()
+{
+    // TODO: review if the ownership is fully passed to the chart or we need
+    // some parent for all this heap allocated objects below.
+
+    series = new QHorizontalStackedBarSeries;
+
+    setStrength = new QBarSet(page.tr("Strength"));
+    setBase = new QBarSet(page.tr("Base"));
+    setMultiplied = new QBarSet(page.tr("Multiplied"));
+
+    series->append(setStrength);
+    series->append(setBase);
+    series->append(setMultiplied);
+    chart->addSeries(series);
+}
+
 void BackstabCalculatorPage::Private::newPage()
 {
     auto widget = new QWidget;
@@ -109,22 +135,124 @@ void BackstabCalculatorPage::Private::newPage()
     setups.append(Ui::BackstabSetup());
     Ui::BackstabSetup& setup = setups.last();
     setup.setupUi(widget);
+
+    // Hide/change parts that are irrelevant to us.
+    setup.weapon->ui->damageGroup->setTitle(tr("Weapon damage"));
+    setup.weapon->ui->thac0Group->hide();
+    setup.weapon->ui->damageType->hide();
+    setup.weapon->ui->damageTypeLabel->hide();
+    setup.weapon->ui->attacksPerRound1->hide();
+    setup.weapon->ui->attacksPerRound2->hide();
+    setup.weapon->ui->attacksPerRoundLabel->hide();
+    setup.weapon->ui->criticalHitChance->hide();
+    setup.weapon->ui->criticalHitChanceLabel->hide();
+
     tabs->addTab(widget, tr("Setup %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
     connect(setup.name, &QLineEdit::textChanged, [this](const QString& text) {
-        series.at(tabs->currentIndex())->setName(text);
+        (void)text;
+        // TODO: something lighter than this to change the name without flicker.
+        setupAxes();
     });
 
-    auto update =  std::bind(&Private::updateSeriesAtCurrentIndex, this);
+    auto update =  std::bind(&Private::updateCurrentSeries, this);
     for (auto child : widget->findChildren<QSpinBox*>())
         connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QDoubleSpinBox*>())
         connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
-//    for (auto child : widget->findChildren<QComboBox*>())
-//        connect(child, &QComboBox::currentTextChanged, update);
-//    for (auto child : widget->findChildren<QCheckBox*>())
-//        connect(child, &QCheckBox::toggled, update);
-//    connect(configuration.offHandGroup, &QGroupBox::toggled, update);
+
+    // We just ensure the count is correct, then the value will be set properly.
+    setStrength->append(0);
+    setBase->append(0);
+    setMultiplied->append(0);
+
+    updateCurrentSeries();
+}
+
+void BackstabCalculatorPage::Private::setupAxes()
+{
+    QBarCategoryAxis* vertical = nullptr;
+    if (auto axes = chart->axes(Qt::Vertical); axes.size() != 0) {
+        vertical = static_cast<QBarCategoryAxis*>(axes.first());
+        vertical->clear();
+    }
+    else {
+        vertical = new QBarCategoryAxis;
+        chart->addAxis(vertical, Qt::AlignLeft);
+        series->attachAxis(vertical);
+    }
+    names.clear();
+    for (int index = 0; index < tabs->count(); ++index) {
+        names << setups.at(index).name->text();
+    }
+    vertical->append(names);
+
+
+    QValueAxis* horizontal = nullptr;
+    if (auto axes = chart->axes(Qt::Horizontal); axes.size() != 0) {
+        horizontal = static_cast<QValueAxis*>(axes.first());
+    }
+    else {
+        horizontal = new QValueAxis;
+        chart->addAxis(horizontal, Qt::AlignBottom);
+        series->attachAxis(horizontal);
+    }
+
+    // This is a bit weird: we need to sum the i-th value of each bar set, then
+    // find the maximum of those to set the range of the axis.
+    const auto barSets = series->barSets();
+    // Assumption: how we chart this, for now, implies that all the sets are
+    // having the same number of points.
+    const int entries = barSets.first()->count();
+
+    QVector<double> maximums(entries, 0.0);
+    for (int entry = 0; entry < entries; ++entry) {
+        for (int index = 0, last = barSets.size(); index < last; ++index) {
+            maximums[entry] += barSets.at(index)->at(entry);
+        }
+    }
+
+    double max = 0.0;
+    for (int index = 0; index < maximums.size(); ++index) {
+        max = qMax(maximums.at(index), max);
+    }
+    horizontal->setRange(0, max);
+    horizontal->applyNiceNumbers();
+}
+
+void BackstabCalculatorPage::Private::updateCurrentSeries()
+{
+    const int index = tabs->currentIndex();
+    const Ui::BackstabSetup& setup = setups[index];
+    WeaponArrangement weapon = setup.weapon->toData();
+    // TODO: luck support
+    // FIXME: this line is copy/pasted from damage calculator page. Also, this
+    // line is like the only outside use of physicalDamageType(), and shows
+    // that physicalDamage() is not that useful if it returns a copy that
+    // we can't use to modify the luck value. Should be easy to fix.
+    // weapon.damage.find(weapon.physicalDamageType()).value().luck(42);
+
+    double totalWeaponDamage = 0.0;
+    for (const auto& damage : weapon.damage)
+        totalWeaponDamage += damage.average();
+    const double physicalPart = weapon.physicalDamage().average()
+                              + setup.kit->value() + setup.other->value();
+
+    // TODO: use this in a testable way instead of the quick solution. :-)
+    Backstab::Other other;
+    other.strength = setup.strength->value();
+    other.multiplier = setup.multiplier->value();
+    other.kit = setup.kit->value();
+    other.bonus = setup.other->value();
+    const Backstab calculator(weapon, other);
+
+    const int remainingMultiplier = other.multiplier - 1;
+
+    setStrength->replace(index, other.strength);
+    setBase->replace(index, totalWeaponDamage);
+    setMultiplied->replace(index, remainingMultiplier * physicalPart);
+
+    setupAxes();
 }
 
