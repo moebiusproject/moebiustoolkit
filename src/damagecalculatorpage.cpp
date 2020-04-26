@@ -379,6 +379,13 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
+    chartControlsLayout->addWidget(new QLabel(tr("Title:")));
+    auto title = new QLineEdit;
+    title->setPlaceholderText(tr("Optional. Set a title for the chart. Accepts some HTML."));
+    connect(title, &QLineEdit::textChanged, [this](const QString& text) {
+        d->chart->setTitle(text);
+    });
+    chartControlsLayout->addWidget(title);
     chartControlsLayout->addWidget(new QLabel(tr("Best AC:")));
     d->minimumX = new QSpinBox;
     d->minimumX->setMinimum(d->armorClasses.last());
