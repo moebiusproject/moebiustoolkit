@@ -83,6 +83,7 @@ struct DamageCalculatorPage::Private
     DamageCalculatorPage& q;
     QVector<int> armorClasses;
 
+    QMenu* mainMenu = nullptr;
     QMenu* loadSavedMenu = nullptr;
     QMenu* deleteSavedMenu = nullptr;
 
@@ -253,17 +254,11 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         dialog->open();
     });
 
-    QMenu* configurationsMenu = menuBar()->addMenu(tr("Configurations"));
+    d->mainMenu = menuBar()->addMenu(tr("Damage calculator configurations"));
 
-    action = new QAction(tr("Save current"), this);
-    configurationsMenu->addAction(action);
-
-    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentConfiguration, d));
-
-    action = new QAction(tr("Duplicate current"), this);
+    action = new QAction(tr("Duplicate current configuration"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    configurationsMenu->addAction(action);
-
+    d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         const QVariantHash saved = d->serialize(d->tabs->currentWidget());
         d->newPage();
@@ -271,15 +266,19 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         d->deserialize(d->tabs->currentWidget(), saved);
     });
 
-    d->loadSavedMenu = new QMenu(tr("Load saved"));
-    configurationsMenu->addMenu(d->loadSavedMenu);
-    d->deleteSavedMenu = new QMenu(tr("Delete saved"));
-    configurationsMenu->addMenu(d->deleteSavedMenu);
+    action = new QAction(tr("Save current configuration to preferences"), this);
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentConfiguration, d));
+
+    d->loadSavedMenu = new QMenu(tr("Load configuration from preferences"));
+    d->mainMenu->addMenu(d->loadSavedMenu);
+    d->deleteSavedMenu = new QMenu(tr("Delete configuration from preferences"));
+    d->mainMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
 
     action = new QAction(tr("Manage entries"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-    configurationsMenu->addAction(action);
+    d->mainMenu->addAction(action);
 
     d->manageDialog = new ManageDialog(this);
     // TODO: pick something reasonable, yet not hardcoded?
