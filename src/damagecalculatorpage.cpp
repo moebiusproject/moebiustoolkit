@@ -300,6 +300,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         dialog->setFileMode(QFileDialog::AnyFile);
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::saveConfigurationsToFile, d, std::placeholders::_1));
+        dialog->setModal(true);
         dialog->show();
     });
 
@@ -311,6 +312,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         dialog->setFileMode(QFileDialog::AnyFile);
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::loadConfigurationsFromFile, d, std::placeholders::_1));
+        dialog->setModal(true);
         dialog->show();
     });
 
