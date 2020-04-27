@@ -89,6 +89,23 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
+         <widget class="QLabel" name="luckLabel">
+          <property name="text">
+           <string>Luck</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="luck">
+          <property name="minimum">
+           <number>-20</number>
+          </property>
+          <property name="maximum">
+           <number>20</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="strengthDamageBonusLabel">
           <property name="text">
            <string>Damage Strength bonus</string>
