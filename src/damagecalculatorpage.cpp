@@ -4,6 +4,8 @@
 #include "ui_configuration.h"
 #include "ui_enemy.h"
 
+#include "calculators.h"
+
 // TODO: make their own pages.
 // #include "attackbonuses.h"
 // #include "rollprobabilities.h"
@@ -890,39 +892,24 @@ void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLi
         const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const auto criticalHitChance1 = c.criticalHitChance1->value() / 100.0;
-        const auto criticalHitChance2 = c.criticalHitChance2->value() / 100.0;
+        const auto criticalHitChance1 = criticalStrike ? 1.0 : c.criticalHitChance1->value() / 100.0;
+        const auto criticalHitChance2 = criticalStrike ? 1.0 : c.criticalHitChance2->value() / 100.0;
 
-        // TODO: move this to a unit testable place, remove criticalChance
-        // capture and rework to support 100% criical hit chance.
-        auto chanceToHit = [criticalStrike](int toHit, double criticalChance) {
-            if (criticalStrike)
-                return 1.0;
-            // FIXME: this doesn't really support a critical chance of 100%
-            // because it evolved from when only 5 or 10% were allowed. Use
-            // critical strike for 100%.
-            const int firstCriticalRoll = (21 - criticalChance*20);
-            // Equivalent to:
-            // const int firstCriticalRoll = (105 - criticalChance*100) / 5;
-            if (toHit <= 2) // Only critical failures fail: 95% chance of hitting
-                return 0.95;
-            else if (toHit > 2 && toHit < firstCriticalRoll) {
-                return 1 - (0.05 * (toHit-1));
-            } else // Only critical hits work.
-                return criticalChance;
-        };
-
-        double damage = chanceToHit(mainToHit, criticalHitChance1) * mainDamage * mainApr * mainResistance;
+        const double toHit1 = Calculators::chanceToHit(mainToHit, criticalHitChance1);
+        const double toHit2 = Calculators::chanceToHit(offToHit, criticalHitChance2);
+        double damage = toHit1 * mainDamage * mainApr * mainResistance;
         if (offHand)
-            damage += chanceToHit(offToHit, criticalHitChance2) * offDamage * offApr * offResistance;
+            damage += toHit2 * offDamage * offApr * offResistance;
 
         if (doubleCriticalDamage) { // Unprotected against critical hits.
             if (criticalStrike) // All damage doubled!
                 damage *= 2;
-            else { // Then 1 of each 20, or 2 of each 20 do extra damage.
-                damage += mainApr * mainDamage * criticalHitChance1 * mainResistance;
+            else {
+                // Otherwise, consider the damage again, this time without
+                // chance to failure, but scaled by the chance of critical hit.
+                damage += criticalHitChance1 * mainDamage * mainApr * mainResistance;
                 if (offHand)
-                    damage += offApr * offDamage * criticalHitChance2 * offResistance;
+                    damage += criticalHitChance2 * offDamage * offApr * offResistance;
             }
         }
 
