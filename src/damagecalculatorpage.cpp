@@ -222,6 +222,9 @@ struct DamageCalculatorPage::Private
             }
             newPage();
             deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
+            const int current = tabs->currentIndex();
+            const QVariant color = configurations[current].color->property("color");
+            lineSeries[current]->setColor(color.value<QColor>());
         }
     }
 
@@ -278,6 +281,14 @@ struct DamageCalculatorPage::Private
         updateSeries(configurations[index], lineSeries[index]);
     }
     void updateSeries(const Ui::configuration& c, QLineSeries* series);
+
+    static void setColorInButton(const QColor& color, QPushButton* button)
+    {
+        const int side = button->height();
+        QPixmap pixmap(side, side);
+        pixmap.fill(color);
+        button->setIcon(QIcon(pixmap));
+    }
 };
 
 DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
@@ -652,6 +663,10 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         else if (auto checkbox = qobject_cast<QCheckBox*>(child)) {
             checkbox->setChecked(value.toBool());
         }
+        else if (auto button = qobject_cast<QPushButton*>(child)) {
+            button->setProperty("color", value);
+            setColorInButton(value.value<QColor>(), button);
+        }
         else if (auto line = qobject_cast<QLineEdit*>(child)) {
             // Skip several "fake" line edits used in spinboxes, etc.
             if (name == QLatin1String("name"))
@@ -682,6 +697,11 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
             result.insert(name, combobox->currentIndex());
         else if (auto checkbox = qobject_cast<QCheckBox*>(child))
             result.insert(name, checkbox->isChecked());
+        else if (auto button = qobject_cast<QPushButton*>(child)) {
+            const QVariant color = button->property("color");
+            if (color.isValid())
+                result.insert(name, color);
+        }
         else if (auto line = qobject_cast<QLineEdit*>(child)) {
             if (name == QLatin1String("name"))
                 result.insert(name, line->text());
@@ -710,6 +730,19 @@ void DamageCalculatorPage::Private::newPage()
     connect(configuration.name, &QLineEdit::textChanged,
             [this](const QString& text) {
         lineSeries.at(tabs->currentIndex())->setName(text);
+    });
+    connect(configuration.color, &QPushButton::clicked, [this, configuration]() {
+        const QColor initial = lineSeries[tabs->currentIndex()]->color();
+        auto dialog = new QColorDialog(initial, &q);
+        q.connect(dialog, &QColorDialog::colorSelected,
+                  &q, [this, configuration](const QColor& color)
+        {
+            lineSeries[tabs->currentIndex()]->setColor(color);
+            setColorInButton(color, configuration.color);
+            configuration.color->setProperty("color", color);
+        });
+        dialog->setModal(true);
+        dialog->show();
     });
 
     auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
@@ -790,6 +823,8 @@ void DamageCalculatorPage::Private::newPage()
         font.setStrikeOut(!series->isVisible());
         marker->setFont(font);
     });
+
+    setColorInButton(series->color(), configuration.color);
 
     updateSeriesAtCurrentIndex();
 }
