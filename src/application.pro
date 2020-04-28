@@ -11,6 +11,7 @@ HEADERS = \
     mainwindow.h \
     pageselector.h \
     pagetype.h \
+    repeatedprobabilitypage.h \
     welcomepage.h \
 
 SOURCES = main.cpp \
@@ -18,6 +19,7 @@ SOURCES = main.cpp \
     damagecalculatorpage.cpp \
     mainwindow.cpp \
     pageselector.cpp \
+    repeatedprobabilitypage.cpp \
     welcomepage.cpp \
 
 FORMS += \

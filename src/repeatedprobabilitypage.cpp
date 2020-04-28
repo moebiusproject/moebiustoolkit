@@ -1,4 +1,4 @@
-#include "rollprobabilities.h"
+#include "repeatedprobabilitypage.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSet>
@@ -28,8 +28,8 @@ static double binomialFunction(unsigned k, unsigned n, double p)
     return binomial(n, k) * qPow(p, k) * qPow(1-p, n-k);
 }
 
-RollProbabilities::RollProbabilities(QWidget* parent)
-    : QDialog(parent)
+RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
+    : QWidget(parent)
 {
     QStackedBarSeries* series = new QStackedBarSeries;
 
@@ -97,7 +97,10 @@ RollProbabilities::RollProbabilities(QWidget* parent)
             value += results[i].at(index);
         tooltip->show();
         tooltip->setText(tr("Value: %1").arg(value));
-    });
+    },
+    // To avoid a crash at shutdown: chart destroys the tooltip before the bar,
+    // so the bar emits the hovered signal to a destroyed tooltip, so crashes.
+    Qt::QueuedConnection);
 
     auto chartView = new QChartView(chart);
     chartView->setRenderHint(QPainter::Antialiasing);
