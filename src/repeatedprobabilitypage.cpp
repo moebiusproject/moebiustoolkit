@@ -28,8 +28,22 @@ static double binomialFunction(unsigned k, unsigned n, double p)
     return binomial(n, k) * qPow(p, k) * qPow(1-p, n-k);
 }
 
+struct RepeatedProbabilityPage::Private
+{
+    Private(RepeatedProbabilityPage& window)
+        : q(window)
+    {}
+
+    RepeatedProbabilityPage& q;
+    QChart* chart = nullptr;
+};
+
+// TODO: Unroll the mess of the constructor to be able to regenerate teh chart
+// with different values, starting with different count of sets (not fixed to 9).
+
 RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     : QWidget(parent)
+    , d(new Private(*this))
 {
     QStackedBarSeries* series = new QStackedBarSeries;
 
@@ -64,27 +78,27 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
         series->append(set);
     }
 
-    QChart* chart = new QChart();
-    chart->addSeries(series);
-    chart->setAnimationOptions(QChart::SeriesAnimations);
+    d->chart = new QChart();
+    d->chart->addSeries(series);
+    d->chart->setAnimationOptions(QChart::SeriesAnimations);
 
     QBarCategoryAxis* axis = new QBarCategoryAxis();
     axis->append(axisTexts);
     // Ironically enough, the default axis is fine: rolls from 1 to 21.
-    chart->createDefaultAxes();
+    d->chart->createDefaultAxes();
     // But _add_ (not set) the custom one with percentages.
-    chart->addAxis(axis, Qt::AlignBottom);
-    if (QValueAxis* verticalAxis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
+    d->chart->addAxis(axis, Qt::AlignBottom);
+    if (QValueAxis* verticalAxis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).first())) {
         verticalAxis->setTickCount(11);
         verticalAxis->setMinorTickCount(1);
         verticalAxis->setLabelFormat(QString::fromLatin1("%.1f"));
     }
 
-    chart->setAcceptHoverEvents(true);
-    QGraphicsSimpleTextItem* tooltip = new QGraphicsSimpleTextItem(chart);
+    d->chart->setAcceptHoverEvents(true);
+    QGraphicsSimpleTextItem* tooltip = new QGraphicsSimpleTextItem(d->chart);
     tooltip->setPos(30, 30);
     QObject::connect(series, &QAbstractBarSeries::hovered,
-                     chart, [tooltip, series, results](bool over, int index, QBarSet* set)
+                     d->chart, [tooltip, series, results](bool over, int index, QBarSet* set)
     {
         if (!over) {
             tooltip->hide();
@@ -102,9 +116,15 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     // so the bar emits the hovered signal to a destroyed tooltip, so crashes.
     Qt::QueuedConnection);
 
-    auto chartView = new QChartView(chart);
+    auto chartView = new QChartView(d->chart);
     chartView->setRenderHint(QPainter::Antialiasing);
 
     setLayout(new QVBoxLayout);
     layout()->addWidget(chartView);
+}
+
+RepeatedProbabilityPage::~RepeatedProbabilityPage()
+{
+    delete d;
+    d = nullptr;
 }
