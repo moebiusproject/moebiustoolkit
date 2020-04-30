@@ -26,20 +26,33 @@
 
 struct KeyFile
 {
-    struct BifEntry {
+    struct BifDetails {
+        QString name;
+        qint64 size = 0;
+    };
+    bool isValid() const;
+
+    QVector<BifDetails> bifDetails;
+
+private:
+    friend class tst_KeyFile;
+    friend QDataStream& operator>>(QDataStream& stream, KeyFile& file);
+
+    // TODO: Once the API has settled for good, move this struct fully to the
+    // internals, and remove the duplication of API.
+    struct BifIndex {
         quint32 size = 0;
         quint32 nameStart = 0;
-        quint16 nameLenght = 0;
+        quint16 nameLength = 0;
         quint16 location = 0; ///< Always 1 in all the files that I've found.
     } PACKED_ATTRIBUTE;
 
-    struct ResourceEntry {
+    // TODO: Make a proper struct with name being a QString, and public API.
+    struct ResourceIndex {
         char name[8] = {0};
         quint16 type = 0;
         quint32 locator = 0;
     } PACKED_ATTRIBUTE;
-
-    bool isValid() const;
 
     // Header.
     quint8 version = 0;
@@ -49,9 +62,9 @@ struct KeyFile
     quint32 resourceStart = 0;
 
     // Body.
-    QVector<BifEntry> bifEntries;
-    QByteArray bifNames;
-    QVector<ResourceEntry> resourceEntries;
+    QVector<BifIndex> bifIndexes;
+    QByteArray rawBifNames;
+    QVector<ResourceIndex> resourceIndexes;
 };
 
 QDataStream& operator>>(QDataStream& stream, KeyFile& file);

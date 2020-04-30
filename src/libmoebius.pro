@@ -13,6 +13,7 @@ HEADERS = \
     diceroll.h \
     keyfile.h \
     packed.h \
+    resourcetype.h \
     tdafile.h \
     tlkfile.h \
 
