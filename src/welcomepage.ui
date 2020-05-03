@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>632</width>
-    <height>395</height>
+    <height>713</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,28 +15,145 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <widget class="QLabel" name="utilitiesLabel_2">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Game browser</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="browserIntroductionLabel">
+     <property name="text">
+      <string>To browse a game, introduce the location of the installation directory and press &quot;Browse&quot;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0">
      <item>
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="configuredGamesLabel">
        <property name="text">
-        <string>TODO</string>
+        <string>Configured games:</string>
+       </property>
+       <property name="buddy">
+        <cstring>configuredGames</cstring>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="comboBox"/>
+      <widget class="QComboBox" name="configuredGames"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="addNew">
        <property name="text">
-        <string>PushButton</string>
+        <string>New</string>
+       </property>
+       <property name="icon">
+        <iconset theme="document-new">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="remove">
        <property name="text">
-        <string>PushButton</string>
+        <string>Remove</string>
+       </property>
+       <property name="icon">
+        <iconset theme="edit-delete">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="0">
+      <widget class="QLabel" name="locationLabel">
+       <property name="text">
+        <string>Location:</string>
+       </property>
+       <property name="buddy">
+        <cstring>location</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="locationOpen">
+       <property name="text">
+        <string>Change</string>
+       </property>
+       <property name="icon">
+        <iconset theme="folder-open">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="nameLabel">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+       <property name="buddy">
+        <cstring>name</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="location">
+       <property name="placeholderText">
+        <string>Location of the root game installation where &quot;chitin.key&quot; file is</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="name">
+       <property name="placeholderText">
+        <string>Give a name for the game, for example &quot;Unmodded BG2EE&quot;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="locationError">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="browse">
+       <property name="text">
+        <string>Browse</string>
+       </property>
+       <property name="icon">
+        <iconset theme="system-run">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save">
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="icon">
+        <iconset theme="document-save">
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
@@ -59,7 +176,7 @@
     </spacer>
    </item>
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="utilitiesLabel">
      <property name="font">
       <font>
        <pointsize>20</pointsize>
@@ -149,6 +266,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>configuredGames</tabstop>
+  <tabstop>addNew</tabstop>
+  <tabstop>remove</tabstop>
+  <tabstop>name</tabstop>
+  <tabstop>location</tabstop>
+  <tabstop>locationOpen</tabstop>
+  <tabstop>browse</tabstop>
+  <tabstop>save</tabstop>
+  <tabstop>damageCalculator</tabstop>
+  <tabstop>backstabCalculator</tabstop>
+  <tabstop>repeatedProbability</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
