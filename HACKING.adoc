@@ -17,6 +17,10 @@ style, project structure, etc.
 - https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/clswpbon.htm[Whether a
   class gets bonus attack with proficiency, penalty when not proficiency, and
   APR rate for unarmed attacks]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/profs.htm[How many
+  proficiencies are obtained at first level, and how many are gained per level]
+- https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/profsmax.htm[Maximum
+  number of proficiency that can be allocated at a certain level]
 - https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/thiefscl.htm[Allowed
   thief skills per class/kit]
 - https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/thiefskl.htm[Starting
