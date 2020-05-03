@@ -550,16 +550,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
 
     // Layout grouping the configurations and the enemy controls ///////////////
-    auto inputWidget = new QWidget;
-    auto inputLayout = new QVBoxLayout(inputWidget);
-    inputWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    auto inputArea = new QScrollArea;
-    inputArea->setWidget(inputWidget);
-    // TODO: Better looking when no scrollbar only... re-consider it.
-    // inputArea->setFrameShape(QFrame::NoFrame);
-    inputArea->setWidgetResizable(true);
-    inputLayout->addWidget(enemyControls);
-    inputLayout->addWidget(d->tabs);
+    auto inputArea = new QToolBox;
+    inputArea->addItem(enemyControls, tr("Opponent"));
+    inputArea->addItem(d->tabs, tr("Attacker"));
+    inputArea->setCurrentWidget(d->tabs);
 
     // Now group everything together ///////////////////////////////////////////
     auto layout = new QHBoxLayout;
