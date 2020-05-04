@@ -9,6 +9,7 @@ DESTDIR = $$BUILD_TREE/lib
 DLLDESTDIR = $$BUILD_TREE/bin
 
 HEADERS = \
+    bifffile.h \
     calculators.h \
     diceroll.h \
     keyfile.h \
@@ -18,6 +19,7 @@ HEADERS = \
     tlkfile.h \
 
 SOURCES = \
+    bifffile.cpp \
     calculators.cpp \
     diceroll.cpp \
     keyfile.cpp \
