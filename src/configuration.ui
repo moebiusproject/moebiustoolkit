@@ -6,11 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>579</width>
-    <height>766</height>
+    <width>476</width>
+    <height>879</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_6">
+  <layout class="QVBoxLayout" name="verticalLayout_9">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -216,113 +216,187 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_4">
-             <item>
-              <widget class="QLabel" name="proficiencyDamageModifier1Label">
-               <property name="text">
-                <string>Proficency modifier</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="proficiencyDamageModifier1">
-               <property name="minimum">
-                <number>-1</number>
-               </property>
-               <property name="maximum">
-                <number>5</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="damageDice1Layout">
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber1">
-               <property name="suffix">
-                <string> dice</string>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceSide1">
-               <property name="suffix">
-                <string> sides</string>
-               </property>
-               <property name="minimum">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceBonus1">
-               <property name="suffix">
-                <string> bonus</string>
-               </property>
-               <property name="maximum">
-                <number>10</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDiceLabel1">
-               <property name="text">
-                <string>Weapon</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_5">
-             <item>
-              <widget class="QLabel" name="damageType1Label">
-               <property name="text">
-                <string>Type</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="damageType1">
-               <item>
-                <property name="text">
-                 <string>Crushing</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Missile</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Piercing</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Slashing</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="damageDetail1">
-             <property name="text">
-              <string/>
+            <widget class="QToolBox" name="mainHandDamage">
+             <property name="currentIndex">
+              <number>0</number>
              </property>
+             <widget class="QWidget" name="phisicalDamagePage1">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Physical</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_7">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                 <item>
+                  <widget class="QLabel" name="proficiencyDamageModifier1Label">
+                   <property name="text">
+                    <string>Proficency modifier</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="proficiencyDamageModifier1">
+                   <property name="minimum">
+                    <number>-1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="damageDice1Layout">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="weaponDamageDiceLabel1">
+                   <property name="text">
+                    <string>Weapon</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceSide1">
+                   <property name="suffix">
+                    <string> sides</string>
+                   </property>
+                   <property name="minimum">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <number>20</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceBonus1">
+                   <property name="suffix">
+                    <string> bonus</string>
+                   </property>
+                   <property name="maximum">
+                    <number>10</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceNumber1">
+                   <property name="suffix">
+                    <string> dice</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>20</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item>
+                  <widget class="QLabel" name="damageType1Label">
+                   <property name="text">
+                    <string>Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="damageType1">
+                   <item>
+                    <property name="text">
+                     <string>Crushing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Missile</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Piercing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Slashing</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="damageDetail1">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="SpecialDamageWidget" name="acidDamagePage1">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Acid</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="coldDamagePage1">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Cold</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="electricityDamagePage1">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Electricity</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="fireDamagePage1">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Fire</string>
+              </attribute>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -396,7 +470,7 @@
        <property name="checked">
         <bool>false</bool>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5">
+       <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QGroupBox" name="offHandThac0Group">
           <property name="title">
@@ -459,115 +533,189 @@
           <property name="title">
            <string>Damage</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3">
+          <layout class="QVBoxLayout" name="verticalLayout_5">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_6">
-             <item>
-              <widget class="QLabel" name="proficiencyDamageModifier2Label">
-               <property name="text">
-                <string>Proficency modifier</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="proficiencyDamageModifier2">
-               <property name="minimum">
-                <number>-1</number>
-               </property>
-               <property name="maximum">
-                <number>5</number>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QGridLayout" name="damageDice2Layout">
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceNumber2">
-               <property name="suffix">
-                <string> dice</string>
-               </property>
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceSide2">
-               <property name="suffix">
-                <string> sides</string>
-               </property>
-               <property name="minimum">
-                <number>4</number>
-               </property>
-               <property name="maximum">
-                <number>20</number>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QSpinBox" name="weaponDamageDiceBonus2">
-               <property name="suffix">
-                <string> bonus</string>
-               </property>
-               <property name="maximum">
-                <number>10</number>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="0">
-              <widget class="QLabel" name="weaponDamageDiceLabel2">
-               <property name="text">
-                <string>Weapon</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_7">
-             <item>
-              <widget class="QLabel" name="damageType2Label">
-               <property name="text">
-                <string>Type</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="damageType2">
-               <item>
-                <property name="text">
-                 <string>Crushing</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Missile</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Piercing</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>Slashing</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="damageDetail2">
-             <property name="text">
-              <string/>
+            <widget class="QToolBox" name="offHandDamage">
+             <property name="currentIndex">
+              <number>0</number>
              </property>
+             <widget class="QWidget" name="phisicalDamagePage2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Physical</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QLabel" name="proficiencyDamageModifier2Label">
+                   <property name="text">
+                    <string>Proficency modifier</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="proficiencyDamageModifier2">
+                   <property name="minimum">
+                    <number>-1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>5</number>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QGridLayout" name="damageDice2Layout">
+                 <item row="2" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceBonus2">
+                   <property name="suffix">
+                    <string> bonus</string>
+                   </property>
+                   <property name="maximum">
+                    <number>10</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceSide2">
+                   <property name="suffix">
+                    <string> sides</string>
+                   </property>
+                   <property name="minimum">
+                    <number>4</number>
+                   </property>
+                   <property name="maximum">
+                    <number>20</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QSpinBox" name="weaponDamageDiceNumber2">
+                   <property name="suffix">
+                    <string> dice</string>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>20</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="weaponDamageDiceLabel2">
+                   <property name="text">
+                    <string>Weapon</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_7">
+                 <item>
+                  <widget class="QLabel" name="damageType2Label">
+                   <property name="text">
+                    <string>Type</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="damageType2">
+                   <item>
+                    <property name="text">
+                     <string>Crushing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Missile</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Piercing</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Slashing</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QLabel" name="damageDetail2">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="SpecialDamageWidget" name="acidDamagePage2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Acid</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="coldDamagePage2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Cold</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="electricityDamagePage2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Electricity</string>
+              </attribute>
+             </widget>
+             <widget class="SpecialDamageWidget" name="fireDamagePage2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>177</width>
+                <height>199</height>
+               </rect>
+              </property>
+              <attribute name="label">
+               <string>Fire</string>
+              </attribute>
+             </widget>
             </widget>
            </item>
           </layout>
@@ -644,6 +792,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SpecialDamageWidget</class>
+   <extends>QWidget</extends>
+   <header>damagecalculatorpage.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

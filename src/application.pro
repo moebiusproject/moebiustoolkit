@@ -26,4 +26,5 @@ FORMS += \
     backstabsetup.ui \
     configuration.ui \
     enemy.ui \
+    specialdamagewidget.ui \
     welcomepage.ui \

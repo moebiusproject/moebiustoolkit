@@ -6,6 +6,20 @@
 class QMenuBar;
 class QStatusBar;
 
+namespace Ui {
+    class SpecialDamageWidget;
+}
+
+class SpecialDamageWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit SpecialDamageWidget(QWidget* parent = nullptr);
+    ~SpecialDamageWidget();
+
+    Ui::SpecialDamageWidget* ui;
+};
+
 class DamageCalculatorPage : public QWidget
 {
     Q_OBJECT

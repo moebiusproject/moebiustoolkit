@@ -3,6 +3,7 @@
 // TODO: rename this forms, classes, etc, to something specific for this page.
 #include "ui_configuration.h"
 #include "ui_enemy.h"
+#include "ui_specialdamagewidget.h"
 
 #include "calculators.h"
 #include "diceroll.h"
@@ -32,6 +33,25 @@ struct ArmorModifiers
     int slashing = 0;
 };
 Q_DECLARE_METATYPE(ArmorModifiers)
+
+SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::SpecialDamageWidget)
+{
+    ui->setupUi(this);
+    connect(ui->reset, &QPushButton::clicked, [this] {
+        ui->dice->setValue(ui->dice->minimum());
+        ui->sides->setValue(ui->sides->minimum());
+        ui->bonus->setValue(ui->bonus->minimum());
+        ui->chance->setValue(ui->chance->maximum());
+    });
+}
+
+SpecialDamageWidget::~SpecialDamageWidget()
+{
+    delete ui;
+}
+
 
 class ManageDialog : public QDialog
 {
@@ -631,20 +651,35 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         data.insert(QLatin1String("maximumDamage"), false);
 
     for (auto child : root->findChildren<QWidget*>()) {
-        if (qobject_cast<QLabel*>(child))
+        if (qobject_cast<QLabel*>(child) ||
+            qobject_cast<QPushButton*>(child) ||
+            qobject_cast<QScrollArea*>(child) ||
+            qobject_cast<QScrollBar*>(child) ||
+            qobject_cast<QToolBox*>(child) ||
+            qobject_cast<SpecialDamageWidget*>(child))
+            continue;
+        // Skip wrapper QWidget without subclass.
+        if (child->metaObject() == &QWidget::staticMetaObject)
             continue;
         if (auto groupbox = qobject_cast<QGroupBox*>(child)) {
             if (!groupbox->isCheckable())
                 continue;
         }
 
-        const QString name = child->objectName();
-        if (name.startsWith(QLatin1String("qt_")))
+        if (child->objectName().startsWith(QLatin1String("qt_")))
             continue;
 
+        const QString name = [child]() {
+            if (auto parent = qobject_cast<SpecialDamageWidget*>(child->parent()))
+                return parent->objectName() + child->objectName();
+            return child->objectName();
+        }();
         const QVariant value = data.take(name);
         if (!value.isValid()) {
-            qInfo() << child << "not loaded with serialized data";
+            // TODO: Many old saves don't have this yet. Remove the check eventually.
+            if (qobject_cast<SpecialDamageWidget*>(child->parent()))
+                continue;
+            qInfo() << child << "not loaded with serialized data from" << name;
             continue;
         }
         if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
@@ -680,9 +715,23 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
 {
     QVariantHash result;
     for (auto child : root->findChildren<QWidget*>()) {
-        const QString name = child->objectName();
-        if (qobject_cast<QLabel*>(child) || name.isEmpty()
-                || name.startsWith(QLatin1String("qt_")))
+        const QString name = [child]() {
+            if (auto parent = qobject_cast<SpecialDamageWidget*>(child->parent()))
+                return parent->objectName() + child->objectName();
+            return child->objectName();
+        }();
+
+        if (qobject_cast<QLabel*>(child) ||
+            qobject_cast<QPushButton*>(child) ||
+            qobject_cast<QScrollArea*>(child) ||
+            qobject_cast<QScrollBar*>(child) ||
+            qobject_cast<QToolBox*>(child) ||
+            qobject_cast<SpecialDamageWidget*>(child))
+            continue;
+        // Skip wrapper QWidget without subclass.
+        if (child->metaObject() == &QWidget::staticMetaObject)
+            continue;
+        if (name.isEmpty() || name.startsWith(QLatin1String("qt_")))
             continue;
         else if (auto spinbox1 = qobject_cast<QSpinBox*>(child))
             result.insert(name, spinbox1->value());
