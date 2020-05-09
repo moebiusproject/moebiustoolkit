@@ -67,7 +67,7 @@ void tst_KeyFile::test_data()
     QTest::addColumn<ResourceType>("resource14242Type");
     QTest::addColumn<quint32>("resource14242Locator");
 
-
+    // TODO: we only have a test row for BG1 EE, but we have a file for BG1 classic.
     QTest::newRow("BG1 EE")
             << QFINDTESTDATA("../../data/key/bg1ee/chitin.key")
                // Header.

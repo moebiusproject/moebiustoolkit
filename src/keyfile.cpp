@@ -98,6 +98,9 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
     file.rawBifNames.resize(stringsLength);
     stream.readRawData(file.rawBifNames.data(), stringsLength);
 
+    if (stream.status() != QDataStream::Ok)
+        return stream;
+
     // Now that bif indexes and the strings of the bif names are read, get the
     // sequence of actual useful bif structs, with more convenient format.
     file.bifDetails.reserve(file.bifIndexes.size());
@@ -108,9 +111,6 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
         bif.name = QString::fromLatin1(realStart);
         file.bifDetails << bif;
     }
-
-    if (stream.status() != QDataStream::Ok)
-        return stream;
 
     file.resourceIndexes.clear();
     file.resourceIndexes.resize(file.resourceCount);

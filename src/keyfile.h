@@ -44,12 +44,12 @@ private:
         quint32 size = 0;
         quint32 nameStart = 0;
         quint16 nameLength = 0;
-        quint16 location = 0; ///< Always 1 in all the files that I've found.
+        quint16 location = 0; ///< Always 1 in all the files that I've found (=> data directory).
     } PACKED_ATTRIBUTE;
 
     // TODO: Make a proper struct with name being a QString, and public API.
     struct ResourceIndex {
-        char name[8] = {0};
+        char name[8] = {0}; ///< Null terminated if shorter than 8, but not otherwise.
         quint16 type = 0;
         quint32 locator = 0;
     } PACKED_ATTRIBUTE;
@@ -63,7 +63,7 @@ private:
 
     // Body.
     QVector<BifIndex> bifIndexes;
-    QByteArray rawBifNames;
+    QByteArray rawBifNames; // FIXME: Get rid of this and just get the strings from the file.
     QVector<ResourceIndex> resourceIndexes;
 };
 

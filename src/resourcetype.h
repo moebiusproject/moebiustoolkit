@@ -2,6 +2,9 @@
 
 #include <QMetaType>
 
+// https://gibberlings3.github.io/iesdp/file_formats/general.htm
+// TODO: Add a lot more
+
 enum ResourceType : quint16
 {
     BmpType   = 0x0001,
@@ -16,6 +19,5 @@ enum ResourceType : quint16
     TdaType   = 0x03F4,
     BsType    = 0x03F9,
     PvrzType  = 0x0404,
-    // TODO: Add a lot more
 };
 Q_DECLARE_METATYPE(ResourceType)
