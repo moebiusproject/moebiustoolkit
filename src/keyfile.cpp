@@ -29,7 +29,7 @@ bool KeyFile::isValid() const
 // https://gibberlings3.github.io/iesdp/file_formats/ie_formats/key_v1.htm
 // Structure:
 // - HEADER
-// - BIF ENTRIES: Sequence of BifIndex, which refer to strings after the entries.
+// - BIFF ENTRIES: Sequence of BiffIndex, which refer to strings after the entries.
 // - STRINGS (we read it as a large string, then we can index into sections).
 // - RESOURCE ENTRIES: Sequence of ResourceIndex.
 
@@ -39,11 +39,9 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
 
     auto onFailure = qScopeGuard([&file] {
         file.version = 0;
-        file.bifIndexes.clear();
-        file.rawBifNames.clear();
-        file.resourceIndexes.clear();
 
-        file.bifDetails.clear();
+        file.biffEntries.clear();
+        file.resourceEntries.clear();
     });
 
     char header[8];
@@ -54,29 +52,33 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
     else
         return stream;
 
-#if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(&file.bifCount), 4*sizeof(quint32));
-#else
-    stream >> file.bifCount >> file.resourceCount >> file.bifStart >> file.resourceStart;
-#endif
+    quint32 biffCount, resourceCount, biffStart, resourceStart;
+    stream >> biffCount >> resourceCount >> biffStart >> resourceStart;
 
     if (stream.status() != QDataStream::Ok)
         return stream;
 
-    // NOTE (semi-TODO): Seems like we should use the bifStart value to find
-    // where the BIF entries start, but I don't see the point. It should always
+    // NOTE (semi-TODO): Seems like we should use the biffStart value to find
+    // where the BIFF entries start, but I don't see the point. It should always
     // be 24 (if I understand it correctly): the size of the header, because the
-    // BIF entries follow immediately the header (which has a fixed size).
+    // BIFF entries follow immediately the header (which has a fixed size).
     // It is also the current position
-    Q_ASSERT(file.bifStart == stream.device()->pos());
+    Q_ASSERT(biffStart == stream.device()->pos());
 
-    file.bifIndexes.clear();
-    file.bifIndexes.resize(file.bifCount);
+    struct BiffIndex {
+        quint32 size = 0;
+        quint32 nameStart = 0;
+        quint16 nameLength = 0;
+        quint16 location = 0; ///< Always 1 in all the files that I've found (=> data directory).
+    } PACKED_ATTRIBUTE;
+
+    QVector<BiffIndex> biffIndexes;
+    biffIndexes.resize(biffCount);
 #if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(file.bifIndexes.data()),
-                       sizeof(KeyFile::BifIndex) * file.bifCount);
+    stream.readRawData(reinterpret_cast<char*>(biffIndexes.data()),
+                       sizeof(BiffIndex) * biffCount);
 #else
-    for (KeyFile::BifIndex& entry : file.bifIndexes) {
+    for (BiffIndex& entry : biffIndexes) {
         stream >> entry.size >> entry.nameStart >> entry.nameLength >> entry.location;
     }
 #endif
@@ -85,43 +87,74 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
         return stream;
 
     constexpr auto headerSize = sizeof(header) * sizeof(char)
-            + sizeof(file.bifCount) + sizeof(file.resourceCount)
-            + sizeof(file.bifStart) + sizeof(file.resourceStart);
+            + sizeof(biffCount) + sizeof(resourceCount)
+            + sizeof(biffStart) + sizeof(resourceStart);
 
-
-    /// Location where the sequence of bif strings begin. Substract this to the "start of file name".
-    const auto stringsStart = headerSize + sizeof(KeyFile::BifIndex) * file.bifCount;
-    const auto stringsLength = file.resourceStart - stringsStart;
+    // Location where the sequence of biff strings begin. Substract this to the "start of file name".
+    const auto stringsStart = headerSize + sizeof(BiffIndex) * biffCount;
+    const auto stringsLength = resourceStart - stringsStart;
     Q_ASSERT(qint64(stringsStart) == stream.device()->pos());
 
-    file.rawBifNames.clear();
-    file.rawBifNames.resize(stringsLength);
-    stream.readRawData(file.rawBifNames.data(), stringsLength);
+    QByteArray rawBiffNames;
+    rawBiffNames.resize(stringsLength);
+    stream.readRawData(rawBiffNames.data(), stringsLength);
 
     if (stream.status() != QDataStream::Ok)
         return stream;
 
-    // Now that bif indexes and the strings of the bif names are read, get the
-    // sequence of actual useful bif structs, with more convenient format.
-    file.bifDetails.reserve(file.bifIndexes.size());
-    for (const KeyFile::BifIndex& entry : file.bifIndexes) {
-        KeyFile::BifDetails bif;
-        bif.size = entry.size;
-        const auto realStart = file.rawBifNames.constData() + entry.nameStart - stringsStart;
-        bif.name = QString::fromLatin1(realStart);
-        file.bifDetails << bif;
+    // Now that biff indexes and the strings of the biff names are read, get the
+    // sequence of actual useful biff structs, with more convenient format.
+    file.biffEntries.reserve(biffIndexes.size());
+    for (const BiffIndex& entry : biffIndexes) {
+        KeyFile::BiffEntry biff;
+        biff.size = entry.size;
+        const auto realStart = rawBiffNames.constData() + entry.nameStart - stringsStart;
+        // TODO: Confirm if all BIFFs are ASCII only, otherwise, change it.
+        biff.name = QString::fromLatin1(realStart);
+        biff.location = entry.location;
+        file.biffEntries << biff;
     }
 
-    file.resourceIndexes.clear();
-    file.resourceIndexes.resize(file.resourceCount);
+    file.resourceEntries.resize(resourceCount);
 
 #if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(file.resourceIndexes.data()),
-                       sizeof(KeyFile::ResourceIndex) * file.resourceCount);
+    struct ResourceIndex {
+        char name[8] = {0}; ///< Null terminated if shorter than 8, but not otherwise.
+        quint16 type = 0;
+        quint32 locator = 0;
+    } PACKED_ATTRIBUTE;
+    QVector<ResourceIndex> resourceIndexes;
+    resourceIndexes.resize(resourceCount);
+
+    stream.readRawData(reinterpret_cast<char*>(resourceIndexes.data()),
+                       sizeof(ResourceIndex) * resourceCount);
+
+    int count = 0;
+    for (ResourceIndex& index : resourceIndexes) {
+        KeyFile::ResourceEntry& entry = file.resourceEntries[count];
+
+        const uint nameLength = qMin(uint(8), qstrlen(index.name));
+        entry.name = QString::fromLatin1(index.name, nameLength);
+        entry.type = index.type;
+        entry.source = (index.locator & 0xFFF00000) >> 20;
+        entry.index  = (index.locator & 0x000FC000) >> 14;
+        entry.locator = index.locator;
+
+        ++count;
+    }
 #else
-    for (KeyFile::ResourceIndex& entry : file.resourceIndexes) {
-        stream.readRawData(entry.name, sizeof(entry.name));
+    char rawName[8];
+    for (KeyFile::ResourceEntry& entry : file.resourceEntries) {
+        stream.readRawData(rawName, sizeof(rawName));
         stream >> entry.type >> entry.locator;
+
+        const uint nameLength = qMin(uint(8), qstrlen(rawName));
+        entry.name = QString::fromLatin1(rawName, nameLength);
+
+        entry.index  = (entry.locator & 0x00003FFF);
+        entry.source = (entry.locator & 0xFFF00000) >> 20;
+        // We don't support tile index for now.
+//        entry.tile  = (entry.locator & 0x000FC000) >> 14;
     }
 #endif
 

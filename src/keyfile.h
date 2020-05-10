@@ -22,50 +22,38 @@
 
 #include <QByteArray>
 #include <QDataStream>
+#include <QMetaType>
 #include <QVector>
 
 struct KeyFile
 {
-    struct BifDetails {
+    struct BiffEntry {
         QString name;
         qint64 size = 0;
+        // TODO: Make this an enum? Or remove, given that we don't make any use of it.
+        quint16 location = 0; ///< Always 1 in all the files that I've found (=> data directory).
     };
+
+    struct ResourceEntry {
+        QString name;
+        quint16 type = 0;
+        quint16 source = 0;  ///< Index of which BIFF file from the list of BIFF files.
+        quint16 index = 0;   ///< Index of which file from the list of files inside a BIFF.
+        quint32 locator = 0; ///< The "locator" which bundles BIFF number and file number.
+    };
+
     bool isValid() const;
 
-    QVector<BifDetails> bifDetails;
+    QVector<BiffEntry> biffEntries;
+    QVector<ResourceEntry> resourceEntries;
 
 private:
     friend class tst_KeyFile;
     friend QDataStream& operator>>(QDataStream& stream, KeyFile& file);
 
-    // TODO: Once the API has settled for good, move this struct fully to the
-    // internals, and remove the duplication of API.
-    struct BifIndex {
-        quint32 size = 0;
-        quint32 nameStart = 0;
-        quint16 nameLength = 0;
-        quint16 location = 0; ///< Always 1 in all the files that I've found (=> data directory).
-    } PACKED_ATTRIBUTE;
-
-    // TODO: Make a proper struct with name being a QString, and public API.
-    struct ResourceIndex {
-        char name[8] = {0}; ///< Null terminated if shorter than 8, but not otherwise.
-        quint16 type = 0;
-        quint32 locator = 0;
-    } PACKED_ATTRIBUTE;
-
-    // Header.
     quint8 version = 0;
-    quint32 bifCount = 0;
-    quint32 resourceCount = 0;
-    quint32 bifStart = 0;
-    quint32 resourceStart = 0;
-
-    // Body.
-    QVector<BifIndex> bifIndexes;
-    QByteArray rawBifNames; // FIXME: Get rid of this and just get the strings from the file.
-    QVector<ResourceIndex> resourceIndexes;
 };
+Q_DECLARE_METATYPE(KeyFile::ResourceEntry)
 
 QDataStream& operator>>(QDataStream& stream, KeyFile& file);
 

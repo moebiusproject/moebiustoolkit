@@ -21,52 +21,33 @@
 #include "keyfile.h"
 #include "resourcetype.h"
 
-class tst_KeyFile: public QObject
+class tst_KeyFile : public QObject
 {
     Q_OBJECT
 
+private:
+    KeyFile loadFile(const QString& fileName);
+
 private slots:
-    void test_data();
-    void test();
+    void testGeneral_data();
+    void testGeneral();
+    void testDetails_data();
+    void testDetails();
 };
 
-void tst_KeyFile::test_data()
+KeyFile tst_KeyFile::loadFile(const QString &fileName)
 {
-    QTest::addColumn<QString>("fileName");
+    qDebug() << QFileInfo(fileName).absoluteFilePath();
+    QFile file(fileName);
+    file.open(QIODevice::ReadOnly);
+    QDataStream stream(&file);
+    KeyFile key;
+    stream >> key;
+    return key;
+}
 
-    QTest::addColumn<quint32>("bifCount");
-    QTest::addColumn<quint32>("resourceCount");
-    QTest::addColumn<quint32>("bifStart");
-    QTest::addColumn<quint32>("resourceStart");
-
-    QTest::addColumn<quint32>("bifSize24");
-    QTest::addColumn<quint32>("bifNameStart24");
-    QTest::addColumn<quint16>("bifNameLength24");
-    QTest::addColumn<quint16>("bifLocation24");
-
-    QTest::addColumn<quint32>("bifSize42");
-    QTest::addColumn<quint32>("bifNameStart42");
-    QTest::addColumn<quint16>("bifNameLength42");
-    QTest::addColumn<quint16>("bifLocation42");
-
-    QTest::addColumn<QStringList>("bifNames");
-
-    QTest::addColumn<QByteArray>("resource0Name");
-    QTest::addColumn<ResourceType>("resource0Type");
-    QTest::addColumn<quint32>("resource0Locator");
-
-    QTest::addColumn<QByteArray>("resource42Name");
-    QTest::addColumn<ResourceType>("resource42Type");
-    QTest::addColumn<quint32>("resource42Locator");
-
-    QTest::addColumn<QByteArray>("resource8442Name");
-    QTest::addColumn<ResourceType>("resource8442Type");
-    QTest::addColumn<quint32>("resource8442Locator");
-
-    QTest::addColumn<QByteArray>("resource14242Name");
-    QTest::addColumn<ResourceType>("resource14242Type");
-    QTest::addColumn<quint32>("resource14242Locator");
-
+void tst_KeyFile::testGeneral_data()
+{
     const auto bifNamesBG1EE = QStringList()
             << QLatin1String("data/AR02XX.BIF")
             << QLatin1String("data/AR10XX.BIF")
@@ -149,111 +130,124 @@ void tst_KeyFile::test_data()
             << QLatin1String("data/AREA0900.Bif")
             << QLatin1String("data/PATCH25.BIF");
 
+    QTest::addColumn<QString>("fileName");
+
+    QTest::addColumn<quint32>("biffCount");
+    QTest::addColumn<quint32>("resourceCount");
+
+    QTest::addColumn<quint32>("bifSize24");
+    QTest::addColumn<quint16>("bifLocation24");
+
+    QTest::addColumn<quint32>("bifSize42");
+    QTest::addColumn<quint16>("bifLocation42");
+
+    QTest::addColumn<QStringList>("bifNames");
+
     // TODO: we only have a test row for BG1 EE, but we have a file for BG1 classic.
     QTest::newRow("BG1 EE")
             << QFINDTESTDATA("../../data/key/bg1ee/chitin.key")
-               // Header.
-            << quint32(80)      << quint32(36993) << quint32(24) << quint32(2320)
-               // BIF entries 24 and 42.
-            << quint32(3012)    << quint32(1370)  << quint16(16) << quint16(1)
-            << quint32(2727956) << quint32(1676)  << quint16(16) << quint16(1)
-            << (bifNamesBG1EE)
-               // Name, type, locator
-            << QByteArray("A020000") << PvrzType << quint32(0)
-            << QByteArray("A022412") << PvrzType << quint32(42)
-            << QByteArray("SCRL3B")  << ItmType  << quint32(26215289)
-            << QByteArray("SPPR309") << SplType  << quint32(44040860);
+               // biffCount, resourceCount.
+            << quint32(80)      << quint32(36993)
+               // BIF entries 24 and 42 (size and location).
+            << quint32(3012)    << quint16(1)
+            << quint32(2727956) << quint16(1)
+            << (bifNamesBG1EE);
 }
 
-void tst_KeyFile::test()
+void tst_KeyFile::testGeneral()
 {
     QFETCH(QString, fileName);
     if (fileName.isEmpty())
         QSKIP("File not found, skipping test.");
-    qDebug() << QTest::currentDataTag() << fileName;
 
-    QFile file(fileName);
-    QVERIFY(file.open(QIODevice::ReadOnly));
-
-    QDataStream stream(&file);
     KeyFile key;
 
     QCOMPARE(key.version, 0);
     QVERIFY(!key.isValid());
 
-    stream >> key;
+    key = loadFile(fileName);
 
     QCOMPARE(key.version, 1);
     QVERIFY(key.isValid());
 
-    QFETCH(quint32, bifCount);
     QFETCH(quint32, resourceCount);
-    QFETCH(quint32, bifStart);
-    QFETCH(quint32, resourceStart);
-    QCOMPARE(key.bifCount, bifCount);
-    QCOMPARE(key.resourceCount, resourceCount);
-    QCOMPARE(key.bifStart, bifStart);
-    QCOMPARE(key.resourceStart, resourceStart);
 
     QFETCH(quint32, bifSize24);
-    QFETCH(quint32, bifNameStart24);
-    QFETCH(quint16, bifNameLength24);
-    QFETCH(quint16, bifLocation24);
     QFETCH(quint32, bifSize42);
-    QFETCH(quint32, bifNameStart42);
-    QFETCH(quint16, bifNameLength42);
-    QFETCH(quint16, bifLocation42);
 
     QFETCH(QStringList, bifNames);
 
-    QCOMPARE(key.bifIndexes.at(24).size, bifSize24);
-    QCOMPARE(key.bifIndexes.at(24).nameStart, bifNameStart24);
-    QCOMPARE(key.bifIndexes.at(24).nameLength, bifNameLength24);
-    QCOMPARE(key.bifIndexes.at(24).location, bifLocation24);
+    QCOMPARE(quint32(key.resourceEntries.count()), resourceCount);
 
-    QCOMPARE(key.bifIndexes.at(42).size, bifSize42);
-    QCOMPARE(key.bifIndexes.at(42).nameStart, bifNameStart42);
-    QCOMPARE(key.bifIndexes.at(42).nameLength, bifNameLength42);
-    QCOMPARE(key.bifIndexes.at(42).location, bifLocation42);
-
-    QCOMPARE(key.bifDetails.count(), int(bifCount));
+    QCOMPARE(key.biffEntries.count(), bifNames.count());
     QStringList bifDetailsNames;
-    for (const KeyFile::BifDetails& bif : key.bifDetails)
+    for (const KeyFile::BiffEntry& bif : key.biffEntries) {
         bifDetailsNames << bif.name;
+        QCOMPARE(bif.location, 1);
+    }
     QCOMPARE(bifDetailsNames, bifNames);
+    QCOMPARE(key.biffEntries.at(24).size, bifSize24);
+    QCOMPARE(key.biffEntries.at(42).size, bifSize42);
 
-    QFETCH(QByteArray, resource0Name);
-    QFETCH(ResourceType, resource0Type);
-    QFETCH(quint32, resource0Locator);
-    QFETCH(QByteArray, resource42Name);
-    QFETCH(ResourceType, resource42Type);
-    QFETCH(quint32, resource42Locator);
-    QFETCH(QByteArray, resource8442Name);
-    QFETCH(ResourceType, resource8442Type);
-    QFETCH(quint32, resource8442Locator);
-    QFETCH(QByteArray, resource14242Name);
-    QFETCH(ResourceType, resource14242Type);
-    QFETCH(quint32, resource14242Locator);
+}
 
-    QCOMPARE(QByteArray::fromRawData(key.resourceIndexes[0].name,
-             qMin(uint(8), qstrlen(key.resourceIndexes[0].name))), resource0Name);
-    QCOMPARE(key.resourceIndexes[0].type, resource0Type);
-    QCOMPARE(key.resourceIndexes[0].locator, resource0Locator);
+void tst_KeyFile::testDetails_data()
+{
+    QTest::addColumn<QString>("fileName");
 
-    QCOMPARE(QByteArray::fromRawData(key.resourceIndexes[42].name,
-             qMin(uint(8), qstrlen(key.resourceIndexes[42].name))), resource42Name);
-    QCOMPARE(key.resourceIndexes[42].type, resource42Type);
-    QCOMPARE(key.resourceIndexes[42].locator, resource42Locator);
+    QTest::addColumn<QHash<int, KeyFile::ResourceEntry>>("resources");
 
-    QCOMPARE(QByteArray::fromRawData(key.resourceIndexes[8442].name,
-             qMin(uint(8), qstrlen(key.resourceIndexes[8442].name))), resource8442Name);
-    QCOMPARE(key.resourceIndexes[8442].type, resource8442Type);
-    QCOMPARE(key.resourceIndexes[8442].locator, resource8442Locator);
+    QTest::newRow("BG1 EE")
+            << QFINDTESTDATA("../../data/key/bg1ee/chitin.key")
+            << QHash<int, KeyFile::ResourceEntry>({
+                    {0,
+                     {QLatin1String("A020000"),
+                      PvrzType,
+                      quint16(0),
+                      quint16(0),
+                      quint32(0)} },
+                    {42,
+                     {QLatin1String("A022412"),
+                      PvrzType,
+                      quint16(0),
+                      quint16(42),
+                      quint32(42)} },
+                    {8442,
+                     {QLatin1String("SCRL3B"),
+                      ItmType,
+                      quint16(25),
+                      quint16(26215289),
+                      quint32(26215289)} },
+                    {14242,
+                     {QLatin1String("SPPR309"),
+                      SplType,
+                      quint16(42),
+                      quint16(44040860),
+                      quint32(44040860)} },
+                });
+}
 
-    QCOMPARE(QByteArray::fromRawData(key.resourceIndexes[14242].name,
-             qMin(uint(8), qstrlen(key.resourceIndexes[14242].name))), resource14242Name);
-    QCOMPARE(key.resourceIndexes[14242].type, resource14242Type);
-    QCOMPARE(key.resourceIndexes[14242].locator, resource14242Locator);
+void tst_KeyFile::testDetails()
+{
+    QFETCH(QString, fileName);
+    if (fileName.isEmpty())
+        QSKIP("File not found, skipping test.");
+
+    KeyFile key = loadFile(fileName);
+
+    using Resources = QHash<int, KeyFile::ResourceEntry>;
+    QFETCH(Resources, resources);
+
+    for (auto entry = resources.constBegin(), last = resources.constEnd();
+         entry != last; ++entry) {
+        const auto& received = key.resourceEntries.at(entry.key());
+        const auto& expected = entry.value();
+        QCOMPARE(received.name, expected.name);
+        QCOMPARE(received.type, expected.type);
+        QCOMPARE(received.index, expected.index);
+        QCOMPARE(received.source, expected.source);
+        QCOMPARE(received.locator, expected.locator);
+    }
 }
 
 QTEST_MAIN(tst_KeyFile)
