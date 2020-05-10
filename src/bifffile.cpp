@@ -75,8 +75,8 @@ QDataStream& operator>>(QDataStream& stream, BiffFile& file)
     file.fileEntries.clear();
     file.fileEntries.resize(fileEntriesCount);
 #if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(fileEntries.data()),
-                       sizeof(FileEntriesIndex) * fileEntriesCount);
+    stream.readRawData(reinterpret_cast<char*>(file.fileEntries.data()),
+                       sizeof(BiffFile::FileEntriesIndex) * fileEntriesCount);
 #else
     for (BiffFile::FileEntriesIndex& entry : file.fileEntries) {
         stream >> entry.locator >> entry.offset >> entry.size >> entry.type >> entry.unknown;
@@ -86,8 +86,8 @@ QDataStream& operator>>(QDataStream& stream, BiffFile& file)
     file.tilesetEntries.clear();
     file.tilesetEntries.resize(tilesetEntriesCount);
 #if defined(PACKED_STRUCTS)
-    stream.readRawData(reinterpret_cast<char*>(tileset.data()),
-                       sizeof(TilesetEntriesIndex) * tilesetEntriesCount);
+    stream.readRawData(reinterpret_cast<char*>(file.tilesetEntries.data()),
+                       sizeof(BiffFile::TilesetEntriesIndex) * tilesetEntriesCount);
 #else
     for (BiffFile::TilesetEntriesIndex& entry : file.tilesetEntries) {
         stream >> entry.locator >> entry.offset >> entry.count >> entry.size
