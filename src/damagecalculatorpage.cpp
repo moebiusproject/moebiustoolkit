@@ -276,18 +276,6 @@ struct DamageCalculatorPage::Private
     void newPage();
     void setupAxes();
 
-    static auto weaponDamage(QSpinBox* proficiency, QSpinBox* dices,
-                             QSpinBox* sides,       QSpinBox* bonus)
-    {
-        const int    min = proficiency->value() + bonus->value()
-                         + dices->value();
-        const int    max = proficiency->value() + bonus->value()
-                         + dices->value() * sides->value();
-        const double avg = proficiency->value() + bonus->value()
-                         + dices->value() * (0.5 + sides->value()/2.0);
-        return std::make_tuple(min, avg, max);
-    }
-
     void updateAllSeries() {
         for (int index = 0; index < tabs->count(); ++index) {
             updateSeries(configurations[index], lineSeries[index]);
@@ -301,6 +289,8 @@ struct DamageCalculatorPage::Private
         const int index = tabs->currentIndex();
         updateSeries(configurations[index], lineSeries[index]);
     }
+
+    QVector<QPointF> pointsFromInput(const Ui::configuration& c) const;
     void updateSeries(const Ui::configuration& c, QLineSeries* series);
 
     static void setColorInButton(const QColor& color, QPushButton* button)
@@ -797,15 +787,10 @@ void DamageCalculatorPage::Private::newPage()
                     .number(dice->value())
                     .sides(sides->value())
                     .bonus(bonus->value() + proficiency->value());
-            auto damage = Private::weaponDamage(proficiency, dice, sides, bonus);
-            Q_ASSERT(std::get<0>(damage) == roll.minimum());
-            Q_ASSERT(std::get<1>(damage) == roll.average());
-            Q_ASSERT(std::get<2>(damage) == roll.maximum());
-
             result->setText(tr("Min/Avg/Max: %1/%2/%3")
-                            .arg(std::get<0>(damage))
-                            .arg(std::get<1>(damage), 0, 'f', 1)
-                            .arg(std::get<2>(damage)));
+                            .arg(roll.minimum())
+                            .arg(roll.average())
+                            .arg(roll.maximum()));
         };
 
         connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
@@ -925,9 +910,7 @@ void DamageCalculatorPage::Private::setupAxes()
     }
 }
 
-
-
-void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
+QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Ui::configuration& c) const
 {
     const bool offHand = c.offHandGroup->isChecked();
 
@@ -969,23 +952,6 @@ void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLi
             .sides(c.weaponDamageDiceSide2->value())
             .bonus(c.weaponDamageDiceBonus2->value() + c.proficiencyDamageModifier2->value());
 
-    const auto weapon1 = Private::weaponDamage(c.proficiencyDamageModifier1,
-                                               c.weaponDamageDiceNumber1,
-                                               c.weaponDamageDiceSide1,
-                                               c.weaponDamageDiceBonus1);
-    const auto weapon2 = Private::weaponDamage(c.proficiencyDamageModifier2,
-                                               c.weaponDamageDiceNumber2,
-                                               c.weaponDamageDiceSide2,
-                                               c.weaponDamageDiceBonus2);
-    if (c.luck->value() == 0) {
-        Q_ASSERT(std::get<0>(weapon1) == dice1.minimum());
-        Q_ASSERT(std::get<1>(weapon1) == dice1.average());
-        Q_ASSERT(std::get<2>(weapon1) == dice1.maximum());
-        Q_ASSERT(std::get<0>(weapon2) == dice2.minimum());
-        Q_ASSERT(std::get<1>(weapon2) == dice2.average());
-        Q_ASSERT(std::get<2>(weapon2) == dice2.maximum());
-    }
-
     const double mainDamage = (maximumDamage ? dice1.maximum() : dice1.average())
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
@@ -1025,8 +991,12 @@ void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLi
 
         points.append(QPointF(ac, damage));
     }
-    series->replace(points);
+    return points;
+}
 
+void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
+{
+    series->replace(pointsFromInput(c));
     setupAxes();
 
     if (series->attachedAxes().size() == 0) {
