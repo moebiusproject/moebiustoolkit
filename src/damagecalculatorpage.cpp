@@ -40,7 +40,7 @@ SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
 {
     ui->setupUi(this);
     connect(ui->reset, &QPushButton::clicked, [this] {
-        ui->dice->setValue(ui->dice->minimum());
+        ui->number->setValue(ui->number->minimum());
         ui->sides->setValue(ui->sides->minimum());
         ui->bonus->setValue(ui->bonus->minimum());
         ui->chance->setValue(ui->chance->maximum());

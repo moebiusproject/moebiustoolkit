@@ -15,7 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QSpinBox" name="dice">
+    <widget class="QSpinBox" name="number">
      <property name="suffix">
       <string> dice</string>
      </property>
