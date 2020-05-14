@@ -18,6 +18,19 @@
 
 #pragma once
 
+#include <QHash>
+#include <QMetaType>
+
+#include "diceroll.h"
+
+enum PhysicalDamageType {
+    Crushing,
+    Missile,
+    Piercing,
+    Slashing,
+};
+Q_DECLARE_METATYPE(PhysicalDamageType)
+
 namespace Calculators
 {
 

@@ -311,28 +311,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="damageType1">
-                   <item>
-                    <property name="text">
-                     <string>Crushing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Missile</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Piercing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Slashing</string>
-                    </property>
-                   </item>
-                  </widget>
+                  <widget class="QComboBox" name="damageType1"/>
                  </item>
                 </layout>
                </item>
@@ -630,28 +609,7 @@
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="damageType2">
-                   <item>
-                    <property name="text">
-                     <string>Crushing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Missile</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Piercing</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Slashing</string>
-                    </property>
-                   </item>
-                  </widget>
+                  <widget class="QComboBox" name="damageType2"/>
                  </item>
                 </layout>
                </item>

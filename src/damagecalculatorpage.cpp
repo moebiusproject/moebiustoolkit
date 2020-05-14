@@ -34,6 +34,27 @@ struct ArmorModifiers
 };
 Q_DECLARE_METATYPE(ArmorModifiers)
 
+struct Enemy : public Ui::Enemy
+{
+    int acModifier(PhysicalDamageType type) const
+    {
+        return ( type == Crushing ? crushingModifier->value()
+               : type == Missile  ? missileModifier->value()
+               : type == Piercing ? piercingModifier->value()
+                                  : slashingModifier->value() );
+
+    }
+
+    double resistanceFactor(PhysicalDamageType type) const
+    {
+        const int value = type == Crushing ? crushingResistance->value()
+                        : type == Missile  ? missileResistance->value()
+                        : type == Piercing ? piercingResistance->value()
+                                           : slashingResistance->value();
+        return (100 - value) / 100.0;
+    }
+};
+
 SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::SpecialDamageWidget)
@@ -123,7 +144,7 @@ struct DamageCalculatorPage::Private
     QCheckBox* pointLabelsClipping = nullptr;
     QCheckBox* reverse = nullptr;
 
-    Ui::Enemy enemy;
+    Enemy enemy;
 
     QTabWidget* tabs = nullptr;
 
@@ -758,6 +779,14 @@ void DamageCalculatorPage::Private::newPage()
     configurations.append(Ui::configuration());
     Ui::configuration& configuration = configurations.last();
     configuration.setupUi(widget);
+    configuration.damageType1->addItem(tr("Crushing"), Crushing);
+    configuration.damageType1->addItem(tr("Missile"),  Missile);
+    configuration.damageType1->addItem(tr("Piercing"), Piercing);
+    configuration.damageType1->addItem(tr("Slashing"), Slashing);
+    configuration.damageType2->addItem(tr("Crushing"), Crushing);
+    configuration.damageType2->addItem(tr("Missile"),  Missile);
+    configuration.damageType2->addItem(tr("Piercing"), Piercing);
+    configuration.damageType2->addItem(tr("Slashing"), Slashing);
     tabs->addTab(widget, tr("Configuration %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
@@ -918,7 +947,7 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Ui::config
     const int mainThac0 = thac0 - c.proficiencyThac0Modifier1->value() - c.styleModifier1->value() - c.weaponThac0Modifier1->value();
     const int offThac0  = thac0 - c.proficiencyThac0Modifier2->value() - c.styleModifier2->value() - c.weaponThac0Modifier2->value();
 
-    // TODO: brittle approach. Relies on the order set on the UI. Set user data instead.
+    // TODO: Remove once we've tested the app enough with the asserts below.
     auto modifierFromUi = [this](QComboBox* box) {
         return ( box->currentIndex() == 0 ? enemy.crushingModifier->value()
                : box->currentIndex() == 1 ? enemy.missileModifier->value()
@@ -932,11 +961,15 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Ui::config
                                           : enemy.slashingResistance->value() );
     };
 
-    const int mainAcModifier = modifierFromUi(c.damageType1);
-    const int offAcModifier  = modifierFromUi(c.damageType2);
+    const int mainAcModifier = enemy.acModifier(c.damageType1->currentData().value<PhysicalDamageType>());
+    const int offAcModifier  = enemy.acModifier(c.damageType2->currentData().value<PhysicalDamageType>());
+    Q_ASSERT(mainAcModifier == modifierFromUi(c.damageType1));
+    Q_ASSERT(offAcModifier  == modifierFromUi(c.damageType2));
 
-    const double mainResistance = (100.0 - resistanceFromUi(c.damageType1)) / 100.0;
-    const double offResistance  = (100.0 - resistanceFromUi(c.damageType2)) / 100.0;
+    const double mainResistance = enemy.resistanceFactor(c.damageType1->currentData().value<PhysicalDamageType>());
+    const double offResistance  = enemy.resistanceFactor(c.damageType2->currentData().value<PhysicalDamageType>());
+    Q_ASSERT(mainResistance == (100.0 - resistanceFromUi(c.damageType1)) / 100.0);
+    Q_ASSERT(offResistance  == (100.0 - resistanceFromUi(c.damageType2)) / 100.0);
 
     const bool maximumDamage = c.maximumDamage->isChecked();
     const bool criticalStrike = c.criticalStrike->isChecked();
