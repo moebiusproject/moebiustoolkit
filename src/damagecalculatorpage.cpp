@@ -303,7 +303,8 @@ struct DamageCalculatorPage::Private
             deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
             const int current = tabs->currentIndex();
             const QVariant color = calculations[current].color->property("color");
-            lineSeries[current]->setColor(color.value<QColor>());
+            if (color.isValid())
+                lineSeries[current]->setColor(color.value<QColor>());
         }
     }
 
@@ -700,7 +701,6 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
 
     for (auto child : root->findChildren<QWidget*>()) {
         if (qobject_cast<QLabel*>(child) ||
-            qobject_cast<QPushButton*>(child) ||
             qobject_cast<QScrollArea*>(child) ||
             qobject_cast<QScrollBar*>(child) ||
             qobject_cast<QToolBox*>(child) ||
@@ -742,6 +742,8 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
             checkbox->setChecked(value.toBool());
         }
         else if (auto button = qobject_cast<QPushButton*>(child)) {
+            if (qobject_cast<SpecialDamageWidget*>(button->parent()))
+                continue;
             button->setProperty("color", value);
             setColorInButton(value.value<QColor>(), button);
         }
@@ -770,7 +772,6 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
         }();
 
         if (qobject_cast<QLabel*>(child) ||
-            qobject_cast<QPushButton*>(child) ||
             qobject_cast<QScrollArea*>(child) ||
             qobject_cast<QScrollBar*>(child) ||
             qobject_cast<QToolBox*>(child) ||
