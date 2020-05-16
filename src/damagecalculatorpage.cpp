@@ -4,6 +4,7 @@
 #include "ui_configuration.h"
 #include "ui_enemy.h"
 #include "ui_specialdamagewidget.h"
+#include "ui_weaponarrangementwidget.h"
 
 #include "calculators.h"
 #include "diceroll.h"
@@ -33,6 +34,9 @@ struct ArmorModifiers
     int slashing = 0;
 };
 Q_DECLARE_METATYPE(ArmorModifiers)
+
+
+// Widgets /////////////////////////////////////////////////////////////////////
 
 struct Enemy : public Ui::Enemy
 {
@@ -73,6 +77,26 @@ SpecialDamageWidget::~SpecialDamageWidget()
     delete ui;
 }
 
+WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::WeaponArrangementWidget)
+{
+    ui->setupUi(this);
+}
+
+WeaponArrangementWidget::~WeaponArrangementWidget()
+{
+    delete ui;
+}
+
+double WeaponArrangementWidget::attacksPerRound() const
+{
+    return ui->attacksPerRound1->isVisible() ? ui->attacksPerRound1->value()
+                                             : double(ui->attacksPerRound2->value());
+}
+
+
+// Dialogs /////////////////////////////////////////////////////////////////////
 
 class ManageDialog : public QDialog
 {
@@ -118,6 +142,9 @@ signals:
 private:
     QTableWidget m_table;
 };
+
+
+// Main class //////////////////////////////////////////////////////////////////
 
 struct DamageCalculatorPage::Private
 {

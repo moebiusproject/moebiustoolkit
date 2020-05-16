@@ -8,6 +8,7 @@ class QStatusBar;
 
 namespace Ui {
     class SpecialDamageWidget;
+    class WeaponArrangementWidget;
 }
 
 class SpecialDamageWidget : public QWidget {
@@ -18,6 +19,17 @@ public:
     ~SpecialDamageWidget();
 
     Ui::SpecialDamageWidget* ui;
+};
+
+class WeaponArrangementWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    explicit WeaponArrangementWidget(QWidget* parent = nullptr);
+    ~WeaponArrangementWidget();
+    double attacksPerRound() const;
+
+    Ui::WeaponArrangementWidget* ui;
 };
 
 class DamageCalculatorPage : public QWidget

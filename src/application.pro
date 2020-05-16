@@ -27,4 +27,5 @@ FORMS += \
     configuration.ui \
     enemy.ui \
     specialdamagewidget.ui \
+    weaponarrangementwidget.ui \
     welcomepage.ui \
