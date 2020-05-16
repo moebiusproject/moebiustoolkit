@@ -1,7 +1,7 @@
 #include "damagecalculatorpage.h"
 
 // TODO: rename this forms, classes, etc, to something specific for this page.
-#include "ui_configuration.h"
+#include "ui_damagecalculationwidget.h"
 #include "ui_enemy.h"
 #include "ui_specialdamagewidget.h"
 #include "ui_weaponarrangementwidget.h"
@@ -57,6 +57,11 @@ struct Enemy : public Ui::Enemy
                                            : slashingResistance->value();
         return (100 - value) / 100.0;
     }
+};
+
+struct Calculation : public Ui::calculation
+{
+
 };
 
 SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
@@ -175,24 +180,25 @@ struct DamageCalculatorPage::Private
 
     QTabWidget* tabs = nullptr;
 
-    QVector<Ui::configuration> configurations;
+    QVector<Calculation> calculations;
     QVector<QLineSeries*> lineSeries;
-    QVector<QVariantHash> savedConfigurations;
+    QVector<QVariantHash> savedCalculations;
 
     // TODO: move to their own location, to make them testable.
     static void deserialize(QWidget* tab, QVariantHash data);
     static QVariantHash serialize(QWidget* tab);
 
-    void loadSavedConfigurations()
+    void loadSavedCalculations()
     {
         QSettings settings;
+        // FIXME: configuration
         const int size = settings.beginReadArray(QLatin1String("configurations"));
         for (int index = 0; index < size; ++index) {
             settings.setArrayIndex(index);
             QVariantHash loadedData;
             for (auto entry : settings.childKeys())
                 loadedData.insert(entry, settings.value(entry));
-            savedConfigurations.append(loadedData);
+            savedCalculations.append(loadedData);
         }
         settings.endArray();
     }
@@ -200,15 +206,15 @@ struct DamageCalculatorPage::Private
     // Due to how QSettings works, this actually saves them all, but we need to
     // ensure the current one is added to the list (or that it updates the list)
     // that are going to be saved.
-    void saveCurrentConfiguration()
+    void saveCurrentCalculation()
     {
         const QVariantHash toSave = serialize(tabs->currentWidget());
 
-        // Check for duplicates, to allow changing a configuration already saved
+        // Check for duplicates, to allow changing a calculation already saved
         const QString name = toSave.value(QLatin1String("name")).toString();
         bool alreadySaved = false;
-        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
-            QVariantHash& entry = savedConfigurations[index];
+        for (int index = 0, size = savedCalculations.size(); index < size; ++index) {
+            QVariantHash& entry = savedCalculations[index];
             const QString savedName = entry.value(QLatin1String("name")).toString();
             if (savedName == name) { // Then overwrite, and done.
                 entry = toSave;
@@ -217,19 +223,20 @@ struct DamageCalculatorPage::Private
             }
         }
         if (!alreadySaved)
-            savedConfigurations.append(toSave);
+            savedCalculations.append(toSave);
 
-        saveConfigurationsToDisk();
+        saveCalculationsToDisk();
         populateEntriesMenu();
     }
 
-    void saveConfigurationsToDisk()
+    void saveCalculationsToDisk()
     {
         QSettings settings;
+        // FIXME: configuration
         settings.beginWriteArray(QLatin1String("configurations"));
-        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
+        for (int index = 0, size = savedCalculations.size(); index < size; ++index) {
             settings.setArrayIndex(index);
-            const QVariantHash& entry = savedConfigurations.at(index);
+            const QVariantHash& entry = savedCalculations.at(index);
             for (auto record = entry.begin(), last = entry.end(); record != last; ++record) {
                 settings.setValue(record.key(), record.value());
             }
@@ -237,7 +244,7 @@ struct DamageCalculatorPage::Private
         settings.endArray();
     }
 
-    void saveConfigurationsToFile(const QString& fileName)
+    void saveCalculationsToFile(const QString& fileName)
     {
         QJsonObject root;
         QJsonArray array;
@@ -249,6 +256,7 @@ struct DamageCalculatorPage::Private
             const QVariantHash toSave = serialize(tabs->widget(index));
             array.append(QJsonValue::fromVariant(toSave));
         }
+        // FIXME: configuration
         root.insert(QLatin1String("configurations"), array);
         QJsonDocument document(root);
         QFile file(fileName);
@@ -256,7 +264,7 @@ struct DamageCalculatorPage::Private
         file.write(document.toJson(QJsonDocument::Indented));
     }
 
-    void loadConfigurationsFromFile(const QString& fileName)
+    void loadCalculationsFromFile(const QString& fileName)
     {
         auto errorOut = [this](const char* text) {
             q.statusBar()->showMessage(tr("The file can not be loaded"));
@@ -278,10 +286,12 @@ struct DamageCalculatorPage::Private
         if (title.isString())
             titleLine->setText(title.toString());
 
+        // FIXME: configuration
         if (!root.contains(QLatin1String("configurations"))) {
             errorOut("Cannot load JSON: root not an object");
             return;
         }
+        // FIXME: configuration
         const QJsonArray array = root.value(QLatin1String("configurations")).toArray();
         for (int index = 0, last = array.count(); index < last; ++index) {
             const QJsonValue value = array.at(index);
@@ -292,7 +302,7 @@ struct DamageCalculatorPage::Private
             newPage();
             deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
             const int current = tabs->currentIndex();
-            const QVariant color = configurations[current].color->property("color");
+            const QVariant color = calculations[current].color->property("color");
             lineSeries[current]->setColor(color.value<QColor>());
         }
     }
@@ -303,22 +313,22 @@ struct DamageCalculatorPage::Private
         deleteSavedMenu->clear();
         auto loadEntry = [this](int index) {
             newPage();
-            deserialize(tabs->currentWidget(), savedConfigurations.at(index));
+            deserialize(tabs->currentWidget(), savedCalculations.at(index));
         };
         auto deleteEntry = [this](int index) {
-            savedConfigurations.remove(index);
-            saveConfigurationsToDisk();
+            savedCalculations.remove(index);
+            saveCalculationsToDisk();
             populateEntriesMenu();
         };
 
-        for (int index = 0, size = savedConfigurations.size(); index < size; ++index) {
-            const auto& entry = savedConfigurations.at(index);
+        for (int index = 0, size = savedCalculations.size(); index < size; ++index) {
+            const auto& entry = savedCalculations.at(index);
             const QString name = entry.value(QLatin1String("name")).toString();
             loadSavedMenu->addAction(name, std::bind(loadEntry, index));
             deleteSavedMenu->addAction(name, std::bind(deleteEntry, index));
         }
-        loadSavedMenu->setEnabled(savedConfigurations.size() > 0);
-        deleteSavedMenu->setEnabled(savedConfigurations.size() > 0);
+        loadSavedMenu->setEnabled(savedCalculations.size() > 0);
+        deleteSavedMenu->setEnabled(savedCalculations.size() > 0);
     }
 
     void newPage();
@@ -326,20 +336,20 @@ struct DamageCalculatorPage::Private
 
     void updateAllSeries() {
         for (int index = 0; index < tabs->count(); ++index) {
-            updateSeries(configurations[index], lineSeries[index]);
+            updateSeries(calculations[index], lineSeries[index]);
         }
     }
     // TODO: previously this accepted the index as parameter, which is better,
-    // but requires knowing the proper index of a series/configuration. This was
+    // but requires knowing the proper index of a series/calculation. This was
     // causing a crash when deleting tabs. But I will have to support something
     // if I want to allow moving tabs around.
     void updateSeriesAtCurrentIndex() {
         const int index = tabs->currentIndex();
-        updateSeries(configurations[index], lineSeries[index]);
+        updateSeries(calculations[index], lineSeries[index]);
     }
 
-    QVector<QPointF> pointsFromInput(const Ui::configuration& c) const;
-    void updateSeries(const Ui::configuration& c, QLineSeries* series);
+    QVector<QPointF> pointsFromInput(const Calculation& c) const;
+    void updateSeries(const Calculation& c, QLineSeries* series);
 
     static void setColorInButton(const QColor& color, QPushButton* button)
     {
@@ -357,31 +367,31 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
 
-    d->loadSavedConfigurations();
+    d->loadSavedCalculations();
 
     // Menus ///////////////////////////////////////////////////////////////////
     d->fileMenu = menuBar()->addMenu(tr("File"));
 
-    auto action = new QAction(tr("Save visible configurations as..."), this);
+    auto action = new QAction(tr("Save visible calculations as..."), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
         dialog->setFileMode(QFileDialog::AnyFile);
         connect(dialog, &QFileDialog::fileSelected, this,
-            std::bind(&Private::saveConfigurationsToFile, d, std::placeholders::_1));
+            std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
         dialog->setModal(true);
         dialog->show();
     });
 
-    action = new QAction(tr("Load configurations from..."), this);
+    action = new QAction(tr("Load calculations from..."), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
         dialog->setFileMode(QFileDialog::AnyFile);
         connect(dialog, &QFileDialog::fileSelected, this,
-            std::bind(&Private::loadConfigurationsFromFile, d, std::placeholders::_1));
+            std::bind(&Private::loadCalculationsFromFile, d, std::placeholders::_1));
         dialog->setModal(true);
         dialog->show();
     });
@@ -410,9 +420,9 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         dialog->open();
     });
 
-    d->mainMenu = menuBar()->addMenu(tr("Damage calculator configurations"));
+    d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
 
-    action = new QAction(tr("Duplicate current configuration"), this);
+    action = new QAction(tr("Duplicate current calculation"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
@@ -422,13 +432,13 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         d->deserialize(d->tabs->currentWidget(), saved);
     });
 
-    action = new QAction(tr("Save current configuration to preferences"), this);
+    action = new QAction(tr("Save current calculation to preferences"), this);
     d->mainMenu->addAction(action);
-    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentConfiguration, d));
+    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
 
-    d->loadSavedMenu = new QMenu(tr("Load configuration from preferences"));
+    d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"));
     d->mainMenu->addMenu(d->loadSavedMenu);
-    d->deleteSavedMenu = new QMenu(tr("Delete configuration from preferences"));
+    d->deleteSavedMenu = new QMenu(tr("Delete calculation from preferences"));
     d->mainMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
 
@@ -442,7 +452,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->manageDialog->setMinimumWidth(600);
     connect(action, &QAction::triggered, [this] {
         QStringList names;
-        for (const auto& entry : qAsConst(d->savedConfigurations)) {
+        for (const auto& entry : qAsConst(d->savedCalculations)) {
             names << entry.value(QLatin1String("name")).toString();
         }
         d->manageDialog->setNames(names);
@@ -450,7 +460,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
     connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
         d->newPage();
-        d->deserialize(d->tabs->currentWidget(), d->savedConfigurations.at(index));
+        d->deserialize(d->tabs->currentWidget(), d->savedCalculations.at(index));
     });
 
 #if 0 // TODO: migrate to its own page
@@ -586,7 +596,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
             std::bind(&Private::updateAllSeries, d));
     connect(d->enemy.helmet, &QCheckBox::toggled, std::bind(&Private::updateAllSeries, d));
 
-    // Tab widget with configurations //////////////////////////////////////////
+    // Tab widget with calculations / //////////////////////////////////////////
     d->tabs = new QTabWidget;
     auto newButton = new QPushButton(tr("New"));
     d->tabs->setCornerWidget(newButton);
@@ -597,17 +607,17 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(d->tabs, &QTabWidget::tabCloseRequested, [this](int index) {
         if (d->tabs->count() == 1)
             return; // don't close the last one for now, to keep the "New" button
-        d->configurations.removeAt(index);
+        d->calculations.removeAt(index);
         d->chart->removeSeries(d->lineSeries[index]);
         delete d->lineSeries.takeAt(index);
         // TODO: with the new approach, this might be a tad heavy. Review.
         d->setupAxes();
         delete d->tabs->widget(index);
         for (int tab = index ; tab < d->tabs->count(); ++tab)
-            d->tabs->setTabText(tab, tr("Configuration %1").arg(tab + 1));
+            d->tabs->setTabText(tab, tr("Calculation %1").arg(tab + 1));
     });
 
-    // Layout grouping the configurations and the enemy controls ///////////////
+    // Layout grouping the calculations and the enemy controls /////////////////
     auto inputArea = new QToolBox;
     inputArea->addItem(enemyControls, tr("Opponent"));
     inputArea->addItem(d->tabs, tr("Attacker"));
@@ -803,33 +813,33 @@ void DamageCalculatorPage::Private::newPage()
 {
     auto widget = new QWidget;
 
-    configurations.append(Ui::configuration());
-    Ui::configuration& configuration = configurations.last();
-    configuration.setupUi(widget);
-    configuration.damageType1->addItem(tr("Crushing"), Crushing);
-    configuration.damageType1->addItem(tr("Missile"),  Missile);
-    configuration.damageType1->addItem(tr("Piercing"), Piercing);
-    configuration.damageType1->addItem(tr("Slashing"), Slashing);
-    configuration.damageType2->addItem(tr("Crushing"), Crushing);
-    configuration.damageType2->addItem(tr("Missile"),  Missile);
-    configuration.damageType2->addItem(tr("Piercing"), Piercing);
-    configuration.damageType2->addItem(tr("Slashing"), Slashing);
-    tabs->addTab(widget, tr("Configuration %1").arg(tabs->count() + 1));
+    calculations.append(Calculation());
+    Calculation& calculation = calculations.last();
+    calculation.setupUi(widget);
+    calculation.damageType1->addItem(tr("Crushing"), Crushing);
+    calculation.damageType1->addItem(tr("Missile"),  Missile);
+    calculation.damageType1->addItem(tr("Piercing"), Piercing);
+    calculation.damageType1->addItem(tr("Slashing"), Slashing);
+    calculation.damageType2->addItem(tr("Crushing"), Crushing);
+    calculation.damageType2->addItem(tr("Missile"),  Missile);
+    calculation.damageType2->addItem(tr("Piercing"), Piercing);
+    calculation.damageType2->addItem(tr("Slashing"), Slashing);
+    tabs->addTab(widget, tr("Calculation %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
-    connect(configuration.name, &QLineEdit::textChanged,
+    connect(calculation.name, &QLineEdit::textChanged,
             [this](const QString& text) {
         lineSeries.at(tabs->currentIndex())->setName(text);
     });
-    connect(configuration.color, &QPushButton::clicked, [this, configuration]() {
+    connect(calculation.color, &QPushButton::clicked, [this, calculation]() {
         const QColor initial = lineSeries[tabs->currentIndex()]->color();
         auto dialog = new QColorDialog(initial, &q);
         q.connect(dialog, &QColorDialog::colorSelected,
-                  &q, [this, configuration](const QColor& color)
+                  &q, [this, calculation](const QColor& color)
         {
             lineSeries[tabs->currentIndex()]->setColor(color);
-            setColorInButton(color, configuration.color);
-            configuration.color->setProperty("color", color);
+            setColorInButton(color, calculation.color);
+            calculation.color->setProperty("color", color);
         });
         dialog->setModal(true);
         dialog->show();
@@ -856,17 +866,17 @@ void DamageCalculatorPage::Private::newPage()
         calculateStats();
     };
 
-    setupStatsLabel(configuration.proficiencyDamageModifier1,
-                    configuration.weaponDamageDiceNumber1,
-                    configuration.weaponDamageDiceSide1,
-                    configuration.weaponDamageDiceBonus1,
-                    configuration.damageDetail1);
+    setupStatsLabel(calculation.proficiencyDamageModifier1,
+                    calculation.weaponDamageDiceNumber1,
+                    calculation.weaponDamageDiceSide1,
+                    calculation.weaponDamageDiceBonus1,
+                    calculation.damageDetail1);
 
-    setupStatsLabel(configuration.proficiencyDamageModifier2,
-                    configuration.weaponDamageDiceNumber2,
-                    configuration.weaponDamageDiceSide2,
-                    configuration.weaponDamageDiceBonus2,
-                    configuration.damageDetail2);
+    setupStatsLabel(calculation.proficiencyDamageModifier2,
+                    calculation.weaponDamageDiceNumber2,
+                    calculation.weaponDamageDiceSide2,
+                    calculation.weaponDamageDiceBonus2,
+                    calculation.damageDetail2);
 
     auto update = std::bind(&Private::updateSeriesAtCurrentIndex, this);
     for (auto child : widget->findChildren<QSpinBox*>())
@@ -877,9 +887,9 @@ void DamageCalculatorPage::Private::newPage()
         connect(child, &QComboBox::currentTextChanged, update);
     for (auto child : widget->findChildren<QCheckBox*>())
         connect(child, &QCheckBox::toggled, update);
-    connect(configuration.offHandGroup, &QGroupBox::toggled, update);
+    connect(calculation.offHandGroup, &QGroupBox::toggled, update);
 
-    // TODO: Decouple this, from setting the UI to setting the whole configuration.
+    // TODO: Decouple this, from setting the UI to setting the whole calculation.
     auto series = new QLineSeries;
     lineSeries.append(series);
     series->setPointsVisible(true);
@@ -917,7 +927,7 @@ void DamageCalculatorPage::Private::newPage()
         marker->setFont(font);
     });
 
-    setColorInButton(series->color(), configuration.color);
+    setColorInButton(series->color(), calculation.color);
 
     updateSeriesAtCurrentIndex();
 }
@@ -966,7 +976,7 @@ void DamageCalculatorPage::Private::setupAxes()
     }
 }
 
-QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Ui::configuration& c) const
+QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculation& c) const
 {
     const bool offHand = c.offHandGroup->isChecked();
 
@@ -1054,7 +1064,7 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Ui::config
     return points;
 }
 
-void DamageCalculatorPage::Private::updateSeries(const Ui::configuration& c, QLineSeries* series)
+void DamageCalculatorPage::Private::updateSeries(const Calculation& c, QLineSeries* series)
 {
     series->replace(pointsFromInput(c));
     setupAxes();

@@ -24,7 +24,7 @@ SOURCES = main.cpp \
 
 FORMS += \
     backstabsetup.ui \
-    configuration.ui \
+    damagecalculationwidget.ui \
     enemy.ui \
     specialdamagewidget.ui \
     weaponarrangementwidget.ui \
