@@ -10,9 +10,6 @@
     <height>624</height>
    </rect>
   </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QGroupBox" name="mainHandThac0Group">
@@ -82,7 +79,7 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="phisicalDamagePage">
+        <widget class="QWidget" name="phisicalDamage">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -189,7 +186,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="SpecialDamageWidget" name="acidDamagePage">
+        <widget class="SpecialDamageWidget" name="acidDamage">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -202,7 +199,7 @@
           <string>Acid</string>
          </attribute>
         </widget>
-        <widget class="SpecialDamageWidget" name="coldDamagePage">
+        <widget class="SpecialDamageWidget" name="coldDamage">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -215,7 +212,7 @@
           <string>Cold</string>
          </attribute>
         </widget>
-        <widget class="SpecialDamageWidget" name="electricityDamagePage">
+        <widget class="SpecialDamageWidget" name="electricityDamage">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -228,7 +225,7 @@
           <string>Electricity</string>
          </attribute>
         </widget>
-        <widget class="SpecialDamageWidget" name="fireDamagePage">
+        <widget class="SpecialDamageWidget" name="fireDamage">
          <property name="geometry">
           <rect>
            <x>0</x>

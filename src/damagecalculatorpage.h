@@ -2,23 +2,21 @@
 
 #include <QWidget>
 
+#include "ui_specialdamagewidget.h"
+
 // TODO: REMOVE this porting workaround.
 class QMenuBar;
 class QStatusBar;
 
 namespace Ui {
-    class SpecialDamageWidget;
     class WeaponArrangementWidget;
 }
 
-class SpecialDamageWidget : public QWidget {
+class SpecialDamageWidget : public QWidget, public Ui::SpecialDamageWidget {
     Q_OBJECT
 
 public:
     explicit SpecialDamageWidget(QWidget* parent = nullptr);
-    ~SpecialDamageWidget();
-
-    Ui::SpecialDamageWidget* ui;
 };
 
 class WeaponArrangementWidget : public QWidget {
@@ -28,6 +26,7 @@ public:
     explicit WeaponArrangementWidget(QWidget* parent = nullptr);
     ~WeaponArrangementWidget();
     double attacksPerRound() const;
+    double criticalHitChance() const;
 
     Ui::WeaponArrangementWidget* ui;
 };

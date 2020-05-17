@@ -3,7 +3,6 @@
 // TODO: rename this forms, classes, etc, to something specific for this page.
 #include "ui_damagecalculationwidget.h"
 #include "ui_enemy.h"
-#include "ui_specialdamagewidget.h"
 #include "ui_weaponarrangementwidget.h"
 
 #include "calculators.h"
@@ -61,25 +60,31 @@ struct Enemy : public Ui::Enemy
 
 struct Calculation : public Ui::calculation
 {
+    void setupUi(QWidget* widget)
+    {
+        Ui::calculation::setupUi(widget);
+        // Change the two weapons for the different limits of the two weapons.
+        weapon1->ui->attacksPerRound2->hide();
+        weapon2->ui->attacksPerRound1->hide();
+        weapon2->ui->styleModifier->setMinimum(-8);
+    }
 
+    PhysicalDamageType damageType1() const
+    { return weapon1->ui->damageType->currentData().value<PhysicalDamageType>(); }
+    PhysicalDamageType damageType2() const
+    { return weapon2->ui->damageType->currentData().value<PhysicalDamageType>(); }
 };
 
 SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::SpecialDamageWidget)
 {
-    ui->setupUi(this);
-    connect(ui->reset, &QPushButton::clicked, [this] {
-        ui->number->setValue(ui->number->minimum());
-        ui->sides->setValue(ui->sides->minimum());
-        ui->bonus->setValue(ui->bonus->minimum());
-        ui->chance->setValue(ui->chance->maximum());
+    setupUi(this);
+    connect(reset, &QPushButton::clicked, [this] {
+        number->setValue(number->minimum());
+        sides->setValue(sides->minimum());
+        bonus->setValue(bonus->minimum());
+        probability->setValue(probability->maximum());
     });
-}
-
-SpecialDamageWidget::~SpecialDamageWidget()
-{
-    delete ui;
 }
 
 WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
@@ -87,6 +92,35 @@ WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
     , ui(new Ui::WeaponArrangementWidget)
 {
     ui->setupUi(this);
+    ui->damageType->addItem(tr("Crushing"), Crushing);
+    ui->damageType->addItem(tr("Missile"),  Missile);
+    ui->damageType->addItem(tr("Piercing"), Piercing);
+    ui->damageType->addItem(tr("Slashing"), Slashing);
+
+    // TODO: this is maybe not worth it, as it's only the physical damage, and
+    // I don't even look at this anymore. Could be replaced with an extra chart.
+    auto proficiency = ui->proficiencyDamageModifier;
+    auto dice = ui->weaponDamageDiceNumber;
+    auto sides = ui->weaponDamageDiceSide;
+    auto bonus = ui->weaponDamageDiceBonus;
+    auto result = ui->damageDetail;
+
+    auto calculateStats = [=]() {
+        DiceRoll roll = DiceRoll()
+                .number(dice->value())
+                .sides(sides->value())
+                .bonus(bonus->value() + proficiency->value());
+        result->setText(tr("Min/Avg/Max: %1/%2/%3")
+                        .arg(roll.minimum())
+                        .arg(roll.average())
+                        .arg(roll.maximum()));
+    };
+
+    connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
+    connect(dice,        qOverload<int>(&QSpinBox::valueChanged), calculateStats);
+    connect(sides,       qOverload<int>(&QSpinBox::valueChanged), calculateStats);
+    connect(bonus,       qOverload<int>(&QSpinBox::valueChanged), calculateStats);
+    calculateStats();
 }
 
 WeaponArrangementWidget::~WeaponArrangementWidget()
@@ -98,6 +132,11 @@ double WeaponArrangementWidget::attacksPerRound() const
 {
     return ui->attacksPerRound1->isVisible() ? ui->attacksPerRound1->value()
                                              : double(ui->attacksPerRound2->value());
+}
+
+double WeaponArrangementWidget::criticalHitChance() const
+{
+    return ui->criticalHitChance->value() / 100.0;
 }
 
 
@@ -678,6 +717,16 @@ QStatusBar* DamageCalculatorPage::statusBar()
     return nullptr;
 }
 
+// TODO: Ideas for serialization. Take advantage that in the findChildren loop
+// we get the parent first, then the children. We could reach a certain kind of
+// widget, and instead of skipping it to let the loop reach the children, stop
+// there, get the "prefix" of it, and serialize the children with the prefix. We
+// can't really stop the loop, but we could either loop only through the direct
+// children (unlike now) or keep a list of visited children, to avoid visiting
+// them twice. This would allow deserializing the tree in a way which is not
+// flat. We can also keep the "last ParentSpecialWhateverWidget visited", then
+// use that to get a prefix on its children (use isAncestorOf, etc.).
+
 void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data)
 {
     // TODO: remove for any kind of release. Is just a backwards compatibility
@@ -700,11 +749,14 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         data.insert(QLatin1String("maximumDamage"), false);
 
     for (auto child : root->findChildren<QWidget*>()) {
+        if (child->isHidden()) // Skip the duplicated APR spinbox (int/double)
+            continue;
         if (qobject_cast<QLabel*>(child) ||
             qobject_cast<QScrollArea*>(child) ||
             qobject_cast<QScrollBar*>(child) ||
             qobject_cast<QToolBox*>(child) ||
-            qobject_cast<SpecialDamageWidget*>(child))
+            qobject_cast<SpecialDamageWidget*>(child) ||
+            qobject_cast<WeaponArrangementWidget*>(child))
             continue;
         // Skip wrapper QWidget without subclass.
         if (child->metaObject() == &QWidget::staticMetaObject)
@@ -717,17 +769,30 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         if (child->objectName().startsWith(QLatin1String("qt_")))
             continue;
 
+        // FIXME: duplicated in serialize/deserialize.
         const QString name = [child]() {
-            if (auto parent = qobject_cast<SpecialDamageWidget*>(child->parent()))
-                return parent->objectName() + child->objectName();
-            return child->objectName();
+            QString n; // Weapon number. Empty, "1" or "2"
+            QWidget* ancestor = child->parentWidget();
+            do {
+                if (qobject_cast<WeaponArrangementWidget*>(ancestor))
+                    n = ancestor->objectName().back();
+            } while ((ancestor = ancestor->parentWidget()));
+            Q_ASSERT(n.isEmpty() || n == QLatin1Char('1') || n == QLatin1Char('2'));
+
+            if (qobject_cast<SpecialDamageWidget*>(child->parent()))
+                return child->parent()->objectName() + n + child->objectName();
+
+            if (child->objectName().contains(QLatin1String("attacks")))
+                return child->objectName();
+            return child->objectName() + n;
         }();
+
         const QVariant value = data.take(name);
         if (!value.isValid()) {
             // TODO: Many old saves don't have this yet. Remove the check eventually.
             if (qobject_cast<SpecialDamageWidget*>(child->parent()))
                 continue;
-            qInfo() << child << "not loaded with serialized data from" << name;
+            qInfo() << child << "not loaded. Data searched with key" << name;
             continue;
         }
         if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
@@ -765,17 +830,32 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
 {
     QVariantHash result;
     for (auto child : root->findChildren<QWidget*>()) {
+        // FIXME: duplicated in serialize/deserialize.
         const QString name = [child]() {
-            if (auto parent = qobject_cast<SpecialDamageWidget*>(child->parent()))
-                return parent->objectName() + child->objectName();
-            return child->objectName();
+            QString n; // Weapon number. Empty, "1" or "2"
+            QWidget* ancestor = child->parentWidget();
+            do {
+                if (qobject_cast<WeaponArrangementWidget*>(ancestor))
+                    n = ancestor->objectName().back();
+            } while ((ancestor = ancestor->parentWidget()));
+            Q_ASSERT(n.isEmpty() || n == QLatin1Char('1') || n == QLatin1Char('2'));
+
+            if (qobject_cast<SpecialDamageWidget*>(child->parent()))
+                return child->parent()->objectName() + n + child->objectName();
+
+            if (child->objectName().contains(QLatin1String("attacks")))
+                return child->objectName();
+            return child->objectName() + n;
         }();
 
+        if (child->isHidden()) // Skip the float APR spinbox or the int one.
+            continue;
         if (qobject_cast<QLabel*>(child) ||
             qobject_cast<QScrollArea*>(child) ||
             qobject_cast<QScrollBar*>(child) ||
             qobject_cast<QToolBox*>(child) ||
-            qobject_cast<SpecialDamageWidget*>(child))
+            qobject_cast<SpecialDamageWidget*>(child) ||
+            qobject_cast<WeaponArrangementWidget*>(child))
             continue;
         // Skip wrapper QWidget without subclass.
         if (child->metaObject() == &QWidget::staticMetaObject)
@@ -817,14 +897,6 @@ void DamageCalculatorPage::Private::newPage()
     calculations.append(Calculation());
     Calculation& calculation = calculations.last();
     calculation.setupUi(widget);
-    calculation.damageType1->addItem(tr("Crushing"), Crushing);
-    calculation.damageType1->addItem(tr("Missile"),  Missile);
-    calculation.damageType1->addItem(tr("Piercing"), Piercing);
-    calculation.damageType1->addItem(tr("Slashing"), Slashing);
-    calculation.damageType2->addItem(tr("Crushing"), Crushing);
-    calculation.damageType2->addItem(tr("Missile"),  Missile);
-    calculation.damageType2->addItem(tr("Piercing"), Piercing);
-    calculation.damageType2->addItem(tr("Slashing"), Slashing);
     tabs->addTab(widget, tr("Calculation %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);
 
@@ -845,39 +917,6 @@ void DamageCalculatorPage::Private::newPage()
         dialog->setModal(true);
         dialog->show();
     });
-
-    auto setupStatsLabel = [](QSpinBox* proficiency, QSpinBox* dice, QSpinBox* sides,
-                              QSpinBox* bonus, QLabel* result)
-    {
-        auto calculateStats = [=]() {
-            DiceRoll roll = DiceRoll()
-                    .number(dice->value())
-                    .sides(sides->value())
-                    .bonus(bonus->value() + proficiency->value());
-            result->setText(tr("Min/Avg/Max: %1/%2/%3")
-                            .arg(roll.minimum())
-                            .arg(roll.average())
-                            .arg(roll.maximum()));
-        };
-
-        connect(proficiency, qOverload<int>(&QSpinBox::valueChanged), calculateStats);
-        connect(dice,        qOverload<int>(&QSpinBox::valueChanged), calculateStats);
-        connect(sides,       qOverload<int>(&QSpinBox::valueChanged), calculateStats);
-        connect(bonus,       qOverload<int>(&QSpinBox::valueChanged), calculateStats);
-        calculateStats();
-    };
-
-    setupStatsLabel(calculation.proficiencyDamageModifier1,
-                    calculation.weaponDamageDiceNumber1,
-                    calculation.weaponDamageDiceSide1,
-                    calculation.weaponDamageDiceBonus1,
-                    calculation.damageDetail1);
-
-    setupStatsLabel(calculation.proficiencyDamageModifier2,
-                    calculation.weaponDamageDiceNumber2,
-                    calculation.weaponDamageDiceSide2,
-                    calculation.weaponDamageDiceBonus2,
-                    calculation.damageDetail2);
 
     auto update = std::bind(&Private::updateSeriesAtCurrentIndex, this);
     for (auto child : widget->findChildren<QSpinBox*>())
@@ -982,8 +1021,12 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     const bool offHand = c.offHandGroup->isChecked();
 
     const int thac0 = c.baseThac0->value() - c.strengthThac0Bonus->value() - c.classThac0Bonus->value();
-    const int mainThac0 = thac0 - c.proficiencyThac0Modifier1->value() - c.styleModifier1->value() - c.weaponThac0Modifier1->value();
-    const int offThac0  = thac0 - c.proficiencyThac0Modifier2->value() - c.styleModifier2->value() - c.weaponThac0Modifier2->value();
+    const int mainThac0 = thac0 - c.weapon1->ui->proficiencyThac0Modifier->value()
+                                - c.weapon1->ui->styleModifier->value()
+                                - c.weapon1->ui->weaponThac0Modifier->value();
+    const int offThac0  = thac0 - c.weapon2->ui->proficiencyThac0Modifier->value()
+                                - c.weapon2->ui->styleModifier->value()
+                                - c.weapon2->ui->weaponThac0Modifier->value();
 
     // TODO: Remove once we've tested the app enough with the asserts below.
     auto modifierFromUi = [this](QComboBox* box) {
@@ -999,29 +1042,31 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
                                           : enemy.slashingResistance->value() );
     };
 
-    const int mainAcModifier = enemy.acModifier(c.damageType1->currentData().value<PhysicalDamageType>());
-    const int offAcModifier  = enemy.acModifier(c.damageType2->currentData().value<PhysicalDamageType>());
-    Q_ASSERT(mainAcModifier == modifierFromUi(c.damageType1));
-    Q_ASSERT(offAcModifier  == modifierFromUi(c.damageType2));
+    const int mainAcModifier = enemy.acModifier(c.damageType1());
+    const int offAcModifier  = enemy.acModifier(c.damageType2());
+    Q_ASSERT(mainAcModifier == modifierFromUi(c.weapon1->ui->damageType));
+    Q_ASSERT(offAcModifier  == modifierFromUi(c.weapon2->ui->damageType));
 
-    const double mainResistance = enemy.resistanceFactor(c.damageType1->currentData().value<PhysicalDamageType>());
-    const double offResistance  = enemy.resistanceFactor(c.damageType2->currentData().value<PhysicalDamageType>());
-    Q_ASSERT(mainResistance == (100.0 - resistanceFromUi(c.damageType1)) / 100.0);
-    Q_ASSERT(offResistance  == (100.0 - resistanceFromUi(c.damageType2)) / 100.0);
+    const double mainResistance = enemy.resistanceFactor(c.damageType1());
+    const double offResistance  = enemy.resistanceFactor(c.damageType2());
+    Q_ASSERT(mainResistance == (100.0 - resistanceFromUi(c.weapon1->ui->damageType)) / 100.0);
+    Q_ASSERT(offResistance  == (100.0 - resistanceFromUi(c.weapon2->ui->damageType)) / 100.0);
 
     const bool maximumDamage = c.maximumDamage->isChecked();
     const bool criticalStrike = c.criticalStrike->isChecked();
 
     DiceRoll dice1 = DiceRoll()
             .luck(c.luck->value())
-            .number(c.weaponDamageDiceNumber1->value())
-            .sides(c.weaponDamageDiceSide1->value())
-            .bonus(c.weaponDamageDiceBonus1->value() + c.proficiencyDamageModifier1->value());
+            .number(c.weapon1->ui->weaponDamageDiceNumber->value())
+            .sides(c.weapon1->ui->weaponDamageDiceSide->value())
+            .bonus(c.weapon1->ui->weaponDamageDiceBonus->value() +
+                   c.weapon1->ui->proficiencyDamageModifier->value());
     DiceRoll dice2 = DiceRoll()
             .luck(c.luck->value())
-            .number(c.weaponDamageDiceNumber2->value())
-            .sides(c.weaponDamageDiceSide2->value())
-            .bonus(c.weaponDamageDiceBonus2->value() + c.proficiencyDamageModifier2->value());
+            .number(c.weapon2->ui->weaponDamageDiceNumber->value())
+            .sides(c.weapon2->ui->weaponDamageDiceSide->value())
+            .bonus(c.weapon2->ui->weaponDamageDiceBonus->value() +
+                   c.weapon2->ui->proficiencyDamageModifier->value());
 
     const double mainDamage = (maximumDamage ? dice1.maximum() : dice1.average())
                             + c.strengthDamageBonus->value()
@@ -1030,8 +1075,8 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
                             + c.strengthDamageBonus->value()
                             + c.classDamageBonus->value();
 
-    const double mainApr = c.attacksPerRound1->value();
-    const int    offApr  = c.attacksPerRound2->value();
+    const double mainApr = c.weapon1->attacksPerRound();
+    const int    offApr  = c.weapon2->attacksPerRound();
 
     QVector<QPointF> points;
     for (const int ac : armorClasses) {
@@ -1039,8 +1084,8 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
         const int offToHit  = offThac0  - ac - offAcModifier;
 
         const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const auto criticalHitChance1 = criticalStrike ? 1.0 : c.criticalHitChance1->value() / 100.0;
-        const auto criticalHitChance2 = criticalStrike ? 1.0 : c.criticalHitChance2->value() / 100.0;
+        const auto criticalHitChance1 = criticalStrike ? 1.0 : c.weapon1->criticalHitChance();
+        const auto criticalHitChance2 = criticalStrike ? 1.0 : c.weapon2->criticalHitChance();
 
         const double toHit1 = Calculators::chanceToHit(mainToHit, criticalHitChance1);
         const double toHit2 = Calculators::chanceToHit(offToHit, criticalHitChance2);

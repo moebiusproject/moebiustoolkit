@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>120</width>
+    <width>137</width>
     <height>171</height>
    </rect>
   </property>
@@ -51,9 +51,9 @@
     </widget>
    </item>
    <item>
-    <widget class="QSpinBox" name="chance">
+    <widget class="QSpinBox" name="probability">
      <property name="suffix">
-      <string>% chance</string>
+      <string>% probability</string>
      </property>
      <property name="maximum">
       <number>100</number>
