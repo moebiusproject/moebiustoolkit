@@ -8,11 +8,13 @@ useLibMoebius()
 HEADERS = \
     backstabcalculatorpage.h \
     basepage.h \
+    buffcalculatorpage.h \
     damagecalculatorpage.h \
     gamebrowserpage.h \
     mainwindow.h \
     pageselector.h \
     pagetype.h \
+    progressionchartspage.h \
     repeatedprobabilitypage.h \
     specialdamagewidget.h \
     weaponarrangementwidget.h \
@@ -21,10 +23,12 @@ HEADERS = \
 SOURCES = main.cpp \
     backstabcalculatorpage.cpp \
     basepage.cpp \
+    buffcalculatorpage.cpp \
     damagecalculatorpage.cpp \
     gamebrowserpage.cpp \
     mainwindow.cpp \
     pageselector.cpp \
+    progressionchartspage.cpp \
     repeatedprobabilitypage.cpp \
     specialdamagewidget.cpp \
     weaponarrangementwidget.cpp \

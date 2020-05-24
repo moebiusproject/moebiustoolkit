@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>532</height>
+    <width>464</width>
+    <height>686</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,7 +34,7 @@
    <item>
     <widget class="QLabel" name="browserIntroductionLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;NOTE: This feature is &lt;span style=&quot; font-weight:600;&quot;&gt;not enabled yet&lt;/span&gt;!&lt;/p&gt;&lt;p&gt;To browse a game or load information from it in one of the other modules, introduce the location of the installation directory (where the &amp;quot;chitin.key&amp;quot; file is), give it a name of your liking, and save.&lt;/p&gt;&lt;p&gt;Then press the button of the Game Browser or other module that requires a game location to work. Without a valid location, some buttons will be disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Some of the modules of the application (for example, the Game Browser) need the data of a game to work. Some may work with a small portion of the data. Other modules don't require an installed game at all.&lt;/p&gt;&lt;p&gt;To browse a game or use one of the other modules, first introduce the location of the installation directory (where the &amp;quot;chitin.key&amp;quot; file is), give it a name of your liking, and save.&lt;/p&gt;&lt;p&gt;Then press the button of the Game Browser or other module that requires a game location to work. Without a valid location, the buttons of the modules that require it will be disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -176,7 +176,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Plots, tables and charts</string>
+      <string>Modules</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -200,8 +200,22 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="4">
+      <widget class="QPushButton" name="buffCalculator">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Buff
+Calculator</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
       <widget class="QPushButton" name="gameBrowser">
        <property name="minimumSize">
         <size>
@@ -210,11 +224,12 @@
         </size>
        </property>
        <property name="text">
-        <string>Game Browser</string>
+        <string>Game
+Browser</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="2">
       <widget class="QPushButton" name="damageCalculator">
        <property name="minimumSize">
         <size>
@@ -223,11 +238,12 @@
         </size>
        </property>
        <property name="text">
-        <string>Damage Calculator</string>
+        <string>Damage
+Calculator</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="3">
       <widget class="QPushButton" name="backstabCalculator">
        <property name="minimumSize">
         <size>
@@ -236,11 +252,12 @@
         </size>
        </property>
        <property name="text">
-        <string>Backstab Calculator</string>
+        <string>Backstab
+Calculator</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="1" column="1">
       <widget class="QPushButton" name="repeatedProbability">
        <property name="minimumSize">
         <size>
@@ -249,7 +266,22 @@
         </size>
        </property>
        <property name="text">
-        <string>Repeated Probability</string>
+        <string>Repeated
+Probability</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="progressionCharts">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Progression
+Charts</string>
        </property>
       </widget>
      </item>
@@ -281,7 +313,9 @@
   <tabstop>gameBrowser</tabstop>
   <tabstop>damageCalculator</tabstop>
   <tabstop>backstabCalculator</tabstop>
+  <tabstop>buffCalculator</tabstop>
   <tabstop>repeatedProbability</tabstop>
+  <tabstop>progressionCharts</tabstop>
  </tabstops>
  <resources/>
  <connections/>

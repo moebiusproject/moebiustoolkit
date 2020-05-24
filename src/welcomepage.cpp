@@ -92,10 +92,14 @@ WelcomePage::WelcomePage(QWidget* parent)
 
     connect(d->ui.backstabCalculator, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::BackstabCalculator); });
+    connect(d->ui.buffCalculator, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::BuffCalculator); });
     connect(d->ui.damageCalculator, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::DamageCalculator); });
     connect(d->ui.gameBrowser, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::GameBrowser); });
+    connect(d->ui.progressionCharts, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::ProgressionCharts); });
     connect(d->ui.repeatedProbability, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::RepeatedProbability); });
 }

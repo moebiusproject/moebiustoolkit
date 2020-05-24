@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019-2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,18 @@
 
 #pragma once
 
-#include <QtGlobal>
+#include "basepage.h"
 
-enum class PageType : qint8
+#include <QWidget>
+
+class ProgressionChartsPage : public QWidget, public BasePage
 {
-    BackstabCalculator,
-    BuffCalculator,
-    DamageCalculator,
-    GameBrowser,
-    ProgressionCharts,
-    RepeatedProbability,
+    Q_OBJECT
+public:
+    explicit ProgressionChartsPage(QWidget* parent = nullptr);
+    ~ProgressionChartsPage();
+
+private:
+    struct Private;
+    Private* d;
 };

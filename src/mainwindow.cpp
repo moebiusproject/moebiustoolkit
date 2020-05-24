@@ -19,10 +19,12 @@
 #include "mainwindow.h"
 
 #include "backstabcalculatorpage.h"
+#include "buffcalculatorpage.h"
 #include "damagecalculatorpage.h"
 #include "gamebrowserpage.h"
 #include "pageselector.h"
 #include "pagetype.h"
+#include "progressionchartspage.h"
 #include "repeatedprobabilitypage.h"
 #include "welcomepage.h"
 
@@ -101,6 +103,10 @@ void MainWindow::Private::addNewPage(PageType type)
         view->addWidget(new BackstabCalculatorPage(&parent));
         selector->addButton(tr("Backstab\nCalculator"));
         break;
+    case PageType::BuffCalculator:
+        view->addWidget(new BuffCalculatorPage(&parent));
+        selector->addButton(tr("Buff\nCalculator"));
+        break;
     case PageType::DamageCalculator:
         view->addWidget(new DamageCalculatorPage(&parent));
         selector->addButton(tr("Damage\nCalculator"));
@@ -108,6 +114,10 @@ void MainWindow::Private::addNewPage(PageType type)
     case PageType::GameBrowser:
         view->addWidget(new GameBrowserPage(&parent));
         selector->addButton(tr("Game\nBrowser"));
+        break;
+    case PageType::ProgressionCharts:
+        view->addWidget(new ProgressionChartsPage(&parent));
+        selector->addButton(tr("Progression\nCharts"));
         break;
     case PageType::RepeatedProbability:
         view->addWidget(new RepeatedProbabilityPage(&parent));
