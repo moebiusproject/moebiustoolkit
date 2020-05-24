@@ -91,6 +91,7 @@ WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::WeaponArrangementWidget)
 {
+    // TODO: Fix the ugly hack in the .ui file (minimum size in the QGroupBox)
     ui->setupUi(this);
     ui->damageType->addItem(tr("Crushing"), Crushing);
     ui->damageType->addItem(tr("Missile"),  Missile);
