@@ -123,6 +123,56 @@ private:
  */
 double chanceToHit(int toHit, double criticalChance);
 
+using UserDefinedOperatorParameter = unsigned long long;
+using Round = quint16;
+
+constexpr Round operator"" _rounds(UserDefinedOperatorParameter value)
+{
+    return value;
+}
+
+constexpr Round operator"" _turns(UserDefinedOperatorParameter value)
+{
+    return value * 10;
+}
+
+constexpr Round operator"" _hours(UserDefinedOperatorParameter value)
+{
+    return value * 60;
+}
+
+struct Duration
+{
+    explicit Duration(Round fixed_, Round variable_, int levels_)
+        : fixed(fixed_)
+        , variable(variable_)
+        , levels(levels_)
+    {}
+    Round fixed;
+    Round variable;
+    int levels;
+};
+
+// TODO: Distinguish per druid/cleric/etc?
+enum SpellType { Arcane, Divine };
+
+struct Spell
+{
+    explicit Spell(SpellType type_, const QString& name_, const Duration& duration_)
+        : type(type_)
+        , name(name_)
+        , duration(duration_)
+    {}
+
+    SpellType type;
+    QString name;
+    Duration duration;
+    // TODO: icon? something else?
+};
+
+
+QVector<Spell> buffList();
+
 };
 
 Q_DECLARE_METATYPE(Calculators::DamageType)

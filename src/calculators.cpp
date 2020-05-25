@@ -18,6 +18,7 @@
 
 #include "calculators.h"
 
+#include <QCoreApplication>
 #include <QDebug>
 
 using namespace Calculators;
@@ -96,4 +97,39 @@ double Calculators::chanceToHit(int toHit, double criticalChance)
         return 1 - (0.05 * (toHit-1));
     else // Only critical hits work.
         return criticalChance;
+}
+
+QVector<Calculators::Spell> Calculators::buffList()
+{
+    auto tr = [](const char* text){ return QCoreApplication::translate("foo", text); };
+    // TODO: Trivially fixable, but this is not retranslatable, as I don't know if it's worth it.
+    static QVector<Spell> spells = {
+        // n rounds
+        Spell(Arcane, tr("Luck"),                   Duration(4_rounds, 0_rounds, 0)),
+        Spell(Divine, tr("Bless"),                  Duration(6_rounds, 0_rounds, 0)),
+        Spell(Divine, tr("Defensive Harmony"),      Duration(6_rounds, 0_rounds, 0)),
+
+        // 1 turn
+        Spell(Divine, tr("Chant"),                  Duration(1_turns, 0_rounds, 0)),
+        Spell(Divine, tr("Draw Upon Holy Might"),   Duration(1_turns, 0_rounds, 0)),
+
+        // 1 round/level
+        Spell(Divine, tr("Boon of Lathander"),      Duration(0_rounds, 1_rounds, 1)),
+        Spell(Divine, tr("Prayer"),                 Duration(0_rounds, 1_rounds, 1)),
+        Spell(Divine, tr("Recitation"),             Duration(0_rounds, 1_rounds, 1)),
+
+        // Messy cases
+        Spell(Arcane, tr("Blur"),             Duration(4_rounds, 2_rounds, 1)),
+        Spell(Arcane, tr("Chaos Shield"),     Duration(5_rounds, 1_turns, 5)),
+
+        // 3/level
+        Spell(Arcane, tr("Minor Spell Deflection"), Duration(0_rounds, 3_rounds, 1)),
+
+        // 3 + 1/level
+        Spell(Divine, tr("Armor of Faith"), Duration(3_rounds, 1_rounds, 1)),
+        Spell(Arcane, tr("Haste"), Duration(3_rounds, 1_rounds, 1)),
+        Spell(Arcane, tr("Improved Invisibility"), Duration(3_rounds, 1_rounds, 1)),
+        Spell(Arcane, tr("Mirror Image"), Duration(3_rounds, 1_rounds, 1)),
+    };
+    return spells;
 }

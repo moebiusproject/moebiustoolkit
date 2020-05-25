@@ -38,6 +38,7 @@ SOURCES = main.cpp \
 
 FORMS += \
     backstabsetup.ui \
+    buffcalculatorpage.ui \
     damagecalculationwidget.ui \
     dualcalculatorwidget.ui \
     enemy.ui \
