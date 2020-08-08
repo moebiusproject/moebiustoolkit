@@ -27,8 +27,8 @@ struct PageSelector::Private
     PageSelector& parent;
     QVBoxLayout* layout;
 
-    Private(PageSelector& parent)
-        : parent(parent)
+    Private(PageSelector& parent_)
+        : parent(parent_)
     {}
 
     void setupButton(QPushButton* button);

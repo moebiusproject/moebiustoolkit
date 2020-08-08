@@ -16,8 +16,8 @@ using Series = QHorizontalStackedBarSeries;
 
 struct BackstabCalculatorPage::Private
 {
-    Private(BackstabCalculatorPage& page)
-        : page(page)
+    Private(BackstabCalculatorPage& page_)
+        : page(page_)
     {}
     BackstabCalculatorPage& page;
 
