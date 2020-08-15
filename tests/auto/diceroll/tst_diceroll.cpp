@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019 Alejandro Exojo Piqueras
+ * Copyright (C) 2019-2020 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,16 +26,58 @@ class tst_DiceRoll: public QObject
 
 private slots:
     void debugOperator();
+    void permutations();
     void luckified();
+    void resistified();
     void test_data();
     void test();
 };
 
 void tst_DiceRoll::debugOperator()
 {
-    auto dice = DiceRoll().number(1).sides(4).bonus(0).luck(1);
     QTest::ignoreMessage(QtDebugMsg, "1d4+0@1");
-    qDebug() << dice;
+    qDebug() << DiceRoll().number(1).sides(4).bonus(0).luck(1);
+    QTest::ignoreMessage(QtDebugMsg, "2d6+3@1");
+    qDebug() << DiceRoll().number(2).sides(6).bonus(3).luck(1);
+}
+
+void tst_DiceRoll::permutations()
+{
+    auto dice = DiceRoll().sides(10).luck(2);
+    auto result = DiceRoll::Permutations{
+        {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {10}, {10} };
+    QCOMPARE(dice.permutations(), result);
+
+    // The bonus shouldn't change the values, as it is not added to each rolled
+    // dice, but once at the end. So we test for that.
+    dice = DiceRoll().number(2).sides(2).bonus(42);
+    result = DiceRoll::Permutations{{1, 1}, {1, 2}, {2, 1}, {2, 2}};
+    QCOMPARE(dice.permutations(), result);
+
+    dice = DiceRoll().number(2).sides(4).luck(-1);
+    result = DiceRoll::Permutations{
+        {1, 1}, {1, 1}, {1, 2}, {1, 3},
+        {1, 1}, {1, 1}, {1, 2}, {1, 3},
+        {2, 1}, {2, 1}, {2, 2}, {2, 3},
+        {3, 1}, {3, 1}, {3, 2}, {3, 3},
+    };
+    QCOMPARE(dice.permutations(), result);
+
+    dice = DiceRoll().number(3).sides(3);
+    result = DiceRoll::Permutations{
+        {1, 1, 1}, {1, 1, 2}, {1, 1, 3},
+        {1, 2, 1}, {1, 2, 2}, {1, 2, 3},
+        {1, 3, 1}, {1, 3, 2}, {1, 3, 3},
+
+        {2, 1, 1}, {2, 1, 2}, {2, 1, 3},
+        {2, 2, 1}, {2, 2, 2}, {2, 2, 3},
+        {2, 3, 1}, {2, 3, 2}, {2, 3, 3},
+
+        {3, 1, 1}, {3, 1, 2}, {3, 1, 3},
+        {3, 2, 1}, {3, 2, 2}, {3, 2, 3},
+        {3, 3, 1}, {3, 3, 2}, {3, 3, 3},
+    };
+    QCOMPARE(dice.permutations(), result);
 }
 
 void tst_DiceRoll::luckified()
@@ -56,6 +98,27 @@ void tst_DiceRoll::luckified()
     QCOMPARE(dice.luckified(8), 6);
     QCOMPARE(dice.luckified(9), 7);
     QCOMPARE(dice.luckified(10), 8);
+}
+
+// TODO: testing the helper function might be enough, but testing some value
+// like mean or standard deviation with resistance would be even better.
+void tst_DiceRoll::resistified()
+{
+    // Resistance 50%, e.g. Defensive Stance for physical resistance.
+    auto dice = DiceRoll().sides(3).resistance(0.5);
+    QCOMPARE(dice.resistified(1), 1);
+    QCOMPARE(dice.resistified(2), 1);
+    QCOMPARE(dice.resistified(3), 2);
+    dice = DiceRoll().sides(4).bonus(1).resistance(0.5);
+    QCOMPARE(dice.resistified(5), 3);
+
+    // Resistance 5%, e.g. low level Armor of Faith.
+    dice = DiceRoll().sides(10).bonus(9).resistance(0.05);
+    QCOMPARE(dice.resistified(dice.maximum()), 19);
+    dice = DiceRoll().sides(20).resistance(0.05);
+    QCOMPARE(dice.resistified(dice.maximum()), 19);
+    dice = DiceRoll().sides(10).bonus(15).resistance(0.05);
+    QCOMPARE(dice.resistified(dice.maximum()), 24);
 }
 
 // Average is easy to calculate by hand, but for standard deviation another
