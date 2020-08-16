@@ -79,6 +79,15 @@ SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
     : QWidget(parent)
 {
     setupUi(this);
+
+    // Disable "sides" if the number of dice is 0, so it's more natural to input
+    // fixed elemental damage, like Varscona's/Ashideena's +1 (which is 0d2+1).
+    auto enabler = [this](int diceNumberValue) {
+        sides->setEnabled(diceNumberValue != 0);
+    };
+    enabler(number->value());
+    connect(number, qOverload<int>(&QSpinBox::valueChanged), enabler);
+
     connect(reset, &QPushButton::clicked, [this] {
         number->setValue(number->minimum());
         sides->setValue(sides->minimum());
