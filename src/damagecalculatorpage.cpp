@@ -407,6 +407,7 @@ struct DamageCalculatorPage::Private
         QPixmap pixmap(side, side);
         pixmap.fill(color);
         button->setIcon(QIcon(pixmap));
+        button->setProperty("color", color);
     }
 };
 
@@ -478,8 +479,12 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(action, &QAction::triggered, [this] {
         const QVariantHash saved = d->serialize(d->tabs->currentWidget());
         d->newPage();
+        // Save the new color set on the new page.
+        const int current = d->tabs->currentIndex();
+        const QColor color = d->calculations[current].color->property("color").value<QColor>();
         // TODO: block signals recursively, load UI values, then update chart.
         d->deserialize(d->tabs->currentWidget(), saved);
+        d->setColorInButton(color, d->calculations.last().color);
     });
 
     action = new QAction(tr("Save current calculation to preferences"), this);
@@ -819,7 +824,6 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         else if (auto button = qobject_cast<QPushButton*>(child)) {
             if (qobject_cast<SpecialDamageWidget*>(button->parent()))
                 continue;
-            button->setProperty("color", value);
             setColorInButton(value.value<QColor>(), button);
         }
         else if (auto line = qobject_cast<QLineEdit*>(child)) {
