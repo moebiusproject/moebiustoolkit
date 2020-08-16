@@ -3,6 +3,7 @@
 #include <QWidget>
 
 #include "ui_specialdamagewidget.h"
+#include "calculators.h"
 
 // TODO: REMOVE this porting workaround.
 class QMenuBar;
@@ -17,6 +18,7 @@ class SpecialDamageWidget : public QWidget, public Ui::SpecialDamageWidget {
 
 public:
     explicit SpecialDamageWidget(QWidget* parent = nullptr);
+    DiceRoll toData() const;
 };
 
 class WeaponArrangementWidget : public QWidget {
@@ -25,10 +27,17 @@ class WeaponArrangementWidget : public QWidget {
 public:
     explicit WeaponArrangementWidget(QWidget* parent = nullptr);
     ~WeaponArrangementWidget();
-    double attacksPerRound() const;
-    double criticalHitChance() const;
+
+    Calculators::WeaponArrangement toData() const;
 
     Ui::WeaponArrangementWidget* ui;
+
+    double attacksPerRound() const;
+    double criticalHitChance() const;
+    Calculators::DamageType damageType() const;
+
+private:
+    QList<QPair<Calculators::DamageType, DiceRoll>> elementalDamages() const;
 };
 
 class DamageCalculatorPage : public QWidget

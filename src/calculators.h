@@ -23,16 +23,80 @@
 
 #include "diceroll.h"
 
-enum PhysicalDamageType {
-    Crushing,
-    Missile,
-    Piercing,
-    Slashing,
-};
-Q_DECLARE_METATYPE(PhysicalDamageType)
-
 namespace Calculators
 {
+
+enum DamageType
+{
+    /// If this bit is set, it's elemental. Physical otherwise.
+    ElementalBit    = 0b1000,
+
+    Crushing        = 0,
+    Missile         = 1,
+    Piercing        = 2,
+    Slashing        = 3,
+
+    Acid            = ElementalBit + 0,
+    Cold            = ElementalBit + 1,
+    Electricity     = ElementalBit + 2,
+    Fire            = ElementalBit + 3,
+
+    MagicDamage     = ElementalBit + 4,
+    PoisonDamage    = ElementalBit + 5,
+    // TODO: About poison/bleed damage, consider that it might be a different
+    // effect in many weapons ("get poisoned" vs "direct poison damage").
+};
+
+struct WeaponArrangement {
+    int proficiencyToHit = 0;
+    int styleToHit = 0;
+    int weaponToHit = 0;
+
+    int proficiencyDamage = 0;
+
+    QHash<DamageType, DiceRoll> damage;
+    double attacks = 1.0;
+    double critical = 0.05;
+
+    /// Returns the physical damage roll with the arrangment modifiers applied.
+    /// Doesn't include the "global" modifiers like Strength, class.
+    DiceRoll physicalDamage() const;
+    DamageType physicalDamageType() const;
+};
+
+class Damage {
+public:
+    struct Common {
+        int thac0 = 20;
+
+        int strengthToHit = 0;
+        int otherToHit = 0;
+
+        int strengthDamage = 0;
+        int otherDamage = 0;
+    };
+
+    explicit Damage(const WeaponArrangement& one, const WeaponArrangement& two,
+                    const Damage::Common& common)
+        : m_1(one)
+        , m_2(two)
+        , m_common(common)
+    {
+    }
+
+    enum Hand {Main, OffHand};
+    // TODO: This probably should be expanded to cover more use cases. One, for
+    // example, might be "average but with critical strike" which makes the
+    // physical damage be maximum, but the elemental damages still be average.
+    enum Stat {Average, Maximum};
+
+    int thac0(Hand hand) const;
+    QHash<DamageType, double> onHitDamages(Hand hand, Stat stat) const;
+
+private:
+    WeaponArrangement m_1, m_2;
+    Damage::Common m_common;
+};
 
 /*!
  * \brief Return the chance of hitting for a certain to-hit number in a d20.
@@ -43,3 +107,7 @@ namespace Calculators
 double chanceToHit(int toHit, double criticalChance);
 
 };
+
+Q_DECLARE_METATYPE(Calculators::DamageType)
+Q_DECLARE_METATYPE(Calculators::WeaponArrangement)
+Q_DECLARE_METATYPE(Calculators::Damage::Common)

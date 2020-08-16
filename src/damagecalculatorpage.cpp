@@ -19,6 +19,7 @@
 #include <functional>
 #include <numeric>
 
+using namespace Calculators;
 using namespace QtCharts;
 
 struct ArmorModifiers
@@ -39,22 +40,32 @@ Q_DECLARE_METATYPE(ArmorModifiers)
 
 struct Enemy : public Ui::Enemy
 {
-    int acModifier(PhysicalDamageType type) const
+    int acModifier(DamageType type) const
     {
-        return ( type == Crushing ? crushingModifier->value()
-               : type == Missile  ? missileModifier->value()
-               : type == Piercing ? piercingModifier->value()
-                                  : slashingModifier->value() );
-
+        return ( type == DamageType::Crushing ? crushingModifier->value()
+               : type == DamageType::Missile  ? missileModifier->value()
+               : type == DamageType::Piercing ? piercingModifier->value()
+               : type == DamageType::Slashing ? slashingModifier->value()
+               : 0 );
     }
 
-    double resistanceFactor(PhysicalDamageType type) const
+    double resistanceFactor(DamageType type) const
     {
-        const int value = type == Crushing ? crushingResistance->value()
-                        : type == Missile  ? missileResistance->value()
-                        : type == Piercing ? piercingResistance->value()
-                                           : slashingResistance->value();
-        return (100 - value) / 100.0;
+        return resistanceValue(type) / 100.0;
+    }
+
+    double resistanceValue(DamageType type) const
+    {
+        return type == DamageType::Crushing ? crushingResistance->value()
+             : type == DamageType::Missile  ? missileResistance->value()
+             : type == DamageType::Piercing ? piercingResistance->value()
+             : type == DamageType::Slashing ? slashingResistance->value()
+
+             : type == DamageType::Acid        ? acidResistance->value()
+             : type == DamageType::Cold        ? coldResistance->value()
+             : type == DamageType::Electricity ? electricityResistance->value()
+             : type == DamageType::Fire        ? fireResistance->value()
+             : 0;
     }
 };
 
@@ -68,11 +79,6 @@ struct Calculation : public Ui::calculation
         weapon2->ui->attacksPerRound1->hide();
         weapon2->ui->styleModifier->setMinimum(-8);
     }
-
-    PhysicalDamageType damageType1() const
-    { return weapon1->ui->damageType->currentData().value<PhysicalDamageType>(); }
-    PhysicalDamageType damageType2() const
-    { return weapon2->ui->damageType->currentData().value<PhysicalDamageType>(); }
 };
 
 SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
@@ -82,6 +88,7 @@ SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
 
     // Disable "sides" if the number of dice is 0, so it's more natural to input
     // fixed elemental damage, like Varscona's/Ashideena's +1 (which is 0d2+1).
+    // TODO: Disable other controls if probability is 0%.
     auto enabler = [this](int diceNumberValue) {
         sides->setEnabled(diceNumberValue != 0);
     };
@@ -96,19 +103,29 @@ SpecialDamageWidget::SpecialDamageWidget(QWidget* parent)
     });
 }
 
+DiceRoll SpecialDamageWidget::toData() const
+{
+    return DiceRoll().number(number->value())
+                     .sides(sides->value())
+                     .bonus(bonus->value())
+                     .probability(probability->value() / 100.0);
+}
+
 WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::WeaponArrangementWidget)
 {
     // TODO: Fix the ugly hack in the .ui file (minimum size in the QGroupBox)
     ui->setupUi(this);
-    ui->damageType->addItem(tr("Crushing"), Crushing);
-    ui->damageType->addItem(tr("Missile"),  Missile);
-    ui->damageType->addItem(tr("Piercing"), Piercing);
-    ui->damageType->addItem(tr("Slashing"), Slashing);
+    ui->damageType->addItem(tr("Crushing"), DamageType::Crushing);
+    ui->damageType->addItem(tr("Missile"),  DamageType::Missile);
+    ui->damageType->addItem(tr("Piercing"), DamageType::Piercing);
+    ui->damageType->addItem(tr("Slashing"), DamageType::Slashing);
 
     // TODO: this is maybe not worth it, as it's only the physical damage, and
     // I don't even look at this anymore. Could be replaced with an extra chart.
+    // Additionally, this widget is unaware of the luck value, so the numbers
+    // will never be _that_ correct anymore if luck is non-zero.
     auto proficiency = ui->proficiencyDamageModifier;
     auto dice = ui->weaponDamageDiceNumber;
     auto sides = ui->weaponDamageDiceSide;
@@ -138,6 +155,50 @@ WeaponArrangementWidget::~WeaponArrangementWidget()
     delete ui;
 }
 
+WeaponArrangement WeaponArrangementWidget::toData() const
+{
+    WeaponArrangement result;
+
+    result.proficiencyToHit = ui->proficiencyThac0Modifier->value();
+    result.styleToHit = ui->styleModifier->value();
+    result.weaponToHit = ui->weaponThac0Modifier->value();
+
+    // TODO: consider having "style damage" on the UI to distinguish bonus
+    // damage from proficiency (0-5) or from fighting style (0-1).
+    result.proficiencyDamage = ui->proficiencyDamageModifier->value();
+    result.damage.insert(ui->damageType->currentData().value<DamageType>(),
+                         DiceRoll().number(ui->weaponDamageDiceNumber->value())
+                                   .sides(ui->weaponDamageDiceSide->value())
+                                   .bonus(ui->weaponDamageDiceBonus->value())
+                         );
+
+    for (auto [type, damage] : elementalDamages()) {
+        // Avoid adding the damage if the amount is 0. But number() is not
+        // enough, as a weapon like Varscona would do 0d2+1 cold damage.
+        if ((damage.average() == 0 && damage.sigma() == 0) ||
+            qFuzzyIsNull(damage.probability()))
+            continue;
+        result.damage.insert(type, damage);
+    }
+
+    result.attacks = attacksPerRound();
+    result.critical = criticalHitChance();
+
+    return result;
+}
+
+QList<QPair<DamageType, DiceRoll>>
+WeaponArrangementWidget::elementalDamages() const
+{
+    return {
+        qMakePair(DamageType::Acid, ui->acidDamage->toData()),
+        qMakePair(DamageType::Cold, ui->coldDamage->toData()),
+        qMakePair(DamageType::Electricity, ui->electricityDamage->toData()),
+        qMakePair(DamageType::Fire, ui->fireDamage->toData()),
+        // TODO: MagicDamage, PoisonDamage.
+    };
+}
+
 double WeaponArrangementWidget::attacksPerRound() const
 {
     return ui->attacksPerRound1->isVisible() ? ui->attacksPerRound1->value()
@@ -147,6 +208,11 @@ double WeaponArrangementWidget::attacksPerRound() const
 double WeaponArrangementWidget::criticalHitChance() const
 {
     return ui->criticalHitChance->value() / 100.0;
+}
+
+DamageType WeaponArrangementWidget::damageType() const
+{
+    return ui->damageType->currentData().value<DamageType>();
 }
 
 
@@ -398,6 +464,7 @@ struct DamageCalculatorPage::Private
         updateSeries(calculations[index], lineSeries[index]);
     }
 
+    WeaponArrangement makeArrangement(WeaponArrangementWidget* widget, int luck) const;
     QVector<QPointF> pointsFromInput(const Calculation& c) const;
     void updateSeries(const Calculation& c, QLineSeries* series);
 
@@ -1030,95 +1097,86 @@ void DamageCalculatorPage::Private::setupAxes()
     }
 }
 
+WeaponArrangement DamageCalculatorPage::Private::makeArrangement(WeaponArrangementWidget* widget,
+                                                                 int luck) const
+{
+    // This does most of the work, missing only the parts not on WeaponArrangementWidget
+    WeaponArrangement result = widget->toData();
+
+    result.damage.find(result.physicalDamageType()).value().luck(luck);
+
+    for (auto entry = result.damage.keyValueBegin(),
+         last = result.damage.keyValueEnd(); entry != last; ++entry)
+    {
+        entry.base().value().resistance(enemy.resistanceFactor(entry.base().key()));
+    }
+
+    return result;
+}
+
 QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculation& c) const
 {
+    const bool doubleCriticalDamage = !enemy.helmet->isChecked();
     const bool offHand = c.offHandGroup->isChecked();
-
-    const int thac0 = c.baseThac0->value() - c.strengthThac0Bonus->value() - c.classThac0Bonus->value();
-    const int mainThac0 = thac0 - c.weapon1->ui->proficiencyThac0Modifier->value()
-                                - c.weapon1->ui->styleModifier->value()
-                                - c.weapon1->ui->weaponThac0Modifier->value();
-    const int offThac0  = thac0 - c.weapon2->ui->proficiencyThac0Modifier->value()
-                                - c.weapon2->ui->styleModifier->value()
-                                - c.weapon2->ui->weaponThac0Modifier->value();
-
-    // TODO: Remove once we've tested the app enough with the asserts below.
-    auto modifierFromUi = [this](QComboBox* box) {
-        return ( box->currentIndex() == 0 ? enemy.crushingModifier->value()
-               : box->currentIndex() == 1 ? enemy.missileModifier->value()
-               : box->currentIndex() == 2 ? enemy.piercingModifier->value()
-                                          : enemy.slashingModifier->value() );
-    };
-    auto resistanceFromUi = [this](QComboBox* box) {
-        return ( box->currentIndex() == 0 ? enemy.crushingResistance->value()
-               : box->currentIndex() == 1 ? enemy.missileResistance->value()
-               : box->currentIndex() == 2 ? enemy.piercingResistance->value()
-                                          : enemy.slashingResistance->value() );
-    };
-
-    const int mainAcModifier = enemy.acModifier(c.damageType1());
-    const int offAcModifier  = enemy.acModifier(c.damageType2());
-    Q_ASSERT(mainAcModifier == modifierFromUi(c.weapon1->ui->damageType));
-    Q_ASSERT(offAcModifier  == modifierFromUi(c.weapon2->ui->damageType));
-
-    const double mainResistance = enemy.resistanceFactor(c.damageType1());
-    const double offResistance  = enemy.resistanceFactor(c.damageType2());
-    Q_ASSERT(mainResistance == (100.0 - resistanceFromUi(c.weapon1->ui->damageType)) / 100.0);
-    Q_ASSERT(offResistance  == (100.0 - resistanceFromUi(c.weapon2->ui->damageType)) / 100.0);
-
     const bool maximumDamage = c.maximumDamage->isChecked();
     const bool criticalStrike = c.criticalStrike->isChecked();
 
-    DiceRoll dice1 = DiceRoll()
-            .luck(c.luck->value())
-            .number(c.weapon1->ui->weaponDamageDiceNumber->value())
-            .sides(c.weapon1->ui->weaponDamageDiceSide->value())
-            .bonus(c.weapon1->ui->weaponDamageDiceBonus->value() +
-                   c.weapon1->ui->proficiencyDamageModifier->value());
-    DiceRoll dice2 = DiceRoll()
-            .luck(c.luck->value())
-            .number(c.weapon2->ui->weaponDamageDiceNumber->value())
-            .sides(c.weapon2->ui->weaponDamageDiceSide->value())
-            .bonus(c.weapon2->ui->weaponDamageDiceBonus->value() +
-                   c.weapon2->ui->proficiencyDamageModifier->value());
+    const WeaponArrangement weapon1 = makeArrangement(c.weapon1, c.luck->value());
+    const WeaponArrangement weapon2 = makeArrangement(c.weapon2, c.luck->value());
 
-    const double mainDamage = (maximumDamage ? dice1.maximum() : dice1.average())
-                            + c.strengthDamageBonus->value()
-                            + c.classDamageBonus->value();
-    const double offDamage  = (maximumDamage ? dice2.maximum() : dice2.average())
-                            + c.strengthDamageBonus->value()
-                            + c.classDamageBonus->value();
+    Damage::Common common;
+    common.thac0 = c.baseThac0->value();
+    common.strengthToHit = c.strengthThac0Bonus->value();
+    common.otherToHit = c.classThac0Bonus->value();
 
-    const double mainApr = c.weapon1->attacksPerRound();
-    const int    offApr  = c.weapon2->attacksPerRound();
+    common.strengthDamage = c.strengthDamageBonus->value();
+    common.otherDamage = c.classDamageBonus->value();
+
+    const int mainAcModifier = enemy.acModifier(c.weapon1->damageType());
+    const int offAcModifier  = enemy.acModifier(c.weapon2->damageType());
+
+    const Damage calculator(weapon1, weapon2, common);
+    const Damage::Stat stat = maximumDamage ? Damage::Maximum : Damage::Average;
+
+    const auto damages1 = calculator.onHitDamages(Damage::Main, stat);
+    const auto damages2 = calculator.onHitDamages(Damage::OffHand, stat);
+
+    double totalDamage1 = 0.0;
+    for (auto damage : damages1)
+        totalDamage1 += damage;
+    double totalDamage2 = 0.0;
+    for (auto damage : damages2)
+        totalDamage2 += damage;
+
+    const auto criticalHitChance1 = criticalStrike ? 1.0 : c.weapon1->criticalHitChance();
+    const auto criticalHitChance2 = criticalStrike ? 1.0 : c.weapon2->criticalHitChance();
 
     QVector<QPointF> points;
     for (const int ac : armorClasses) {
-        const int mainToHit = mainThac0 - ac - mainAcModifier;
-        const int offToHit  = offThac0  - ac - offAcModifier;
+        const int mainToHit = calculator.thac0(Damage::Main)    - ac - mainAcModifier;
+        const int offToHit  = calculator.thac0(Damage::OffHand) - ac - offAcModifier;
 
-        const bool doubleCriticalDamage = !enemy.helmet->isChecked();
-        const auto criticalHitChance1 = criticalStrike ? 1.0 : c.weapon1->criticalHitChance();
-        const auto criticalHitChance2 = criticalStrike ? 1.0 : c.weapon2->criticalHitChance();
-
+        //
+        // TODO: Move to-hit calculations to the damage calculation code.
+        //
         const double toHit1 = Calculators::chanceToHit(mainToHit, criticalHitChance1);
         const double toHit2 = Calculators::chanceToHit(offToHit, criticalHitChance2);
-        double damage = toHit1 * mainDamage * mainApr * mainResistance;
+        double damage = toHit1 * totalDamage1 * weapon1.attacks;
         if (offHand)
-            damage += toHit2 * offDamage * offApr * offResistance;
+            damage += toHit2 * totalDamage2 * weapon2.attacks;
 
+        // FIXME adjust to the new damage calculation!
         if (doubleCriticalDamage) { // Unprotected against critical hits.
             if (criticalStrike) // All damage doubled!
                 damage *= 2;
             else {
                 // Otherwise, consider the damage again, this time without
                 // chance to failure, but scaled by the chance of critical hit.
-                damage += criticalHitChance1 * mainDamage * mainApr * mainResistance;
+                damage += criticalHitChance1 * weapon1.physicalDamage().average() * weapon1.attacks;
                 if (offHand)
-                    damage += criticalHitChance2 * offDamage * offApr * offResistance;
+                    damage += criticalHitChance2 * weapon2.physicalDamage().average() * weapon2.attacks;
             }
         }
-
         points.append(QPointF(ac, damage));
     }
     return points;

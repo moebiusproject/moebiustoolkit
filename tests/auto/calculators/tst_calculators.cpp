@@ -20,6 +20,8 @@
 
 #include "calculators.h"
 
+using namespace Calculators;
+
 class tst_Calculators : public QObject
 {
     Q_OBJECT
@@ -27,8 +29,9 @@ class tst_Calculators : public QObject
 private slots:
     void testToHit_data();
     void testToHit();
+    void testDamage_data();
+    void testDamage();
 };
-
 
 void tst_Calculators::testToHit_data()
 {
@@ -73,6 +76,56 @@ void tst_Calculators::testToHit()
     QFETCH(double, result);
 
     QCOMPARE(Calculators::chanceToHit(toHit, criticalChance), result);
+}
+
+void tst_Calculators::testDamage_data()
+{
+    QTest::addColumn<Damage::Common>("common");
+    QTest::addColumn<WeaponArrangement>("weapon1");
+    QTest::addColumn<WeaponArrangement>("weapon2");
+
+    // TODO: Many more output values!
+    QTest::addColumn<double>("average");
+
+    const Damage::Common defaultCommon;
+    const DiceRoll defaultDamage = DiceRoll().sides(8);
+    WeaponArrangement defaultWeapon;
+    defaultWeapon.damage.insert(DamageType::Crushing, defaultDamage);
+
+    QTest::addRow("defaults")
+            << defaultCommon << defaultWeapon << defaultWeapon
+            << 4.5;
+
+    auto common = defaultCommon;
+    common.strengthDamage = +7;
+    QTest::addRow("19 STR")
+            << common << defaultWeapon << defaultWeapon
+            << 11.5;
+
+    common.otherDamage = +2;
+    QTest::addRow("19 STR with +2 bonus")
+            << common << defaultWeapon << defaultWeapon
+            << 13.5;
+
+    WeaponArrangement weapon = defaultWeapon;
+    weapon.damage.find(DamageType::Crushing).value().resistance(0.5);
+    QTest::addRow("19 STR with +2 bonus at 50%% resistance")
+            << common << weapon << weapon
+            << 7.0;
+}
+
+void tst_Calculators::testDamage()
+{
+    QFETCH(Damage::Common, common);
+    QFETCH(WeaponArrangement, weapon1);
+    QFETCH(WeaponArrangement, weapon2);
+
+    QFETCH(double, average);
+
+    const Damage calculator(weapon1, weapon2, common);
+    auto averageDamages = calculator.onHitDamages(Damage::Main, Damage::Average);
+    QCOMPARE(averageDamages.count(), 1);
+    QCOMPARE(averageDamages.value(DamageType::Crushing), average);
 }
 
 QTEST_MAIN(tst_Calculators)

@@ -20,6 +20,66 @@
 
 #include <QDebug>
 
+using namespace Calculators;
+
+DiceRoll WeaponArrangement::physicalDamage() const
+{
+    Q_ASSERT(damage.contains(physicalDamageType()));
+    DiceRoll result = damage.find(physicalDamageType()).value();
+    // TODO: This could be a nice opportunity for operator overloading in DiceRoll
+    result.bonus(result.bonus() + proficiencyDamage);
+    return result;
+}
+
+DamageType WeaponArrangement::physicalDamageType() const
+{
+    for (auto entry = damage.constBegin(), last = damage.constEnd(); entry != last; ++entry) {
+        const DamageType type = entry.key();
+        if (type < DamageType::ElementalBit)
+            return type;
+    }
+    Q_UNREACHABLE();
+    return DamageType::Crushing;
+}
+
+int Damage::thac0(Damage::Hand hand) const
+{
+    // Common to both hands.
+    int result = m_common.thac0 - m_common.strengthToHit - m_common.otherToHit;
+
+    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
+    result -= (arrangement.proficiencyToHit + arrangement.styleToHit + arrangement.weaponToHit);
+
+    return result;
+}
+
+QHash<DamageType, double> Damage::onHitDamages(Damage::Hand hand, Damage::Stat stat) const
+{
+    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
+    const double bonusPhysicalDamage = m_common.strengthDamage + m_common.otherDamage;
+    DiceRoll physicalDamageRoll = arrangement.physicalDamage();
+    physicalDamageRoll.bonus(physicalDamageRoll.bonus() + bonusPhysicalDamage);
+
+    const double physicalDamage = stat == Average ? physicalDamageRoll.average()
+                                                  : physicalDamageRoll.maximum();
+
+    QHash<DamageType, double> result;
+    for (auto entry = arrangement.damage.constBegin(), last = arrangement.damage.constEnd();
+         entry != last; ++entry)
+    {
+        const DamageType type = entry.key();
+        if (type & DamageType::ElementalBit) {
+            // Elemental damage doesn't get bonuses, nor maximum damage (because
+            // that's for Critical Strike).
+            const DiceRoll roll = entry.value();
+            result.insert(type, roll.average());
+        }
+        else // Physical damage.
+            result.insert(type, physicalDamage);
+    }
+    return result;
+}
+
 double Calculators::chanceToHit(int toHit, double criticalChance)
 {
     Q_ASSERT(criticalChance >= 0.05 && criticalChance <= 1.00);
