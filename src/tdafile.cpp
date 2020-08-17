@@ -40,12 +40,12 @@ TdaFile TdaFile::from(QIODevice& device)
     table.defaultValue = QString::fromLatin1(device.readLine().trimmed());
 
     const QString& headers = QString::fromLatin1(device.readLine().trimmed());
-    for (const QString& header : headers.split(QLatin1Char(' '), QString::SkipEmptyParts))
+    for (const QString& header : headers.split(QLatin1Char(' '), Qt::SkipEmptyParts))
         table.headers.append(header);
 
     while (!device.atEnd()) {
         const QString& row = QString::fromLatin1(device.readLine().trimmed());
-        table.entries.append(row.split(QLatin1Char(' '), QString::SkipEmptyParts));
+        table.entries.append(row.split(QLatin1Char(' '), Qt::SkipEmptyParts));
     }
 
     return table;

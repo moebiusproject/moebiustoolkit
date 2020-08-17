@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
-SUBDIRS += application.pro libmoebius.pro
+SUBDIRS += libmoebius.pro application.pro
 application.pro.depends = libmoebius.pro

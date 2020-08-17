@@ -7,10 +7,12 @@ defineTest(projectGlobals) {
     DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
     export(DEFINES)
 
-    QMAKE_CXXFLAGS += -Werror
-    QMAKE_CXXFLAGS += -Wall
-    QMAKE_CXXFLAGS += -Wshadow
-    QMAKE_CXXFLAGS += -Wextra
+    unix {
+        QMAKE_CXXFLAGS += -Werror
+        QMAKE_CXXFLAGS += -Wall
+        QMAKE_CXXFLAGS += -Wshadow
+        QMAKE_CXXFLAGS += -Wextra
+    }
     export(QMAKE_CXXFLAGS)
 
     CONFIG += c++17
@@ -20,8 +22,18 @@ defineTest(projectGlobals) {
 defineTest(useLibMoebius) {
     INCLUDEPATH += $$SOURCE_TREE/src
     DEPENDPATH  += $$SOURCE_TREE/src
-    LIBS += -L$$BUILD_TREE/lib
+
+    libpath = $$BUILD_TREE/lib/
+    LIBS += -L$$libpath
     LIBS += -lmoebius
+
+    win32 {
+        libname = libmoebius.a
+        !win32-g++: libname = moebius.lib
+        PRE_TARGETDEPS += $$libpath$$libname
+        export(PRE_TARGETDEPS)
+    }
+
     export(INCLUDEPATH)
     export(DEPENDPATH)
     export(LIBS)
