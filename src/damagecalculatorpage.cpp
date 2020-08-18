@@ -201,7 +201,7 @@ WeaponArrangementWidget::elementalDamages() const
 
 double WeaponArrangementWidget::attacksPerRound() const
 {
-    return ui->attacksPerRound1->isVisible() ? ui->attacksPerRound1->value()
+    return !ui->attacksPerRound1->isHidden() ? ui->attacksPerRound1->value()
                                              : double(ui->attacksPerRound2->value());
 }
 
@@ -763,7 +763,7 @@ DamageCalculatorPage::~DamageCalculatorPage()
 
 bool DamageCalculatorPage::event(QEvent* event)
 {
-    // FIXME: Doesn't work... debug why.
+    // FIXME: Doesn't work on Plasma with the global menu, debug why.
     if (event->type() == QEvent::Hide) {
         d->fileMenu->menuAction()->setVisible(false);
         d->mainMenu->menuAction()->setVisible(false);
