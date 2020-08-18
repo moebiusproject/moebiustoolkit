@@ -7,6 +7,7 @@ useLibMoebius()
 
 HEADERS = \
     backstabcalculatorpage.h \
+    basepage.h \
     damagecalculatorpage.h \
     mainwindow.h \
     pageselector.h \
@@ -16,6 +17,7 @@ HEADERS = \
 
 SOURCES = main.cpp \
     backstabcalculatorpage.cpp \
+    basepage.cpp \
     damagecalculatorpage.cpp \
     mainwindow.cpp \
     pageselector.cpp \

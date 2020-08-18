@@ -776,29 +776,6 @@ bool DamageCalculatorPage::event(QEvent* event)
     return QWidget::event(event);
 }
 
-// TODO: REMOVE this porting workaround.
-QMenuBar* DamageCalculatorPage::menuBar()
-{
-    QWidget* widget = this;
-    while ((widget = widget->parentWidget())) {
-        if (QMainWindow* window = qobject_cast<QMainWindow*>(widget))
-            return window->menuBar();
-    }
-    qFatal("Should not happen...");
-    return nullptr;
-}
-
-QStatusBar* DamageCalculatorPage::statusBar()
-{
-    QWidget* widget = this;
-    while ((widget = widget->parentWidget())) {
-        if (QMainWindow* window = qobject_cast<QMainWindow*>(widget))
-            return window->statusBar();
-    }
-    qFatal("Should not happen...");
-    return nullptr;
-}
-
 // TODO: Ideas for serialization. Take advantage that in the findChildren loop
 // we get the parent first, then the children. We could reach a certain kind of
 // widget, and instead of skipping it to let the loop reach the children, stop

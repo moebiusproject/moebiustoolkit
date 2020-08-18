@@ -3,11 +3,8 @@
 #include <QWidget>
 
 #include "ui_specialdamagewidget.h"
+#include "basepage.h"
 #include "calculators.h"
-
-// TODO: REMOVE this porting workaround.
-class QMenuBar;
-class QStatusBar;
 
 namespace Ui {
     class WeaponArrangementWidget;
@@ -40,7 +37,7 @@ private:
     QList<QPair<Calculators::DamageType, DiceRoll>> elementalDamages() const;
 };
 
-class DamageCalculatorPage : public QWidget
+class DamageCalculatorPage : public QWidget, public BasePage
 {
     Q_OBJECT
 
@@ -52,9 +49,6 @@ protected:
     bool event(QEvent* event) override;
 
 private:
-    // TODO: REMOVE this porting workaround.
-    QMenuBar* menuBar();
-    QStatusBar* statusBar();
     struct Private;
     Private* d;
 };

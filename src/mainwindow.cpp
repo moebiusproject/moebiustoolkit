@@ -49,6 +49,9 @@ MainWindow::MainWindow(QWidget* parentWidget)
     : QMainWindow(parentWidget)
     , d(new Private(*this))
 {
+    BasePage::m_menuBar = menuBar();
+    BasePage::m_statusBar = statusBar();
+
     d->view = new QStackedWidget(this);
 
     d->selector = new PageSelector(this);
