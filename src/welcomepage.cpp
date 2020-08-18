@@ -165,6 +165,8 @@ void WelcomePage::Private::updateUi()
     const bool validLocation = ui.locationError->text().isEmpty();
     ui.locationError->setVisible(!validLocation);
     ui.browse->setEnabled(validLocation && !location.isEmpty());
+    // TODO: Temporary, till I enable the browser better.
+    ui.browse->setEnabled(false);
 }
 
 void WelcomePage::Private::configuredGamesChanged(int index)
