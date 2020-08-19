@@ -13,6 +13,8 @@ HEADERS = \
     pageselector.h \
     pagetype.h \
     repeatedprobabilitypage.h \
+    specialdamagewidget.h \
+    weaponarrangementwidget.h \
     welcomepage.h \
 
 SOURCES = main.cpp \
@@ -22,6 +24,8 @@ SOURCES = main.cpp \
     mainwindow.cpp \
     pageselector.cpp \
     repeatedprobabilitypage.cpp \
+    specialdamagewidget.cpp \
+    weaponarrangementwidget.cpp \
     welcomepage.cpp \
 
 FORMS += \

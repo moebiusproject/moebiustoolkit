@@ -18,26 +18,14 @@
 
 #pragma once
 
-#include <QWidget>
+#include "ui_specialdamagewidget.h"
 
-#include "basepage.h"
+#include "diceroll.h"
 
-// TODO: Remove from this header, but requires adjusting promoted widgets.
-#include "specialdamagewidget.h"
-#include "weaponarrangementwidget.h"
-
-class DamageCalculatorPage : public QWidget, public BasePage
+class SpecialDamageWidget : public QWidget, public Ui::SpecialDamageWidget
 {
     Q_OBJECT
-
 public:
-    explicit DamageCalculatorPage(QWidget* parent = nullptr);
-    ~DamageCalculatorPage();
-
-protected:
-    bool event(QEvent* event) override;
-
-private:
-    struct Private;
-    Private* d;
+    explicit SpecialDamageWidget(QWidget* parent = nullptr);
+    DiceRoll toData() const;
 };

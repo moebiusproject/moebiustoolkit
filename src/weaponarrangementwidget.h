@@ -20,24 +20,28 @@
 
 #include <QWidget>
 
-#include "basepage.h"
+#include "calculators.h"
 
-// TODO: Remove from this header, but requires adjusting promoted widgets.
-#include "specialdamagewidget.h"
-#include "weaponarrangementwidget.h"
+namespace Ui {
+    class WeaponArrangementWidget;
+}
 
-class DamageCalculatorPage : public QWidget, public BasePage
+class WeaponArrangementWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit DamageCalculatorPage(QWidget* parent = nullptr);
-    ~DamageCalculatorPage();
+    explicit WeaponArrangementWidget(QWidget* parent = nullptr);
+    ~WeaponArrangementWidget();
 
-protected:
-    bool event(QEvent* event) override;
+    Calculators::WeaponArrangement toData() const;
+
+    Ui::WeaponArrangementWidget* ui;
+
+    double attacksPerRound() const;
+    double criticalHitChance() const;
+    Calculators::DamageType damageType() const;
 
 private:
-    struct Private;
-    Private* d;
+    QList<QPair<Calculators::DamageType, DiceRoll>> elementalDamages() const;
 };
