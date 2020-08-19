@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>216</width>
-    <height>624</height>
+    <width>218</width>
+    <height>636</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="mainHandThac0Group">
+    <widget class="QGroupBox" name="thac0Group">
      <property name="title">
       <string>THAC0</string>
      </property>
@@ -69,7 +69,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="mainHandDamageGroup">
+    <widget class="QGroupBox" name="damageGroup">
      <property name="minimumSize">
       <size>
        <width>200</width>
@@ -81,7 +81,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QToolBox" name="mainHandDamage">
+       <widget class="QToolBox" name="damage">
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -172,7 +172,7 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QLabel" name="damageType1Label">
+             <widget class="QLabel" name="damageTypeLabel">
               <property name="text">
                <string>Type</string>
               </property>
