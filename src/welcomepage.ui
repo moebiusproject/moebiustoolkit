@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
-    <height>713</height>
+    <width>500</width>
+    <height>532</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Game browser</string>
+      <string>Game setup</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -34,7 +34,10 @@
    <item>
     <widget class="QLabel" name="browserIntroductionLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;NOTE: This feature is &lt;span style=&quot; font-weight:600;&quot;&gt;not enabled yet&lt;/span&gt;!&lt;/p&gt;&lt;p&gt;To browse a game, introduce the location of the installation directory (where the &amp;quot;chitin.key&amp;quot; file is) and press &amp;quot;Browse&amp;quot; &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;NOTE: This feature is &lt;span style=&quot; font-weight:600;&quot;&gt;not enabled yet&lt;/span&gt;!&lt;/p&gt;&lt;p&gt;To browse a game or load information from it in one of the other modules, introduce the location of the installation directory (where the &amp;quot;chitin.key&amp;quot; file is), give it a name of your liking, and save.&lt;/p&gt;&lt;p&gt;Then press the button of the Game Browser or other module that requires a game location to work. Without a valid location, some buttons will be disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -145,25 +148,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QPushButton" name="browse">
-       <property name="minimumSize">
-        <size>
-         <width>100</width>
-         <height>100</height>
-        </size>
-       </property>
-       <property name="text">
-        <string>Browse</string>
-       </property>
-       <property name="icon">
-        <iconset theme="system-run">
-         <normaloff>.</normaloff>.</iconset>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <layout class="QHBoxLayout" name="horizontalLayout_3"/>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
@@ -216,6 +201,19 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QPushButton" name="browse">
+       <property name="minimumSize">
+        <size>
+         <width>100</width>
+         <height>100</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Game Browser</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <widget class="QPushButton" name="damageCalculator">
        <property name="minimumSize">
