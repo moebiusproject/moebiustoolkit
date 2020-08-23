@@ -824,8 +824,12 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
             if (groupbox->isCheckable())
                 result.insert(name, groupbox->isChecked());
         }
+        // Skip the list views inside the combo boxes.
+        else if (auto grandParent = child->parent()->parent();
+                 grandParent && grandParent->metaObject() == &QComboBox::staticMetaObject)
+            continue;
         else
-            qWarning() << "Not serialized:" << child;
+            qWarning() << "Not serialized:" << child << child->parent() << name;
     }
 
     return result;
