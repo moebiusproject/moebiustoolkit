@@ -27,6 +27,8 @@
 
 #include <QDebug>
 #include <QHBoxLayout>
+#include <QMenu>
+#include <QMenuBar>
 #include <QStackedWidget>
 
 #include <functional>
@@ -43,6 +45,8 @@ struct MainWindow::Private
     PageSelector* selector;
     WelcomePage* welcomePage;
     QStackedWidget* view;
+
+    QMenu* mainMenu = nullptr;
 };
 
 MainWindow::MainWindow(QWidget* parentWidget)
@@ -51,6 +55,13 @@ MainWindow::MainWindow(QWidget* parentWidget)
 {
     BasePage::m_menuBar = menuBar();
     BasePage::m_statusBar = statusBar();
+
+    d->mainMenu = menuBar()->addMenu(tr("Moebius Toolkit"));
+    auto action = new QAction(tr("Quit"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered,
+            qApp, &QCoreApplication::quit, Qt::QueuedConnection);
 
     d->view = new QStackedWidget(this);
 
