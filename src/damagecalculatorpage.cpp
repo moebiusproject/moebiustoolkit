@@ -155,12 +155,14 @@ struct DamageCalculatorPage::Private
         : q(window)
     {}
     DamageCalculatorPage& q;
+    static DamageCalculatorPage* self;
+
     QVector<int> armorClasses;
 
-    QMenu* fileMenu = nullptr;
-    QMenu* mainMenu = nullptr;
-    QMenu* loadSavedMenu = nullptr;
-    QMenu* deleteSavedMenu = nullptr;
+    static QMenu* fileMenu;
+    static QMenu* mainMenu;
+    static QMenu* loadSavedMenu;
+    static QMenu* deleteSavedMenu;
 
     ManageDialog* manageDialog = nullptr;
 
@@ -265,6 +267,7 @@ struct DamageCalculatorPage::Private
     void loadCalculationsFromFile(const QString& fileName)
     {
         auto errorOut = [this](const char* text) {
+            // FIXME: this error is so subtle that I can't notice it...
             q.statusBar()->showMessage(tr("The file can not be loaded"));
             qWarning() << text;
         };
@@ -274,7 +277,13 @@ struct DamageCalculatorPage::Private
             errorOut("File could not be opened");
             return;
         }
-        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
+        QJsonParseError jsonError;
+        const QJsonDocument document = QJsonDocument::fromJson(file.readAll(), &jsonError);
+        if (jsonError.error != QJsonParseError::NoError) {
+            errorOut("JSON parsing error");
+            qWarning() << jsonError.errorString() << jsonError.offset;
+            return;
+        }
         if (!document.isObject()) {
             errorOut("Cannot load JSON: root not an object");
             return;
@@ -286,7 +295,7 @@ struct DamageCalculatorPage::Private
 
         // FIXME: configuration
         if (!root.contains(QLatin1String("configurations"))) {
-            errorOut("Cannot load JSON: root not an object");
+            errorOut("Cannot load JSON: element \"configurations\" is not an object");
             return;
         }
         // FIXME: configuration
@@ -305,6 +314,8 @@ struct DamageCalculatorPage::Private
                 lineSeries[current]->setColor(color.value<QColor>());
         }
     }
+
+    void initializeMenus();
 
     void populateEntriesMenu()
     {
@@ -351,15 +362,22 @@ struct DamageCalculatorPage::Private
     QVector<QPointF> pointsFromInput(const Calculation& c) const;
     void updateSeries(const Calculation& c, QLineSeries* series);
 
-    static void setColorInButton(const QColor& color, QPushButton* button)
-    {
-        const int side = button->height();
-        QPixmap pixmap(side, side);
-        pixmap.fill(color);
-        button->setIcon(QIcon(pixmap));
-        button->setProperty("color", color);
-    }
 };
+
+DamageCalculatorPage* DamageCalculatorPage::Private::self = nullptr;
+QMenu* DamageCalculatorPage::Private::fileMenu = nullptr;
+QMenu* DamageCalculatorPage::Private::mainMenu = nullptr;
+QMenu* DamageCalculatorPage::Private::loadSavedMenu = nullptr;
+QMenu* DamageCalculatorPage::Private::deleteSavedMenu = nullptr;
+
+static void setColorInButton(const QColor& color, QPushButton* button)
+{
+    const int side = button->height();
+    QPixmap pixmap(side, side);
+    pixmap.fill(color);
+    button->setIcon(QIcon(pixmap));
+    button->setProperty("color", color);
+}
 
 DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     : QWidget(parent)
@@ -368,126 +386,8 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     for (int i = 10; i >= -20; --i)
         d->armorClasses << i;
 
+    d->initializeMenus();
     d->loadSavedCalculations();
-
-    // Menus ///////////////////////////////////////////////////////////////////
-    d->fileMenu = menuBar()->addMenu(tr("File"));
-
-    auto action = new QAction(tr("Save visible calculations as..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-    d->fileMenu->addAction(action);
-    connect(action, &QAction::triggered, [this] {
-        auto dialog = new QFileDialog(this);
-        dialog->setFileMode(QFileDialog::AnyFile);
-        connect(dialog, &QFileDialog::fileSelected, this,
-            std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
-        dialog->setModal(true);
-        dialog->show();
-    });
-
-    action = new QAction(tr("Load calculations from..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
-    d->fileMenu->addAction(action);
-    connect(action, &QAction::triggered, [this] {
-        auto dialog = new QFileDialog(this);
-        dialog->setFileMode(QFileDialog::AnyFile);
-        connect(dialog, &QFileDialog::fileSelected, this,
-            std::bind(&Private::loadCalculationsFromFile, d, std::placeholders::_1));
-        dialog->setModal(true);
-        dialog->show();
-    });
-
-    action = new QAction(tr("Copy chart to clipboard"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
-    d->fileMenu->addAction(action);
-
-    connect(action, &QAction::triggered, [this] {
-        const QPixmap pixmap = d->chartView->grab();
-        QClipboard* clipboard = QGuiApplication::clipboard();
-        clipboard->setPixmap(pixmap);
-    });
-
-    action = new QAction(tr("Save chart as..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
-    d->fileMenu->addAction(action);
-
-    connect(action, &QAction::triggered, [this] {
-        const QPixmap pixmap = d->chartView->grab();
-        auto dialog = new QFileDialog(this);
-        dialog->setAcceptMode(QFileDialog::AcceptSave);
-        connect(dialog, &QFileDialog::fileSelected, [pixmap](const QString& name) {
-            pixmap.save(name, "png");
-        });
-        dialog->open();
-    });
-
-    d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
-
-    action = new QAction(tr("Duplicate current calculation"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    d->mainMenu->addAction(action);
-    connect(action, &QAction::triggered, [this] {
-        const QVariantHash saved = d->serialize(d->tabs->currentWidget());
-        d->newPage();
-        // Save the new color set on the new page.
-        const int current = d->tabs->currentIndex();
-        const QColor color = d->calculations[current].color->property("color").value<QColor>();
-        // TODO: block signals recursively, load UI values, then update chart.
-        d->deserialize(d->tabs->currentWidget(), saved);
-        d->setColorInButton(color, d->calculations.last().color);
-    });
-
-    action = new QAction(tr("Save current calculation to preferences"), this);
-    d->mainMenu->addAction(action);
-    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
-
-    d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"));
-    d->mainMenu->addMenu(d->loadSavedMenu);
-    d->deleteSavedMenu = new QMenu(tr("Delete calculation from preferences"));
-    d->mainMenu->addMenu(d->deleteSavedMenu);
-    d->populateEntriesMenu();
-
-    action = new QAction(tr("Manage entries"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-    d->mainMenu->addAction(action);
-    d->mainMenu->setEnabled(false);
-
-    d->manageDialog = new ManageDialog(this);
-    // TODO: pick something reasonable, yet not hardcoded?
-    d->manageDialog->setMinimumWidth(600);
-    connect(action, &QAction::triggered, [this] {
-        QStringList names;
-        for (const auto& entry : qAsConst(d->savedCalculations)) {
-            names << entry.value(QLatin1String("name")).toString();
-        }
-        d->manageDialog->setNames(names);
-        d->manageDialog->show();
-    });
-    connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
-        d->newPage();
-        d->deserialize(d->tabs->currentWidget(), d->savedCalculations.at(index));
-    });
-
-#if 0 // TODO: migrate to its own page
-    QMenu* extrasMenu = menuBar()->addMenu(tr("Extras"));
-    action = new QAction(tr("Attack bonuses"), this);
-    extrasMenu->addAction(action);
-
-    connect(action, &QAction::triggered, this, [this] {
-        auto dialog = new AttackBonuses(this);
-        dialog->showMaximized();
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-    });
-
-    action = new QAction(tr("Repeated roll probability"), this);
-    extrasMenu->addAction(action);
-
-    connect(action, &QAction::triggered, this, [this] {
-        auto dialog = new RollProbabilities(this);
-        dialog->showMaximized();
-        dialog->setAttribute(Qt::WA_DeleteOnClose);
-    });
-#endif
 
     // Chart controls //////////////////////////////////////////////////////////
     auto chartControlsLayout = new QHBoxLayout;
@@ -649,11 +549,12 @@ bool DamageCalculatorPage::event(QEvent* event)
     // FIXME: Doesn't work on Plasma with the global menu, debug why.
     if (event->type() == QEvent::Hide) {
         d->fileMenu->menuAction()->setVisible(false);
-        d->mainMenu->menuAction()->setVisible(false);
+//        d->mainMenu->menuAction()->setVisible(false);
     }
     if (event->type() == QEvent::Show) {
+        Private::self = this;
         d->fileMenu->menuAction()->setVisible(true);
-        d->mainMenu->menuAction()->setVisible(true);
+//        d->mainMenu->menuAction()->setVisible(true);
     }
 
     return QWidget::event(event);
@@ -833,6 +734,140 @@ QVariantHash DamageCalculatorPage::Private::serialize(QWidget* root)
     }
 
     return result;
+}
+
+void DamageCalculatorPage::Private::initializeMenus()
+{
+    if (fileMenu) // If created/initialized, our job here is done.
+        return;
+
+    fileMenu = q.menuBar()->addMenu(tr("File"));
+
+    // FIXME? No parent now.
+    auto action = new QAction(tr("Save visible calculations as...") /*, this*/);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    fileMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        // FIXME: here, the dialogs take a copy of 'self', but we want it to be
+        // swapped somehow. It's not what we need.
+        auto dialog = new QFileDialog(self);
+        dialog->setFileMode(QFileDialog::AnyFile);
+        connect(dialog, &QFileDialog::fileSelected, self,
+            std::bind(&Private::saveCalculationsToFile, this, std::placeholders::_1));
+        dialog->setModal(true);
+        dialog->show();
+    });
+
+    // FIXME? No parent now.
+    action = new QAction(tr("Load calculations from...") /*, this*/);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+    fileMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        // FIXME: here, the dialogs take a copy of 'self', but we want it to be
+        // swapped somehow. It's not what we need.
+        auto dialog = new QFileDialog(self);
+        dialog->setFileMode(QFileDialog::AnyFile);
+        connect(dialog, &QFileDialog::fileSelected, self,
+            std::bind(&Private::loadCalculationsFromFile, this, std::placeholders::_1));
+        dialog->setModal(true);
+        dialog->show();
+    });
+
+    // FIXME? No parent now.
+    action = new QAction(tr("Copy chart to clipboard")/*, this*/);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    fileMenu->addAction(action);
+
+    // FIXME: We want the "current `this`" to be used. This doesn't do it.
+    connect(action, &QAction::triggered, [this] {
+        const QPixmap pixmap = chartView->grab();
+        QClipboard* clipboard = QGuiApplication::clipboard();
+        clipboard->setPixmap(pixmap);
+    });
+
+#if 0
+    action = new QAction(tr("Save chart as..."), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+    d->fileMenu->addAction(action);
+
+    connect(action, &QAction::triggered, [this] {
+        const QPixmap pixmap = d->chartView->grab();
+        auto dialog = new QFileDialog(this);
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
+        connect(dialog, &QFileDialog::fileSelected, [pixmap](const QString& name) {
+            pixmap.save(name, "png");
+        });
+        dialog->open();
+    });
+
+    d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
+
+    action = new QAction(tr("Duplicate current calculation"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        const QVariantHash saved = d->serialize(d->tabs->currentWidget());
+        d->newPage();
+        // Save the new color set on the new page.
+        const int current = d->tabs->currentIndex();
+        const QColor color = d->calculations[current].color->property("color").value<QColor>();
+        // TODO: block signals recursively, load UI values, then update chart.
+        d->deserialize(d->tabs->currentWidget(), saved);
+        setColorInButton(color, d->calculations.last().color);
+    });
+
+    action = new QAction(tr("Save current calculation to preferences"), this);
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
+
+    d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"));
+    d->mainMenu->addMenu(d->loadSavedMenu);
+    d->deleteSavedMenu = new QMenu(tr("Delete calculation from preferences"));
+    d->mainMenu->addMenu(d->deleteSavedMenu);
+    d->populateEntriesMenu();
+
+    action = new QAction(tr("Manage entries"), this);
+    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
+    d->mainMenu->addAction(action);
+    d->mainMenu->setEnabled(false);
+
+    d->manageDialog = new ManageDialog(this);
+    // TODO: pick something reasonable, yet not hardcoded?
+    d->manageDialog->setMinimumWidth(600);
+    connect(action, &QAction::triggered, [this] {
+        QStringList names;
+        for (const auto& entry : qAsConst(d->savedCalculations)) {
+            names << entry.value(QLatin1String("name")).toString();
+        }
+        d->manageDialog->setNames(names);
+        d->manageDialog->show();
+    });
+    connect(d->manageDialog, &ManageDialog::showClicked, this, [this](int index) {
+        d->newPage();
+        d->deserialize(d->tabs->currentWidget(), d->savedCalculations.at(index));
+    });
+#endif
+
+#if 0 // TODO: migrate to its own page
+    QMenu* extrasMenu = menuBar()->addMenu(tr("Extras"));
+    action = new QAction(tr("Attack bonuses"), this);
+    extrasMenu->addAction(action);
+
+    connect(action, &QAction::triggered, this, [this] {
+        auto dialog = new AttackBonuses(this);
+        dialog->showMaximized();
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+    });
+
+    action = new QAction(tr("Repeated roll probability"), this);
+    extrasMenu->addAction(action);
+
+    connect(action, &QAction::triggered, this, [this] {
+        auto dialog = new RollProbabilities(this);
+        dialog->showMaximized();
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+    });
+#endif
 }
 
 void DamageCalculatorPage::Private::newPage()
