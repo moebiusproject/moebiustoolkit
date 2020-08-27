@@ -119,8 +119,9 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
 
 #if defined(PACKED_STRUCTS)
     struct ResourceIndex {
-        char name[8] = {0}; ///< Null terminated if shorter than 8, but not otherwise.
-        quint16 type = 0;
+        // The names are null terminated only if shorter than 8. Fill with 0s.
+        char name[8] = {0};
+        ResourceType type = NoType;
         quint32 locator = 0;
     } PACKED_ATTRIBUTE;
     QVector<ResourceIndex> resourceIndexes;
@@ -136,8 +137,8 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
         const uint nameLength = qMin(uint(8), qstrlen(index.name));
         entry.name = QString::fromLatin1(index.name, nameLength);
         entry.type = index.type;
+        entry.index  = (index.locator & 0x00003FFF);
         entry.source = (index.locator & 0xFFF00000) >> 20;
-        entry.index  = (index.locator & 0x000FC000) >> 14;
         entry.locator = index.locator;
 
         ++count;

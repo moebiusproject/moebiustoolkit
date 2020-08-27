@@ -33,6 +33,9 @@ private slots:
     void testGeneral();
     void testDetails_data();
     void testDetails();
+
+    void testSanity_data();
+    void testSanity();
 };
 
 KeyFile tst_KeyFile::loadFile(const QString &fileName)
@@ -233,7 +236,7 @@ void tst_KeyFile::testDetails()
     if (fileName.isEmpty())
         QSKIP("File not found, skipping test.");
 
-    KeyFile key = loadFile(fileName);
+    const KeyFile key = loadFile(fileName);
 
     using Resources = QHash<int, KeyFile::ResourceEntry>;
     QFETCH(Resources, resources);
@@ -247,6 +250,37 @@ void tst_KeyFile::testDetails()
         QCOMPARE(received.index, expected.index);
         QCOMPARE(received.source, expected.source);
         QCOMPARE(received.locator, expected.locator);
+    }
+}
+
+void tst_KeyFile::testSanity_data()
+{
+    QTest::addColumn<QString>("filePath");
+    QTest::newRow("BG1 EE")
+            << QFINDTESTDATA("../../data/key/bg1ee/chitin.key");
+    QTest::newRow("BG1")
+            << QFINDTESTDATA("../../data/key/bg1/chitin.key");
+}
+
+void tst_KeyFile::testSanity()
+{
+    QFETCH(QString, filePath);
+    if (filePath.isEmpty())
+        QSKIP("File not found, skipping test.");
+    const KeyFile key = loadFile(filePath);
+
+    // Confirm our suspicion that the resources are unique if we consider name
+    // and type, even if we lowercase the name.
+    QHash<QPair<QString, quint16>, KeyFile::ResourceEntry> seenResourceNames;
+    for (const KeyFile::ResourceEntry& entry : key.resourceEntries) {
+        const auto seenKey = qMakePair(entry.name.toLower(), entry.type);
+        if (seenResourceNames.contains(seenKey)) {
+            const KeyFile::ResourceEntry& seen = seenResourceNames.value(seenKey);
+            qDebug() << seen.name << int(seen.type) << seen.index << seen.source;
+            qDebug() << entry.name << int(entry.type) << entry.index << entry.source;
+        }
+        QVERIFY2(!seenResourceNames.contains(seenKey), qPrintable(entry.name));
+        seenResourceNames.insert(seenKey, entry);
     }
 }
 

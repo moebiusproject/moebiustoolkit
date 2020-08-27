@@ -7,6 +7,7 @@
 
 enum ResourceType : quint16
 {
+    NoType    = 0x0000,
     BmpType   = 0x0001,
     WavType   = 0x0004,
     BamType   = 0x03E8,

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "packed.h"
+#include "resourcetype.h"
 
 #include <QByteArray>
 #include <QDataStream>
@@ -41,10 +42,10 @@ struct BiffFile
     } type = Invalid;
 
     struct FileEntriesIndex {
-        quint32 locator;
+        quint32 locator; ///< Might be used to make a check against what the CHITIN.KEY says
         quint32 offset;
         quint32 size;
-        quint16 type;
+        ResourceType type;
         quint16 unknown;
     } PACKED_ATTRIBUTE;
 
@@ -53,7 +54,7 @@ struct BiffFile
         quint32 offset;
         quint32 count;
         quint32 size;
-        quint16 type;
+        ResourceType type;
         quint16 unknown;
     } PACKED_ATTRIBUTE;
 

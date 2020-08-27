@@ -19,6 +19,7 @@
 #pragma once
 
 #include "packed.h"
+#include "resourcetype.h"
 
 #include <QByteArray>
 #include <QDataStream>
@@ -36,7 +37,7 @@ struct KeyFile
 
     struct ResourceEntry {
         QString name;
-        quint16 type = 0;
+        ResourceType type = NoType;
         quint16 source = 0;  ///< Index of which BIFF file from the list of BIFF files.
         quint16 index = 0;   ///< Index of which file from the list of files inside a BIFF.
         quint32 locator = 0; ///< The "locator" which bundles BIFF number and file number.
