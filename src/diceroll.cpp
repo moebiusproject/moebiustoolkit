@@ -139,7 +139,7 @@ double DiceRoll::sigma() const
     const auto p = (m_probability / permutations.size());
 
     double result = 0.0;
-    for (const auto rolls : permutations) {
+    for (const QVector<int>& rolls : permutations) {
         double value = 0.0;
         for (const auto& roll : rolls) {
             value += roll;
