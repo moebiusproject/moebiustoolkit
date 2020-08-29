@@ -19,6 +19,7 @@ HEADERS = \
     diceroll.h \
     keyfile.h \
     packed.h \
+    resourcemanager.h \
     resourcetype.h \
     tdafile.h \
     tlkfile.h \
@@ -29,5 +30,6 @@ SOURCES = \
     backstabstats.cpp \
     diceroll.cpp \
     keyfile.cpp \
+    resourcemanager.cpp \
     tdafile.cpp \
     tlkfile.cpp \

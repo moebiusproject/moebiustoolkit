@@ -4,5 +4,6 @@ SUBDIRS += \
     calculators \
     diceroll \
     keyfile \
+    resourcemanager \
     tdafile \
     tlkfile \
