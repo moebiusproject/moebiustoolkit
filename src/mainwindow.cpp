@@ -20,6 +20,7 @@
 
 #include "backstabcalculatorpage.h"
 #include "damagecalculatorpage.h"
+#include "gamebrowserpage.h"
 #include "pageselector.h"
 #include "pagetype.h"
 #include "repeatedprobabilitypage.h"
@@ -72,8 +73,10 @@ MainWindow::MainWindow(QWidget* parentWidget)
 
     d->welcomePage = new WelcomePage(this);
     d->view->addWidget(d->welcomePage);
+
+    using namespace std::placeholders;
     connect(d->welcomePage, &WelcomePage::newPageRequested,
-            std::bind(&Private::addNewPage, d, std::placeholders::_1));
+            std::bind(&Private::addNewPage, d, _1));
 
     auto central = new QWidget(this);
     central->setLayout(new QHBoxLayout(central));
@@ -90,15 +93,21 @@ MainWindow::~MainWindow()
 
 void MainWindow::Private::addNewPage(PageType type)
 {
+    BasePage::m_currentName = welcomePage->gameName();
+    BasePage::m_currentLocation = welcomePage->gameLocation();
+
     switch (type) {
-    case PageType::DamageCalculator: {
-        view->addWidget(new DamageCalculatorPage(&parent));
-        selector->addButton(tr("Damage\nCalculator"));
-        break;
-    }
     case PageType::BackstabCalculator:
         view->addWidget(new BackstabCalculatorPage(&parent));
         selector->addButton(tr("Backstab\nCalculator"));
+        break;
+    case PageType::DamageCalculator:
+        view->addWidget(new DamageCalculatorPage(&parent));
+        selector->addButton(tr("Damage\nCalculator"));
+        break;
+    case PageType::GameBrowser:
+        view->addWidget(new GameBrowserPage(&parent));
+        selector->addButton(tr("Game\nBrowser"));
         break;
     case PageType::RepeatedProbability:
         view->addWidget(new RepeatedProbabilityPage(&parent));
@@ -107,5 +116,4 @@ void MainWindow::Private::addNewPage(PageType type)
     }
 
     view->setCurrentIndex(view->count() - 1);
-
 }

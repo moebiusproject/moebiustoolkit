@@ -22,6 +22,7 @@
 #include "keyfile.h"
 
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QLoggingCategory>
 
@@ -72,8 +73,16 @@ ResourceManager::~ResourceManager()
     delete &d;
 }
 
+const KeyFile& ResourceManager::chitinKey() const
+{
+    return d.chitinKey;
+}
+
 void ResourceManager::load(const QString& path)
 {
+    QElapsedTimer timer;
+    timer.start();
+
     d.root = path.section(QLatin1Char('/'), 0, -2, QString::SectionIncludeTrailingSep);
 
     // Make idempotent.
@@ -128,6 +137,7 @@ void ResourceManager::load(const QString& path)
                                resource.locator);
 
     emit loaded();
+    qCDebug(log) << "Loaded:" << timer.elapsed() << "ms";
 }
 
 QByteArray ResourceManager::resource(const QString& name)

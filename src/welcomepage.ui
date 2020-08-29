@@ -202,7 +202,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="browse">
+      <widget class="QPushButton" name="gameBrowser">
        <property name="minimumSize">
         <size>
          <width>100</width>
@@ -278,7 +278,7 @@
   <tabstop>name</tabstop>
   <tabstop>location</tabstop>
   <tabstop>locationOpen</tabstop>
-  <tabstop>browse</tabstop>
+  <tabstop>gameBrowser</tabstop>
   <tabstop>damageCalculator</tabstop>
   <tabstop>backstabCalculator</tabstop>
   <tabstop>repeatedProbability</tabstop>

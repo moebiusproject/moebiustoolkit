@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <QString>
+
 class QMenuBar;
 class QStatusBar;
 
@@ -28,6 +30,8 @@ public:
 protected:
     QMenuBar* menuBar();
     QStatusBar* statusBar();
+    static QString m_currentName;
+    static QString m_currentLocation;
 private:
     static QMenuBar* m_menuBar;
     static QStatusBar* m_statusBar;

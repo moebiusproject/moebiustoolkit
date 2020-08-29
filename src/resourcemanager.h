@@ -22,12 +22,16 @@
 
 #include <QObject>
 
+class KeyFile;
+
 class ResourceManager : public QObject
 {
     Q_OBJECT
 public:
     explicit ResourceManager();
     ~ResourceManager();
+
+    const KeyFile& chitinKey() const;
 
     void load(const QString& path);
 

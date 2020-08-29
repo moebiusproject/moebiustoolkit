@@ -29,6 +29,9 @@ public:
     explicit WelcomePage(QWidget* parent = nullptr);
     ~WelcomePage();
 
+    QString gameName() const;
+    QString gameLocation() const;
+
 signals:
     void newPageRequested(PageType type);
 

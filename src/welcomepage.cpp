@@ -45,8 +45,6 @@ struct WelcomePage::Private
 
     void configuredGamesChanged(int index);
     void openChitinKeyDialog();
-
-    void startLoadingGame();
 };
 
 static const auto keyConfiguredGames = QStringLiteral("ConfiguredGames");
@@ -83,8 +81,6 @@ WelcomePage::WelcomePage(QWidget* parent)
     connect(d->ui.location, &QLineEdit::textChanged, std::bind(&Private::updateUi, d));
     connect(d->ui.locationOpen, &QPushButton::clicked, std::bind(&Private::openChitinKeyDialog, d));
 
-    connect(d->ui.browse, &QPushButton::clicked, std::bind(&Private::startLoadingGame, d));
-
     connect(d->ui.save, &QPushButton::clicked, [this] {
         const int selected = d->ui.configuredGames->currentIndex();
         const QString newName     = d->ui.name->text();
@@ -94,10 +90,12 @@ WelcomePage::WelcomePage(QWidget* parent)
         d->saveGameList();
     });
 
-    connect(d->ui.damageCalculator, &QPushButton::clicked,
-            this, [this]{ emit newPageRequested(PageType::DamageCalculator); });
     connect(d->ui.backstabCalculator, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::BackstabCalculator); });
+    connect(d->ui.damageCalculator, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::DamageCalculator); });
+    connect(d->ui.gameBrowser, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::GameBrowser); });
     connect(d->ui.repeatedProbability, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::RepeatedProbability); });
 }
@@ -106,6 +104,16 @@ WelcomePage::~WelcomePage()
 {
     delete d;
     d = nullptr;
+}
+
+QString WelcomePage::gameName() const
+{
+    return d->ui.name->text();
+}
+
+QString WelcomePage::gameLocation() const
+{
+    return d->ui.location->text();
 }
 
 void WelcomePage::Private::saveGameList()
@@ -164,9 +172,7 @@ void WelcomePage::Private::updateUi()
 
     const bool validLocation = ui.locationError->text().isEmpty();
     ui.locationError->setVisible(!validLocation);
-    ui.browse->setEnabled(validLocation && !location.isEmpty());
-    // TODO: Temporary, till I enable the browser better.
-    ui.browse->setEnabled(false);
+    ui.gameBrowser->setEnabled(validLocation && !location.isEmpty());
 }
 
 void WelcomePage::Private::configuredGamesChanged(int index)
@@ -188,9 +194,4 @@ void WelcomePage::Private::openChitinKeyDialog()
         ui.location->setText(file);
         dialog->deleteLater();
     });
-}
-
-void WelcomePage::Private::startLoadingGame()
-{
-    qDebug() << Q_FUNC_INFO;
 }

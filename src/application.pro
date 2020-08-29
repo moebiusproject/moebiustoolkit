@@ -9,6 +9,7 @@ HEADERS = \
     backstabcalculatorpage.h \
     basepage.h \
     damagecalculatorpage.h \
+    gamebrowserpage.h \
     mainwindow.h \
     pageselector.h \
     pagetype.h \
@@ -21,6 +22,7 @@ SOURCES = main.cpp \
     backstabcalculatorpage.cpp \
     basepage.cpp \
     damagecalculatorpage.cpp \
+    gamebrowserpage.cpp \
     mainwindow.cpp \
     pageselector.cpp \
     repeatedprobabilitypage.cpp \
@@ -32,6 +34,7 @@ FORMS += \
     backstabsetup.ui \
     damagecalculationwidget.ui \
     enemy.ui \
+    gamebrowserpage.ui \
     specialdamagewidget.ui \
     weaponarrangementwidget.ui \
     welcomepage.ui \

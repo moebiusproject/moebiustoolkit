@@ -21,6 +21,9 @@
 #include <QMenuBar>
 #include <QStatusBar>
 
+QString BasePage::m_currentName;
+QString BasePage::m_currentLocation;
+
 QMenuBar* BasePage::m_menuBar = nullptr;
 QStatusBar* BasePage::m_statusBar = nullptr;
 

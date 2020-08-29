@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019-2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +18,24 @@
 
 #pragma once
 
-#include <QtGlobal>
+#include "basepage.h"
 
-enum class PageType : qint8
+#include <QWidget>
+
+class GameBrowserPage : public QWidget, public BasePage
 {
-    BackstabCalculator,
-    DamageCalculator,
-    GameBrowser,
-    RepeatedProbability,
+    Q_OBJECT
+public:
+    explicit GameBrowserPage(QWidget* parent = nullptr);
+    ~GameBrowserPage();
+
+    void start(const QString& name, const QString& location);
+
+protected:
+    bool event(QEvent* event) override;
+
+private:
+    struct Private;
+    Private* d;
 };
+
