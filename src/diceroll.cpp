@@ -41,6 +41,16 @@ namespace
     }
 }
 
+DiceRoll::DiceRoll(const Arguments& arguments)
+    : m_number(arguments.number)
+    , m_sides(arguments.sides)
+    , m_bonus(arguments.bonus)
+    , m_luck(arguments.luck)
+    , m_resistance(arguments.resistance)
+    , m_probability(arguments.probability)
+{
+}
+
 // TODO: simplify the cartesian product function with something that can assume
 // our case: each dice is equal, so {1,2,3}{1,2,3} is redundant. We could pass
 // something like {1,2,3}{2} as input instead, and ditch the "more advanced"

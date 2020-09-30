@@ -25,7 +25,7 @@ class tst_DiceRoll: public QObject
     Q_OBJECT
 
 private slots:
-    void debugOperator();
+    void debugOperatorAndConstructor();
     void permutations();
     void luckified();
     void resistified();
@@ -33,12 +33,31 @@ private slots:
     void test();
 };
 
-void tst_DiceRoll::debugOperator()
+void tst_DiceRoll::debugOperatorAndConstructor()
 {
+    QTest::ignoreMessage(QtDebugMsg, "1d1+0@0");
+    qDebug() << DiceRoll();
+
+#ifndef Q_CC_MSVC
+    QTest::ignoreMessage(QtDebugMsg, "2d1+0@0");
+    qDebug() << DiceRoll({.number = 2});
+#endif
+
     QTest::ignoreMessage(QtDebugMsg, "1d4+0@1");
     qDebug() << DiceRoll().number(1).sides(4).bonus(0).luck(1);
+
     QTest::ignoreMessage(QtDebugMsg, "2d6+3@1");
     qDebug() << DiceRoll().number(2).sides(6).bonus(3).luck(1);
+
+#ifndef Q_CC_MSVC
+    QTest::ignoreMessage(QtDebugMsg, "1d2+3@4");
+    qDebug() << DiceRoll({.number = 1, .sides = 2, .bonus = 3, .luck = 4});
+#endif
+
+    auto roll = DiceRoll({.number = 1, .sides = 2, .bonus = 3, .luck = 4,
+                          .resistance = 0.5, .probability = 0.1});
+    QCOMPARE(roll.resistance(), 0.5);
+    QCOMPARE(roll.probability(), 0.1);
 }
 
 void tst_DiceRoll::permutations()

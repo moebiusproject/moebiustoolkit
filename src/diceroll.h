@@ -24,22 +24,27 @@ class QDebug;
 
 class DiceRoll
 {
+    struct Arguments {
+        int number = 1, sides = 1, bonus = 0, luck = 0;
+        double resistance = 0.0, probability = 1.0;
+    };
 public:
     using Permutations = QVector<QVector<int>>;
 
+    explicit DiceRoll(const Arguments& arguments);
     explicit DiceRoll() = default;
 
     Permutations permutations() const;
 
-    int sides() const {return m_sides;}
     int number() const {return m_number;}
+    int sides() const {return m_sides;}
     int bonus() const {return m_bonus;}
     int luck() const {return m_luck;}
     double resistance() const {return m_resistance;}
     double probability() const {return m_probability;}
 
-    DiceRoll& sides(int sides);
     DiceRoll& number(int number);
+    DiceRoll& sides(int sides);
     DiceRoll& bonus(int bonus);
     DiceRoll& luck(int luck);
     DiceRoll& resistance(double resistance);
@@ -56,8 +61,8 @@ public:
     int resistified(int value) const;
 
 private:
-    int m_sides = 1;
     int m_number = 1;
+    int m_sides = 1;
     int m_bonus = 0;
     int m_luck = 0;
     double m_resistance = 0.0;
