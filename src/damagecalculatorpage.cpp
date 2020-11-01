@@ -172,6 +172,7 @@ struct DamageCalculatorPage::Private
     QSpinBox* maximumX = nullptr;
     QCheckBox* pointLabels = nullptr;
     QCheckBox* pointLabelsClipping = nullptr;
+    QCheckBox* axisTitle = nullptr;
     QCheckBox* reverse = nullptr;
 
     Enemy enemy;
@@ -533,6 +534,17 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
             if (auto line = qobject_cast<QLineSeries*>(series)) {
                 line->setPointLabelsClipping(value);
             }
+        }
+    });
+    d->axisTitle = new QCheckBox(tr("Axis description"));
+    chartControlsLayout->addWidget(d->axisTitle);
+    d->axisTitle->setChecked(true);
+    connect(d->axisTitle, &QCheckBox::toggled, [this](bool value) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).first())) {
+            axis->setTitleVisible(value);
+        }
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).first())) {
+            axis->setTitleVisible(value);
         }
     });
     d->reverse = new QCheckBox(tr("AC: worst to best"));
@@ -930,6 +942,7 @@ void DamageCalculatorPage::Private::setupAxes()
 
         axis->setLabelFormat(QLatin1String("%i"));
         axis->setTitleText(tr("Opponent's Armor Class"));
+        axis->setTitleVisible(axisTitle->isChecked());
 #if 0
         QFont font = axis->labelsFont();
         font.setPointSize(font.pointSize() - 2);
@@ -960,6 +973,7 @@ void DamageCalculatorPage::Private::setupAxes()
         axis->setMinorTickCount(1);
         axis->setLabelFormat(QLatin1String("%d"));
         axis->setTitleText(tr("Damage per round"));
+        axis->setTitleVisible(axisTitle->isChecked());
     }
 }
 
