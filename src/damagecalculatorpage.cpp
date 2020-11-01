@@ -378,7 +378,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
-        dialog->setFileMode(QFileDialog::AnyFile);
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
         dialog->setModal(true);
@@ -929,6 +929,7 @@ void DamageCalculatorPage::Private::setupAxes()
         axis->setTickCount(maximumX->value() - minimumX->value() + 1);
 
         axis->setLabelFormat(QLatin1String("%i"));
+        axis->setTitleText(tr("Opponent's Armor Class"));
 #if 0
         QFont font = axis->labelsFont();
         font.setPointSize(font.pointSize() - 2);
@@ -958,6 +959,7 @@ void DamageCalculatorPage::Private::setupAxes()
 #endif
         axis->setMinorTickCount(1);
         axis->setLabelFormat(QLatin1String("%d"));
+        axis->setTitleText(tr("Damage per round"));
     }
 }
 
