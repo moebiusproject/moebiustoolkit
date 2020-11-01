@@ -60,7 +60,13 @@ MainWindow::MainWindow(QWidget* parentWidget)
     BasePage::m_statusBar = statusBar();
 
     d->mainMenu = menuBar()->addMenu(tr("Moebius Toolkit"));
-    auto action = new QAction(tr("Quit"), this);
+    auto action = new QAction(tr("Show full screen"), this);
+    action->setShortcut(QKeySequence(Qt::Key_F11));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered,
+            this, [this]{ setWindowState(windowState() ^ Qt::WindowFullScreen); });
+
+    action = new QAction(tr("Quit"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered,
