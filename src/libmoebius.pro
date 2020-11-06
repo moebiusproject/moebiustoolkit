@@ -18,6 +18,8 @@ HEADERS = \
     bifffile.h \
     calculators.h \
     diceroll.h \
+    globals.h \
+    itmfile.h \
     keyfile.h \
     packed.h \
     resourcemanager.h \
@@ -31,6 +33,7 @@ SOURCES = \
     bifffile.cpp \
     calculators.cpp \
     diceroll.cpp \
+    itmfile.cpp \
     keyfile.cpp \
     resourcemanager.cpp \
     tdafile.cpp \
