@@ -3,6 +3,7 @@ SUBDIRS += \
     bifffile \
     calculators \
     diceroll \
+    itmfile \
     keyfile \
     resourcemanager \
     tdafile \

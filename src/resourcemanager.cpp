@@ -97,6 +97,7 @@ void ResourceManager::load(const QString& path)
 
     QFile chitinFile(path);
     chitinFile.open(QIODevice::ReadOnly);
+    // TODO. Check failure in opening chitin key file? Case sensitivity?
     QDataStream chitinStream(&chitinFile);
     chitinStream >> d.chitinKey;
 
@@ -195,6 +196,7 @@ QByteArray ResourceManager::defaultResource(const QString& name, ResourceType ty
     }
 #endif
 
+    // FIXME: is the lookup into d.resourceIndex, checked in any way? doesn't seem
     // Resource metadata
     const quint32 locator = d.resourceIndex.value(resource);
     const quint16 index  = (locator & 0x00003FFF); // which file in the list inside the biff

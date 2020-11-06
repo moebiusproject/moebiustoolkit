@@ -17,6 +17,8 @@ HEADERS = \
     calculators.h \
     backstabstats.h \
     diceroll.h \
+    globals.h \
+    itmfile.h \
     keyfile.h \
     packed.h \
     resourcemanager.h \
@@ -29,6 +31,7 @@ SOURCES = \
     calculators.cpp \
     backstabstats.cpp \
     diceroll.cpp \
+    itmfile.cpp \
     keyfile.cpp \
     resourcemanager.cpp \
     tdafile.cpp \
