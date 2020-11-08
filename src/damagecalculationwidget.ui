@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>476</width>
+    <width>482</width>
     <height>283</height>
    </rect>
   </property>
@@ -128,18 +128,22 @@
        </layout>
       </item>
       <item>
-       <widget class="QCheckBox" name="maximumDamage">
-        <property name="text">
-         <string>Maximum damage (Kai, Righteous Magic, etc.)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="criticalStrike">
-        <property name="text">
-         <string>Critical Strike HLA</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QCheckBox" name="maximumDamage">
+          <property name="text">
+           <string>Maximum damage (Kai, Righteous Magic, etc.)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="criticalStrike">
+          <property name="text">
+           <string>Critical Strike HLA</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>

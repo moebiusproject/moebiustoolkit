@@ -15,6 +15,9 @@ WeaponArrangementWidget::WeaponArrangementWidget(QWidget* parent)
     ui->damageType->addItem(tr("Piercing"), DamageType::Piercing);
     ui->damageType->addItem(tr("Slashing"), DamageType::Slashing);
 
+    // Hide it for now. It uses space that I care a lot about right now.
+    ui->damageDetail->hide();
+
     // TODO: this is maybe not worth it, as it's only the physical damage, and
     // I don't even look at this anymore. Could be replaced with an extra chart.
     // Additionally, this widget is unaware of the luck value, so the numbers
