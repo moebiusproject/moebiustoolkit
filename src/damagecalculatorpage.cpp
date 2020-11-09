@@ -1007,10 +1007,10 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     Damage::Common common;
     common.thac0 = c.baseThac0->value();
     common.strengthToHit = c.strengthThac0Bonus->value();
-    common.otherToHit = c.classThac0Bonus->value();
+    common.otherToHit = c.classThac0Bonus->value() + c.miscThac0Bonus->value();
 
     common.strengthDamage = c.strengthDamageBonus->value();
-    common.otherDamage = c.classDamageBonus->value();
+    common.otherDamage = c.classDamageBonus->value() + c.miscDamageBonus->value();
 
     const int mainAcModifier = enemy.acModifier(c.weapon1->damageType());
     const int offAcModifier  = enemy.acModifier(c.weapon2->damageType());

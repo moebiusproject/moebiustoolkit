@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>482</width>
-    <height>283</height>
+    <width>598</width>
+    <height>256</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -84,6 +84,16 @@
         <item>
          <widget class="QSpinBox" name="classThac0Bonus"/>
         </item>
+        <item>
+         <widget class="QLabel" name="miscThac0BonusLabel">
+          <property name="text">
+           <string>Misc bonus</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="miscThac0Bonus"/>
+        </item>
        </layout>
       </item>
       <item>
@@ -108,7 +118,7 @@
         <item>
          <widget class="QLabel" name="strengthDamageBonusLabel">
           <property name="text">
-           <string>Damage Strength bonus</string>
+           <string>Strength dmg. bonus</string>
           </property>
          </widget>
         </item>
@@ -118,12 +128,22 @@
         <item>
          <widget class="QLabel" name="classDamageBonusLabel">
           <property name="text">
-           <string>Damage class bonus</string>
+           <string>Class dmg. bonus</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QSpinBox" name="classDamageBonus"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="miscDamageBonusLabel">
+          <property name="text">
+           <string>Misc dmg. bonus</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="miscDamageBonus"/>
         </item>
        </layout>
       </item>
