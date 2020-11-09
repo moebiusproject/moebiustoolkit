@@ -30,6 +30,15 @@ style, project structure, etc.
   https://gibberlings3.github.io/iesdp/files/2da/2da_bgee/strmodex.htm[extraordinary
   Strength]
 
+== Resources on file formats
+
+https://forums.beamdog.com/discussion/1285/iesdp-unknowns[IESDP unknowns]. Scott
+Brooks, former Beamdog developer, shared what seem to be the stripped headers of
+the file formats.
+
+https://github.com/Beamdog/bgfileformats[Baldur's Gate file format handling
+library] (written in Go).
+
 == Table/chart ideas
 
 - Number of spells (and at which levels) per XP. As in, to see how many spells
