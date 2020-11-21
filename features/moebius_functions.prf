@@ -5,6 +5,7 @@ defineTest(projectGlobals) {
     # TODO: not sure what I want yet.
     # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x051200
     DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
+    DEFINES += TOML_HEADER_ONLY=0
     export(DEFINES)
 
     unix {

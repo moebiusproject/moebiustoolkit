@@ -34,7 +34,12 @@
 #include <QtWidgets>
 #include <QtCharts>
 
+#define TOML_EXCEPTIONS 0
+#define TOML_IMPLEMENTATION
+#include "tomlplusplus/include/toml++/toml.h"
+
 #include <functional>
+#include <iostream>
 #include <numeric>
 
 using namespace Calculators;
@@ -243,23 +248,71 @@ struct DamageCalculatorPage::Private
         settings.endArray();
     }
 
-    void saveCalculationsToFile(const QString& fileName)
+    void saveCalculationsToFile(const QString& chosenFileName)
     {
-        QJsonObject root;
-        QJsonArray array;
+        const bool json = chosenFileName.endsWith(QLatin1String(".json"), Qt::CaseInsensitive);
+        const bool toml = chosenFileName.endsWith(QLatin1String(".toml"), Qt::CaseInsensitive);
+
+        toml::table tomlRoot;
+        QJsonObject jsonRoot;
         const QString title = chart->title();
         if (!title.isEmpty()) {
-            root.insert(QLatin1String("title"), title);
+            jsonRoot.insert(QLatin1String("title"), title);
+            tomlRoot.insert("title", qUtf8Printable(title));
         }
+
+        QJsonArray jsonArray;
+        toml::array tomlArray;
         for (int index = 0, last = tabs->count(); index < last; ++index) {
             const QVariantHash toSave = serialize(tabs->widget(index));
-            array.append(QJsonValue::fromVariant(toSave));
+            if (json)
+            {
+                jsonArray.append(QJsonValue::fromVariant(toSave));
+                continue;
+            }
+
+            toml::table calculation;
+            for (auto entry = toSave.keyValueBegin(),
+                 lastEntry = toSave.keyValueEnd(); entry != lastEntry; ++entry)
+            {
+                const QString& key = entry.base().key();
+                const QVariant& variant = entry.base().value();
+                switch (variant.type()) {
+                case QVariant::Bool:
+                    calculation.insert(key.toStdString(), variant.toBool());
+                    break;
+                case QVariant::Int:
+                    calculation.insert(key.toStdString(), variant.toInt());
+                    break;
+                case QVariant::Double:
+                    calculation.insert(key.toStdString(), variant.toDouble());
+                    break;
+                case QVariant::String:
+                case QVariant::Color:
+                    calculation.insert(key.toStdString(), qUtf8Printable(variant.toString()));
+                    break;
+                default:
+                    qWarning() << "Value of an unexpected type for serialization:" << key << variant;
+                }
+            }
+            tomlArray.push_back(calculation);
         }
-        root.insert(keyDamageCalculations, array);
-        QJsonDocument document(root);
+
+        // We use TOML by default, so append it.
+        const QString fileName = (toml || json) ? chosenFileName : chosenFileName + QLatin1String(".toml");
         QFile file(fileName);
         file.open(QIODevice::WriteOnly);
-        file.write(document.toJson(QJsonDocument::Indented));
+        if (json) {
+            jsonRoot.insert(keyDamageCalculations, jsonArray);
+            QJsonDocument document(jsonRoot);
+            file.write(document.toJson(QJsonDocument::Indented));
+        }
+        else {
+            tomlRoot.insert(keyDamageCalculations.toStdString(), tomlArray);
+            std::stringstream stream;
+            stream << tomlRoot;
+            file.write(stream.str().c_str());
+        }
     }
 
     void loadCalculationsFromFile(const QString& fileName)
@@ -379,6 +432,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
         dialog->setAcceptMode(QFileDialog::AcceptSave);
+        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json"));
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
         dialog->setModal(true);
