@@ -9,7 +9,9 @@
 
 #include <QDebug>
 #include <QStandardItemModel>
+#ifndef Q_OS_WASM
 #include <QThreadPool>
+#endif
 
 enum Row {
     BiffsRow = 0,
@@ -65,9 +67,13 @@ void GameBrowserPage::start(const QString& name, const QString& location)
     d->ui.header->setText(tr("%1 (%2)").arg(name).arg(location));
     d->location = location.section(QLatin1Char('/'), 0, -2); // Get the root only.
 
-    QThreadPool::globalInstance()->start(
-        QRunnable::create([this, location] { d->manager.load(location); }
-    ));
+    const auto load = [this, location] { d->manager.load(location); };
+
+#ifndef Q_OS_WASM
+    QThreadPool::globalInstance()->start(QRunnable::create(load));
+#else
+    load();
+#endif
 }
 
 bool GameBrowserPage::event(QEvent *event)

@@ -22,7 +22,7 @@
 
 #include <QObject>
 
-class KeyFile;
+struct KeyFile;
 
 class ResourceManager : public QObject
 {

@@ -22,8 +22,9 @@
 #include "resourcetype.h"
 
 #include <QByteArray>
-#include <QDataStream>
 #include <QVector>
+
+class QDataStream;
 
 struct BiffFile
 {

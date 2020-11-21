@@ -18,7 +18,9 @@
 
 #include "bifffile.h"
 
+#include <QDataStream>
 #include <QDebug>
+#include <QIODevice>
 #include <QScopeGuard>
 
 bool BiffFile::isValid() const

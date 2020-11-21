@@ -22,9 +22,10 @@
 #include "resourcetype.h"
 
 #include <QByteArray>
-#include <QDataStream>
 #include <QMetaType>
 #include <QVector>
+
+class QDataStream;
 
 struct KeyFile
 {

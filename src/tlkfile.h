@@ -21,8 +21,9 @@
 #include "packed.h"
 
 #include <QByteArray>
-#include <QDataStream>
 #include <QVector>
+
+class QDataStream;
 
 struct TlkFile
 {

@@ -18,7 +18,9 @@
 
 #include "keyfile.h"
 
+#include <QDataStream>
 #include <QDebug>
+#include <QIODevice>
 #include <QScopeGuard>
 
 bool KeyFile::isValid() const

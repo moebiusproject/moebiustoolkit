@@ -18,7 +18,9 @@
 
 #include "tlkfile.h"
 
+#include <QDataStream>
 #include <QDebug>
+#include <QIODevice>
 #include <QScopeGuard>
 
 bool TlkFile::isValid() const

@@ -21,6 +21,7 @@
 #include "bifffile.h"
 #include "keyfile.h"
 
+#include <QDataStream>
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QFile>
@@ -40,7 +41,11 @@ struct Resource {
 bool operator==(const Resource& a, const Resource& b)
 { return a.name == b.name && a.type == b.type; }
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 uint qHash(const Resource& resource, uint seed)
+#else
+size_t qHash(const Resource& resource, size_t seed)
+#endif
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, resource.name);
