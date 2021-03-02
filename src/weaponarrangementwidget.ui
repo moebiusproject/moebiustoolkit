@@ -323,6 +323,19 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>proficiencyThac0Modifier</tabstop>
+  <tabstop>styleModifier</tabstop>
+  <tabstop>weaponThac0Modifier</tabstop>
+  <tabstop>proficiencyDamageModifier</tabstop>
+  <tabstop>weaponDamageDiceNumber</tabstop>
+  <tabstop>weaponDamageDiceSide</tabstop>
+  <tabstop>weaponDamageDiceBonus</tabstop>
+  <tabstop>damageType</tabstop>
+  <tabstop>attacksPerRound1</tabstop>
+  <tabstop>attacksPerRound2</tabstop>
+  <tabstop>criticalHitChance</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
