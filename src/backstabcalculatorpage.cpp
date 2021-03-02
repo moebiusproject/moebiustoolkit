@@ -208,14 +208,14 @@ void BackstabCalculatorPage::Private::setupAxes()
 
     QVector<double> maximums(entries, 0.0);
     for (int entry = 0; entry < entries; ++entry) {
-        for (int index = 0, last = barSets.size(); index < last; ++index) {
-            maximums[entry] += barSets.at(index)->at(entry);
+        for (auto barSet : barSets) {
+            maximums[entry] += barSet->at(entry);
         }
     }
 
     double max = 0.0;
-    for (int index = 0; index < maximums.size(); ++index) {
-        max = qMax(maximums.at(index), max);
+    for (double maximum : maximums) {
+        max = qMax(maximum, max);
     }
     horizontal->setRange(0, max);
     horizontal->applyNiceNumbers();
