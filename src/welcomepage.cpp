@@ -177,6 +177,7 @@ void WelcomePage::Private::updateUi()
     const bool validLocation = ui.locationError->text().isEmpty();
     ui.locationError->setVisible(!validLocation);
     ui.gameBrowser->setEnabled(validLocation && !location.isEmpty());
+    ui.progressionCharts->setEnabled(validLocation && !location.isEmpty());
 }
 
 void WelcomePage::Private::configuredGamesChanged(int index)
