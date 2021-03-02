@@ -46,7 +46,7 @@
       <string> bonus</string>
      </property>
      <property name="maximum">
-      <number>10</number>
+      <number>100</number>
      </property>
     </widget>
    </item>
