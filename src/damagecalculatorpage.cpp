@@ -50,6 +50,7 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QTableWidget>
+#include <QTimer> // TODO: Remove once we can remove the QTimer-workaround.
 #include <QValueAxis>
 
 #define TOML_EXCEPTIONS 0
@@ -213,6 +214,7 @@ struct DamageCalculatorPage::Private
 
     QChart* chart = nullptr;
     QChartView* chartView = nullptr;
+    QTimer chartRefresher; // TODO: Remove once we fix the Qt Charts redraw issue.
 
     QLineEdit* titleLine = nullptr;
     QSpinBox* minimumX = nullptr;
@@ -763,6 +765,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->chart->setAnimationOptions(QChart::SeriesAnimations);
     d->chartView = new QChartView(d->chart);
     d->chartView->setRenderHint(QPainter::Antialiasing);
+    d->chartRefresher.setSingleShot(true);
+    connect(&d->chartRefresher, &QTimer::timeout, this, [this] {
+        d->chart->update(); // FIXME: Force a redraw due to a bug in Qt Charts.
+    });
 
     // The chart layout grouping the two ///////////////////////////////////////
     auto chartViewLayout = new QVBoxLayout;
@@ -1341,6 +1347,7 @@ void DamageCalculatorPage::Private::updateSeries(const Calculation& c, QLineSeri
 {
     series->replace(pointsFromInput(c));
     setupAxes();
+    chartRefresher.start(1000);
 
     if (series->attachedAxes().size() == 0) {
         // FIXME: assumption on QLineSeries
