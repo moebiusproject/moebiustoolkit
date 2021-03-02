@@ -147,7 +147,7 @@ private:
 };
 
 
-// Main class //////////////////////////////////////////////////////////////////
+// Private class ///////////////////////////////////////////////////////////////
 
 struct DamageCalculatorPage::Private
 {
@@ -184,8 +184,8 @@ struct DamageCalculatorPage::Private
     QVector<QVariantHash> savedCalculations;
 
     // TODO: move to their own location, to make them testable.
-    static void deserialize(QWidget* tab, QVariantHash data);
-    static QVariantHash serialize(QWidget* tab);
+    static void deserialize(QWidget* root, QVariantHash data);
+    static QVariantHash serialize(QWidget* root);
 
     void loadSavedCalculations()
     {
@@ -361,6 +361,8 @@ struct DamageCalculatorPage::Private
         button->setProperty("color", color);
     }
 };
+
+// Main class //////////////////////////////////////////////////////////////////
 
 DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     : QWidget(parent)
@@ -540,10 +542,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     chartControlsLayout->addWidget(d->axisTitle);
     d->axisTitle->setChecked(true);
     connect(d->axisTitle, &QCheckBox::toggled, [this](bool value) {
-        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).first())) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).constFirst())) {
             axis->setTitleVisible(value);
         }
-        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).first())) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).constFirst())) {
             axis->setTitleVisible(value);
         }
     });
@@ -552,7 +554,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->reverse->setChecked(true);
     connect(d->reverse, &QCheckBox::toggled, [this](bool value) {
         // FIXME: assumption on QLineSeries
-        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).first())) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).constFirst())) {
             axis->setReverse(value);
         }
     });
