@@ -88,7 +88,7 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     d->chart->createDefaultAxes();
     // But _add_ (not set) the custom one with percentages.
     d->chart->addAxis(axis, Qt::AlignBottom);
-    if (QValueAxis* verticalAxis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).first())) {
+    if (QValueAxis* verticalAxis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).constFirst())) {
         verticalAxis->setTickCount(11);
         verticalAxis->setMinorTickCount(1);
         verticalAxis->setLabelFormat(QString::fromLatin1("%.1f"));
