@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019-2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,21 @@
 
 #pragma once
 
-#include <QtGlobal>
+#include "basepage.h"
 
-enum class PageType : qint8
+#include <QWidget>
+
+class DualCalculatorPage : public QWidget, public BasePage
 {
-    BackstabCalculator,
-    BuffCalculator,
-    DamageCalculator,
-    DualCalculator,
-    GameBrowser,
-    ProgressionCharts,
-    RepeatedProbability,
+    Q_OBJECT
+public:
+    explicit DualCalculatorPage(QWidget* parent = nullptr);
+    ~DualCalculatorPage();
+
+protected:
+    bool event(QEvent* event) override;
+
+private:
+    struct Private;
+    Private* d;
 };

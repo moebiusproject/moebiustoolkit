@@ -96,6 +96,8 @@ WelcomePage::WelcomePage(QWidget* parent)
             this, [this]{ emit newPageRequested(PageType::BuffCalculator); });
     connect(d->ui.damageCalculator, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::DamageCalculator); });
+    connect(d->ui.dualCalculator, &QPushButton::clicked,
+            this, [this]{ emit newPageRequested(PageType::DualCalculator); });
     connect(d->ui.gameBrowser, &QPushButton::clicked,
             this, [this]{ emit newPageRequested(PageType::GameBrowser); });
     connect(d->ui.progressionCharts, &QPushButton::clicked,
@@ -178,6 +180,7 @@ void WelcomePage::Private::updateUi()
     ui.locationError->setVisible(!validLocation);
     ui.gameBrowser->setEnabled(validLocation && !location.isEmpty());
     ui.progressionCharts->setEnabled(validLocation && !location.isEmpty());
+    ui.dualCalculator->setEnabled(validLocation && !location.isEmpty());
 }
 
 void WelcomePage::Private::configuredGamesChanged(int index)

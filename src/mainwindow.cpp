@@ -21,6 +21,7 @@
 #include "backstabcalculatorpage.h"
 #include "buffcalculatorpage.h"
 #include "damagecalculatorpage.h"
+#include "dualcalculatorpage.h"
 #include "gamebrowserpage.h"
 #include "pageselector.h"
 #include "pagetype.h"
@@ -116,6 +117,10 @@ void MainWindow::Private::addNewPage(PageType type)
     case PageType::DamageCalculator:
         view->addWidget(new DamageCalculatorPage(&parent));
         selector->addButton(tr("Damage\nCalculator"));
+        break;
+    case PageType::DualCalculator:
+        view->addWidget(new DualCalculatorPage(&parent));
+        selector->addButton(tr("Dual XP\nCalculator"));
         break;
     case PageType::GameBrowser:
         view->addWidget(new GameBrowserPage(&parent));
