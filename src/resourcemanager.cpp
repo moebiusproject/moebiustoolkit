@@ -27,7 +27,7 @@
 #include <QFile>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(log, "resourcemanager");
+Q_LOGGING_CATEGORY(log, "resourcemanager", QtWarningMsg);
 
 namespace {
 
