@@ -40,6 +40,8 @@
 using namespace Calculators;
 using namespace QtCharts;
 
+static const auto keyDamageCalculations = QStringLiteral("DamageCalculations");
+
 struct ArmorModifiers
 {
     ArmorModifiers() = default;
@@ -190,8 +192,7 @@ struct DamageCalculatorPage::Private
     void loadSavedCalculations()
     {
         QSettings settings;
-        // FIXME: configuration
-        const int size = settings.beginReadArray(QLatin1String("configurations"));
+        const int size = settings.beginReadArray(keyDamageCalculations);
         for (int index = 0; index < size; ++index) {
             settings.setArrayIndex(index);
             QVariantHash loadedData;
@@ -231,8 +232,7 @@ struct DamageCalculatorPage::Private
     void saveCalculationsToDisk()
     {
         QSettings settings;
-        // FIXME: configuration
-        settings.beginWriteArray(QLatin1String("configurations"));
+        settings.beginWriteArray(keyDamageCalculations);
         for (int index = 0, size = savedCalculations.size(); index < size; ++index) {
             settings.setArrayIndex(index);
             const QVariantHash& entry = savedCalculations.at(index);
@@ -255,8 +255,7 @@ struct DamageCalculatorPage::Private
             const QVariantHash toSave = serialize(tabs->widget(index));
             array.append(QJsonValue::fromVariant(toSave));
         }
-        // FIXME: configuration
-        root.insert(QLatin1String("configurations"), array);
+        root.insert(keyDamageCalculations, array);
         QJsonDocument document(root);
         QFile file(fileName);
         file.open(QIODevice::WriteOnly);
@@ -285,13 +284,11 @@ struct DamageCalculatorPage::Private
         if (title.isString())
             titleLine->setText(title.toString());
 
-        // FIXME: configuration
-        if (!root.contains(QLatin1String("configurations"))) {
+        if (!root.contains(keyDamageCalculations)) {
             errorOut("Cannot load JSON: root not an object");
             return;
         }
-        // FIXME: configuration
-        const QJsonArray array = root.value(QLatin1String("configurations")).toArray();
+        const QJsonArray array = root.value(keyDamageCalculations).toArray();
         for (int index = 0, last = array.count(); index < last; ++index) {
             const QJsonValue value = array.at(index);
             if (!value.isObject()) {
