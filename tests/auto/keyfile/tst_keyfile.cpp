@@ -184,7 +184,7 @@ void tst_KeyFile::testGeneral()
 
     QCOMPARE(key.biffEntries.count(), bifNames.count());
     QStringList bifDetailsNames;
-    for (const KeyFile::BiffEntry& bif : key.biffEntries) {
+    for (const KeyFile::BiffEntry& bif : qAsConst(key.biffEntries)) {
         bifDetailsNames << bif.name;
         QCOMPARE(bif.location, 1);
     }

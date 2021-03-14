@@ -195,7 +195,7 @@ struct DamageCalculatorPage::Private
         for (int index = 0; index < size; ++index) {
             settings.setArrayIndex(index);
             QVariantHash loadedData;
-            for (auto entry : settings.childKeys())
+            for (const QString& entry : settings.childKeys())
                 loadedData.insert(entry, settings.value(entry));
             savedCalculations.append(loadedData);
         }
@@ -917,7 +917,7 @@ void DamageCalculatorPage::Private::newPage()
             q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
     });
     chart->addSeries(series);
-    QLegendMarker* marker = chart->legend()->markers(series).first();
+    QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
         series->setVisible(!series->isVisible());
         marker->setVisible(true);
@@ -936,7 +936,7 @@ void DamageCalculatorPage::Private::setupAxes()
     if (chart->axes().size() == 0)
         chart->createDefaultAxes();
 
-    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first())) {
+    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).constFirst())) {
         axis->setReverse(reverse->isChecked());
         axis->setMin(minimumX->value());
         axis->setMax(maximumX->value());
@@ -952,10 +952,10 @@ void DamageCalculatorPage::Private::setupAxes()
 #endif
     }
     // FIXME: assumption on QLineSeries
-    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first())) {
+    if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).constFirst())) {
         double min = +qInf();
         double max = -qInf();
-        for (auto series : lineSeries) {
+        for (auto series : qAsConst(lineSeries)) {
             const QVector<QPointF> points = series->pointsVector();
             for (auto point : points) {
                 if (point.x() > maximumX->value() || point.x() < minimumX->value())
@@ -1071,9 +1071,9 @@ void DamageCalculatorPage::Private::updateSeries(const Calculation& c, QLineSeri
 
     if (series->attachedAxes().size() == 0) {
         // FIXME: assumption on QLineSeries
-        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).first()))
+        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Horizontal).constFirst()))
             series->attachAxis(axis);
-        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).first()))
+        if (auto axis = qobject_cast<QValueAxis*>(chart->axes(Qt::Vertical).constFirst()))
             series->attachAxis(axis);
     }
 }
