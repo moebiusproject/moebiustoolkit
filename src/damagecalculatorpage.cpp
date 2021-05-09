@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2018-2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2018-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -327,33 +327,125 @@ struct DamageCalculatorPage::Private
             errorOut("File could not be opened");
             return;
         }
-        const QJsonDocument document = QJsonDocument::fromJson(file.readAll());
-        if (!document.isObject()) {
-            errorOut("Cannot load JSON: root not an object");
-            return;
-        }
-        const QJsonObject root = document.object();
-        const QJsonValue title = root.value(QLatin1String("title"));
-        if (title.isString())
-            titleLine->setText(title.toString());
+        const QByteArray fileData = file.readAll();
 
-        if (!root.contains(keyDamageCalculations)) {
-            errorOut("Cannot load JSON: root not an object");
-            return;
-        }
-        const QJsonArray array = root.value(keyDamageCalculations).toArray();
-        for (int index = 0, last = array.count(); index < last; ++index) {
-            const QJsonValue value = array.at(index);
-            if (!value.isObject()) {
-                errorOut("Cannot load JSON: element is not an object");
-                continue;
+        const bool json = fileName.endsWith(QLatin1String(".json"), Qt::CaseInsensitive);
+        const bool toml = fileName.endsWith(QLatin1String(".toml"), Qt::CaseInsensitive);
+
+        if (json) {
+            const QJsonDocument document = QJsonDocument::fromJson(fileData);
+            if (!document.isObject()) {
+                errorOut("Cannot load JSON: root not an object");
+                return;
             }
-            newPage();
-            deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
-            const int current = tabs->currentIndex();
-            const QVariant color = calculations[current].color->property("color");
-            if (color.isValid())
-                lineSeries[current]->setColor(color.value<QColor>());
+            const QJsonObject root = document.object();
+            const QJsonValue title = root.value(QLatin1String("title"));
+            if (title.isString())
+                titleLine->setText(title.toString());
+
+            if (!root.contains(keyDamageCalculations)) {
+                errorOut("Cannot load JSON: root not an object");
+                return;
+            }
+            const QJsonArray array = root.value(keyDamageCalculations).toArray();
+            for (int index = 0, last = array.count(); index < last; ++index) {
+                const QJsonValue value = array.at(index);
+                if (!value.isObject()) {
+                    errorOut("Cannot load JSON: element is not an object");
+                    continue;
+                }
+                newPage();
+                deserialize(tabs->currentWidget(), value.toObject().toVariantHash());
+                const int current = tabs->currentIndex();
+                const QVariant color = calculations[current].color->property("color");
+                if (color.isValid())
+                    lineSeries[current]->setColor(color.value<QColor>());
+            }
+        } else {
+            if (!toml)
+                qDebug() << "Attempting to parse" << fileName << "as TOML";
+
+            const auto fileDataView = std::string_view(fileData.data(), fileData.size());
+            toml::parse_result result = toml::parse(fileDataView);
+            if (!result) {
+                errorOut("Cannot load TOML: parse error");
+                qWarning() << result.error().description().data() << "\n";
+                return;
+            }
+            const auto table = result.table();
+            const toml::node* title = table.get("title");
+            if (title->is_string())
+                titleLine->setText(QString::fromStdString(title->as_string()->get()));
+
+            const std::string keyCalculations = keyDamageCalculations.toStdString();
+            if (!table.contains(keyCalculations)) {
+                errorOut("Cannot load TOML: doesn't contain calculations!");
+                return;
+            }
+            const toml::node* arrayNode = table.get(keyCalculations);
+            if (!arrayNode->is_array()) {
+                errorOut("Cannot load TOML: the calculations entry is not an array!");
+                return;
+            }
+            const toml::array* array = arrayNode->as_array();
+            for (int index = 0, last = array->size(); index < last; ++index) {
+                const toml::node* value = array->get(index);
+                if (!value->is_table()) {
+                    errorOut("Cannot load TOML element in calculations: is not a table");
+                    continue;
+                }
+
+                QVariantHash calculation;
+                for (const auto& entry : *value->as_table()) {
+                    const QString key = QString::fromStdString(entry.first);
+                    QVariant variant;
+
+#if 0 // TODO: Test that this works in all of our compilers.
+                    entry.second.visit([&variant](auto&& element) noexcept
+                    {
+                        if constexpr (toml::is_number<decltype(element)>)
+                            variant = QVariant::fromValue(element.as_integer()->get());
+                        else if constexpr (toml::is_string<decltype(element)>)
+                            variant = QVariant(QString::fromStdString(element.as_string()->get()));
+                    });
+#else
+                    switch (entry.second.type()) {
+                    case toml::node_type::none:
+                    case toml::node_type::table:
+                    case toml::node_type::array:
+                        break;
+                    case toml::node_type::string:
+                        variant = QString::fromStdString(entry.second.as_string()->get());
+                        break;
+                    case toml::node_type::integer:
+                        variant = QVariant::fromValue(entry.second.as_integer()->get());
+                        break;
+                    case toml::node_type::floating_point:
+                        variant = QVariant::fromValue(entry.second.as_floating_point()->get());
+                        break;
+                    case toml::node_type::boolean:
+                        variant = QVariant::fromValue(entry.second.as_boolean()->get());
+                        break;
+                    case toml::node_type::date:
+                    case toml::node_type::time:
+                    case toml::node_type::date_time:
+                        break;
+                    }
+#endif
+                    if (variant.isValid())
+                        calculation.insert(key, variant);
+                    else
+                        qWarning() << "Entry at" << key << "is of a non-implemented type";
+                }
+                // TODO: the next lines are fully duplicated with the JSON block.
+
+                newPage();
+                deserialize(tabs->currentWidget(), calculation);
+                const int current = tabs->currentIndex();
+                const QVariant color = calculations[current].color->property("color");
+                if (color.isValid())
+                    lineSeries[current]->setColor(color.value<QColor>());
+            }
         }
     }
 
