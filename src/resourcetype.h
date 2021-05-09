@@ -20,5 +20,6 @@ enum ResourceType : quint16
     TdaType   = 0x03F4,
     BsType    = 0x03F9,
     PvrzType  = 0x0404,
+    MenuType  = 0x0408,
 };
 Q_DECLARE_METATYPE(ResourceType)

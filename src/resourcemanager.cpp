@@ -240,6 +240,7 @@ QString ResourceManager::resourceFileName(const QString& name, ResourceType type
     case TdaType:      termination = QLatin1String("2da");      break;
     case BsType:       termination = QLatin1String("bs");       break;
     case PvrzType:     termination = QLatin1String("pvrz");     break;
+    case MenuType:     termination = QLatin1String("menu");     break;
     }
     return name + QLatin1Char('.') + termination;
 }
@@ -261,6 +262,7 @@ ResourceType ResourceManager::resourceType(const QString& name)
         {QLatin1String("2da"),      TdaType},
         {QLatin1String("bs"),       BsType},
         {QLatin1String("pvrz"),     PvrzType},
+        {QLatin1String("menu"),     PvrzType},
     };
     auto termination = [](const QString& string) {
         return string.section(QLatin1Char('.'), -1);
