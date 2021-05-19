@@ -30,9 +30,25 @@
 // #include "attackbonuses.h"
 // #include "rollprobabilities.h"
 
-#include <QtCore>
-#include <QtWidgets>
-#include <QtCharts>
+#include <QChartView>
+#include <QClipboard>
+#include <QColorDialog>
+#include <QDebug>
+#include <QDialog>
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QLegendMarker>
+#include <QLineSeries>
+#include <QMenu>
+#include <QMenuBar>
+#include <QScrollBar>
+#include <QSettings>
+#include <QStatusBar>
+#include <QTableWidget>
+#include <QValueAxis>
 
 #define TOML_EXCEPTIONS 0
 #define TOML_IMPLEMENTATION
