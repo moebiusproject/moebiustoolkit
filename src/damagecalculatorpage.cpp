@@ -524,7 +524,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
         dialog->setAcceptMode(QFileDialog::AcceptSave);
-        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json"));
+        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json)"));
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
         dialog->setModal(true);
@@ -536,7 +536,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         auto dialog = new QFileDialog(this);
-        dialog->setFileMode(QFileDialog::AnyFile);
+        dialog->setFileMode(QFileDialog::ExistingFile);
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::loadCalculationsFromFile, d, std::placeholders::_1));
         dialog->setModal(true);
