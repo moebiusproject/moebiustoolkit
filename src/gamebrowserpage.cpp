@@ -29,6 +29,13 @@ struct GameBrowserPage::Private
     GameBrowserPage& page;
     Ui::GameBrowserPage ui;
 
+    const QHash<Row, ResourceType> typeMapping = {
+        {BiffsRow, NoType},
+        {SpellsRow, SplType},
+        {ItemsRow, ItmType},
+        {TdasRow, TdaType},
+        {CresRow, CreType},
+    };
     QStandardItemModel model;
 
     ResourceManager manager;
@@ -54,6 +61,19 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
 
     connect(&d->manager, &ResourceManager::loaded,
             this, [this]() { d->loaded(); });
+
+    connect(d->ui.resources, &QAbstractItemView::clicked, [this](const QModelIndex& index) {
+        if (index.parent() != QModelIndex()) {
+            const ResourceType type = d->typeMapping.value(Row(index.parent().row()));
+            QString resource = tr("Not yet implemented");
+            if (type == TdaType) {
+                const QString resourceName = index.data().toString();
+                const QByteArray resourceData = d->manager.resource(resourceName, type);
+                resource = QString::fromUtf8(resourceData);
+            }
+            d->ui.log->setText(resource);
+        }
+    });
 }
 
 GameBrowserPage::~GameBrowserPage()
