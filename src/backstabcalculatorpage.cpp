@@ -161,6 +161,8 @@ void BackstabCalculatorPage::Private::newPage()
         connect(child, qOverload<int>(&QSpinBox::valueChanged), update);
     for (auto child : widget->findChildren<QDoubleSpinBox*>())
         connect(child, qOverload<double>(&QDoubleSpinBox::valueChanged), update);
+    for (auto child : widget->findChildren<QCheckBox*>())
+        connect(child, &QCheckBox::toggled, update);
 
     // We just ensure the count is correct, then the value will be set properly.
     setStrength->append(0);
@@ -214,7 +216,7 @@ void BackstabCalculatorPage::Private::setupAxes()
     }
 
     double max = 0.0;
-    for (double maximum : maximums) {
+    for (double maximum : qAsConst(maximums)) {
         max = qMax(maximum, max);
     }
     horizontal->setRange(0, max);
@@ -225,7 +227,7 @@ void BackstabCalculatorPage::Private::updateCurrentSeries()
 {
     const int index = tabs->currentIndex();
     const Ui::BackstabSetup& setup = setups[index];
-    WeaponArrangement weapon = setup.weapon->toData();
+    const WeaponArrangement weapon = setup.weapon->toData();
     // TODO: luck support
     // FIXME: this line is copy/pasted from damage calculator page. Also, this
     // line is like the only outside use of physicalDamageType(), and shows
@@ -233,10 +235,12 @@ void BackstabCalculatorPage::Private::updateCurrentSeries()
     // we can't use to modify the luck value. Should be easy to fix.
     // weapon.damage.find(weapon.physicalDamageType()).value().luck(42);
 
+    const bool max = setup.maximumDamage->isChecked();
     double totalWeaponDamage = 0.0;
     for (const auto& damage : weapon.damage)
-        totalWeaponDamage += damage.average();
-    const double physicalPart = weapon.physicalDamage().average()
+        totalWeaponDamage += (max ? damage.maximum() : damage.average());
+    const DiceRoll physicalDamage = weapon.physicalDamage();
+    const double physicalPart = (max ? physicalDamage.maximum() : physicalDamage.average())
                               + setup.kit->value() + setup.other->value();
 
     // TODO: use this in a testable way instead of the quick solution. :-)
@@ -252,6 +256,7 @@ void BackstabCalculatorPage::Private::updateCurrentSeries()
     setStrength->replace(index, other.strength);
     setBase->replace(index, totalWeaponDamage);
     setMultiplied->replace(index, remainingMultiplier * physicalPart);
+    qDebug() << setup.name->text() << totalWeaponDamage << (remainingMultiplier*physicalPart);
 
     setupAxes();
 }

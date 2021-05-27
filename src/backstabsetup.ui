@@ -74,6 +74,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="maximumDamage">
+     <property name="text">
+      <string>Maximum damage</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="WeaponArrangementWidget" name="weapon" native="true"/>
    </item>
    <item>
@@ -81,15 +88,15 @@
      <item row="0" column="1">
       <widget class="QSpinBox" name="kit"/>
      </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="other"/>
-     </item>
      <item row="0" column="0">
       <widget class="QLabel" name="kitLabel">
        <property name="text">
         <string>Kit bonus</string>
        </property>
       </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="other"/>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="otherLabel">
