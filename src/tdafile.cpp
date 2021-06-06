@@ -20,6 +20,7 @@
 
 #include <QDebug>
 #include <QIODevice>
+#include <QRegularExpression>
 
 TdaFile TdaFile::from(QIODevice& device)
 {
@@ -37,15 +38,20 @@ TdaFile TdaFile::from(QIODevice& device)
         return table;
     }
 
-    table.defaultValue = QString::fromLatin1(device.readLine().trimmed());
+    QRegularExpression space(QStringLiteral("\\s+"));
+    const QByteArray defaultValueLine = device.readLine();
+    table.defaultValue = QString::fromLatin1(defaultValueLine.trimmed());
 
-    const QString& headers = QString::fromLatin1(device.readLine().trimmed());
-    for (const QString& header : headers.split(QLatin1Char(' '), Qt::SkipEmptyParts))
+    const QByteArray headersLine = device.readLine();
+    const QString& headers = QString::fromLatin1(headersLine.trimmed());
+    for (const QString& header : headers.split(space, Qt::SkipEmptyParts))
         table.headers.append(header);
 
     while (!device.atEnd()) {
         const QString& row = QString::fromLatin1(device.readLine().trimmed());
-        table.entries.append(row.split(QLatin1Char(' '), Qt::SkipEmptyParts));
+        if (row.isEmpty())
+            continue;
+        table.entries.append(row.split(space, Qt::SkipEmptyParts));
     }
 
     return table;
