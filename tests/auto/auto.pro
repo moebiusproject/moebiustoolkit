@@ -7,3 +7,4 @@ SUBDIRS += \
     resourcemanager \
     tdafile \
     tlkfile \
+    xplevels \

@@ -23,6 +23,7 @@ HEADERS = \
     resourcetype.h \
     tdafile.h \
     tlkfile.h \
+    xplevels.h \
 
 SOURCES = \
     bifffile.cpp \
@@ -33,3 +34,4 @@ SOURCES = \
     resourcemanager.cpp \
     tdafile.cpp \
     tlkfile.cpp \
+    xplevels.cpp \
