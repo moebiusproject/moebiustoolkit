@@ -68,8 +68,9 @@ struct ResourceManager::Private
     QHash<Resource, quint32> resourceIndex;
 };
 
-ResourceManager::ResourceManager()
-    : d(*(new Private))
+ResourceManager::ResourceManager(QObject* parentObject)
+    : QObject(parentObject)
+    , d(*(new Private))
 {
 }
 
@@ -145,7 +146,7 @@ void ResourceManager::load(const QString& path)
     qCDebug(log) << "Loaded:" << timer.elapsed() << "ms";
 }
 
-QByteArray ResourceManager::resource(const QString& name)
+QByteArray ResourceManager::resource(const QString& name) const
 {
     // Try to find the resource on the overridden directory first.
     // TODO: I feel tempted to use a container to store which files have been
@@ -178,7 +179,7 @@ QByteArray ResourceManager::resource(const QString& name, ResourceType type)
     return resource(resourceFileName(name, type));
 }
 
-QByteArray ResourceManager::defaultResource(const QString& name, ResourceType type)
+QByteArray ResourceManager::defaultResource(const QString& name, ResourceType type) const
 {
     QByteArray result;
 

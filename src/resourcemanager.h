@@ -27,8 +27,9 @@ struct KeyFile;
 class ResourceManager : public QObject
 {
     Q_OBJECT
+
 public:
-    explicit ResourceManager();
+    explicit ResourceManager(QObject* parentObject = nullptr);
     ~ResourceManager();
 
     const KeyFile& chitinKey() const;
@@ -44,7 +45,7 @@ public:
      * \param name Name of the file
      * \return Contents of the file
      */
-    QByteArray resource(const QString& name);
+    QByteArray resource(const QString& name) const;
 
     /*!
      * \brief Returns the contents of a resource from a base name and type.
@@ -65,7 +66,7 @@ public:
      * \param type Type of the file.
      * \return
      */
-    QByteArray defaultResource(const QString& name, ResourceType type);
+    QByteArray defaultResource(const QString& name, ResourceType type) const;
 
     /*!
      * \brief Returns a file name "abc.xyz" from "abc" and the type
