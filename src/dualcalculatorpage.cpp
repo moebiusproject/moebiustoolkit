@@ -18,19 +18,16 @@
 
 
 #include "dualcalculatorpage.h"
-#include "resourcemanager.h"
-#include "tdafile.h"
-
 #include "ui_dualcalculatorwidget.h"
+
+#include "xplevels.h"
 
 #include <QBarCategoryAxis>
 #include <QBarSet>
-#include <QBuffer>
 #include <QChartView>
 #include <QDebug>
-#include <QEvent>
+#include <QSplitter>
 #include <QStackedBarSeries>
-#include <QThreadPool>
 #include <QValueAxis>
 
 using namespace QtCharts;
@@ -69,16 +66,18 @@ QDebug operator<<(QDebug dbg, QAbstractAxis* axis)
 
 struct DualCalculatorPage::Private
 {
-    Private(DualCalculatorPage& page) : parent(page) {}
-    void load(const QString& path);
+    Private(DualCalculatorPage& page, const QString& location)
+        : parent(page)
+        , levels(location)
+    {}
+
     void loaded();
     void addCalculation();
     void recalculate(int index);
 
     DualCalculatorPage& parent;
 
-    ResourceManager manager;
-    QString location;
+    XpLevels levels;
 
     QChart* chart = nullptr;
     QBarSet* class1 = nullptr;
@@ -88,52 +87,27 @@ struct DualCalculatorPage::Private
 
     QVector<Ui::DualCalculatorWidget> widgets;
     QVBoxLayout* inputsLayout = nullptr;
-
-    QHash<QString, QVector<quint32>> levels;
 };
 
 // Private /////////////////////////////////////////////////////////////////////
 
-void DualCalculatorPage::Private::load(const QString& path)
-{
-    QThreadPool::globalInstance()->start( [this, path] { manager.load(path); } );
-}
-
 void DualCalculatorPage::Private::loaded()
 {
-    QByteArray data = manager.resource(QLatin1String("XPLEVEL.2DA"));
-    QBuffer buffer(&data);
-    buffer.open(QIODevice::ReadOnly);
-    const TdaFile file = TdaFile::from(buffer);
-    buffer.close();
-
-    for (const QStringList& entry : file.entries) {
-        const QString name = entry.first();
-
-        // For now, just skip some of the ones we know are uninteresting for this
-        if (name == QLatin1String("MONK") ||
-            name == QLatin1String("PALADIN") ||
-            name == QLatin1String("SORCERER") ||
-            name == QLatin1String("SHAMAN") ||
-            name == QLatin1String("BARD"))
-            continue;
-
+    for (const QString& name : levels.classes()) { // clazy:exclude=range-loop
         QVector<QPointF> points;
         // TODO: check the validity of the string conversion to number.
-        QVector<quint32> values;
-        for (int level = 1; level < entry.count() && level <= 40; ++level) {
-            const uint x = qMax(uint(1), entry.at(level).toUInt());
+        const QVector<quint32> values = levels.data().value(name);
+        for (int level = 1; level < values.count() && level <= 40; ++level) {
+            const uint x = qMax(uint(1), values.at(level));
             points.append(QPointF(x, level));
-            values.append(entry.at(level).toULong());
         }
-        levels.insert(name, values);
     }
 
     for (auto& widget : widgets) {
         QSignalBlocker blocker1(widget.firstClass);
         QSignalBlocker blocker2(widget.secondClass);
-        widget.firstClass->addItems(levels.keys());
-        widget.secondClass->addItems(levels.keys());
+        widget.firstClass->addItems(levels.classes());
+        widget.secondClass->addItems(levels.classes());
     }
     // TODO: now we should enable the "add new" button here, which should be disabled initially
 
@@ -161,11 +135,12 @@ void DualCalculatorPage::Private::addCalculation()
     const int index = widgets.size() - 1;
     Ui::DualCalculatorWidget& widget = widgets.last();
     widget.setupUi(input);
+    widget.close->hide(); // TODO: implement the "delete" feature
 
-    inputsLayout->addWidget(input);
+    inputsLayout->insertWidget(index + 1, input);
 
-    widget.firstClass->addItems(levels.keys());
-    widget.secondClass->addItems(levels.keys());
+    widget.firstClass->addItems(levels.classes());
+    widget.secondClass->addItems(levels.classes());
 
     auto recalculateThis = [this, index] { recalculate(index); };
 
@@ -189,15 +164,20 @@ void DualCalculatorPage::Private::addCalculation()
 
 void DualCalculatorPage::Private::recalculate(int index)
 {
+    const QHash<QString, QVector<quint32>> levelsData = levels.data();
+
     const Ui::DualCalculatorWidget& widget = widgets.at(index);
     const QString firstClass = widget.firstClass->currentText();
     const QString secondClass = widget.secondClass->currentText();
-    const int firstLevel = widget.firstClassLevel->value();
-    const int secondLevel = widget.secondClassLevel->value();
+
+    const QVector<quint32> firstClassData = levelsData.value(firstClass);
+    const QVector<quint32> secondClassData = levelsData.value(secondClass);
+    const int firstLevel = qBound(0, widget.firstClassLevel->value(), firstClassData.size() - 1);
+    const int secondLevel = qBound(0, widget.secondClassLevel->value(), secondClassData.size() - 1);
 
     // Level 1 is index=0 on the container, so subtract 1.
-    const int xp1 = levels.value(firstClass).at(firstLevel - 1);
-    const int xp2 = levels.value(secondClass).at(secondLevel - 1);
+    const int xp1 = firstClassData.at(firstLevel - 1);
+    const int xp2 = secondClassData.at(secondLevel - 1);
 
     // qDebug() << firstClass << firstLevel << xp1;
     // qDebug() << secondClass << secondLevel << xp2;
@@ -226,9 +206,9 @@ void DualCalculatorPage::Private::recalculate(int index)
 
 DualCalculatorPage::DualCalculatorPage(QWidget* parent)
     : QWidget(parent)
-    , d(new Private(*this))
+    , d(new Private(*this, m_currentLocation))
 {
-    connect(&d->manager, &ResourceManager::loaded, this, [this]{ d->loaded(); });
+    connect(&d->levels, &XpLevels::loaded, this, [this]{ d->loaded(); });
 
     d->class1 = new QBarSet(tr("First class"));
     d->class2 = new QBarSet(tr("Second class"));
@@ -269,24 +249,21 @@ DualCalculatorPage::DualCalculatorPage(QWidget* parent)
 
     d->addCalculation();
 
+    auto bottomSpacer = new QSpacerItem(10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    d->inputsLayout->addItem(bottomSpacer);
+
     // Main layout of this page: an horizontal row chart<->inputs
     setLayout(new QHBoxLayout);
-    layout()->addWidget(chartView);
-    layout()->addWidget(inputs);
+    auto splitter = new QSplitter;
+    splitter->addWidget(chartView);
+    splitter->addWidget(inputs);
+    splitter->setSizes(QList<int>{splitter->width()*2/3, splitter->width()/3});
+    layout()->addWidget(splitter);
 }
 
 DualCalculatorPage::~DualCalculatorPage()
 {
     delete d;
     d = nullptr;
-}
-
-bool DualCalculatorPage::event(QEvent* event)
-{
-    // On first show, start browsing.
-    if (event->type() == QEvent::Show && d->location.isEmpty())
-        d->load(m_currentLocation);
-
-    return QWidget::event(event);
 }
 

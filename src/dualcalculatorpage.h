@@ -29,9 +29,6 @@ public:
     explicit DualCalculatorPage(QWidget* parent = nullptr);
     ~DualCalculatorPage();
 
-protected:
-    bool event(QEvent* event) override;
-
 private:
     struct Private;
     Private* d;
