@@ -104,6 +104,10 @@ void MainWindow::Private::addNewPage(PageType type)
 {
     BasePage::m_currentName = welcomePage->gameName();
     BasePage::m_currentLocation = welcomePage->gameLocation();
+#ifdef Q_OS_WASM
+    Q_ASSERT(m_currentName.isEmpty());
+    Q_ASSERT(m_currentLocation.isEmpty());
+#endif
 
     switch (type) {
     case PageType::BackstabCalculator:
