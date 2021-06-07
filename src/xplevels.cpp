@@ -70,7 +70,10 @@ void XpLevels::Private::readData()
 
         data.insert(key, values);
     }
-    emit parent.loaded();
+    // This lines sometimes run, directly or indirectly, from the constructor.
+    // We need to defer emiting the signal to allow for it to be connected to
+    // (and we can only connect to an object after it's been constructed).
+    QMetaObject::invokeMethod(&parent, &XpLevels::loaded, Qt::QueuedConnection);
 }
 
 XpLevels::XpLevels(const QString& path, QObject* parentObject)
