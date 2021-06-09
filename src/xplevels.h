@@ -25,6 +25,8 @@ class XpLevels : public QObject
     Q_OBJECT
 
 public:
+    struct Level { QString name; QVector<quint32> thresholds; };
+
     /*!
      * \brief Constructs the object and starts to load the data right away
      *
@@ -38,7 +40,8 @@ public:
     explicit XpLevels(const QString& path, QObject* parentObject = nullptr);
 
     QStringList classes() const;
-    QHash<QString, QVector<quint32>> data() const;
+    const QVector<Level>& levels() const;
+    QVector<quint32> thresholds(const QString& name) const;
 
 
 signals:

@@ -68,7 +68,7 @@ struct DualCalculatorPage::Private
 {
     Private(DualCalculatorPage& page, const QString& location)
         : parent(page)
-        , levels(location)
+        , xpLevels(location)
     {}
 
     void loaded();
@@ -77,7 +77,7 @@ struct DualCalculatorPage::Private
 
     DualCalculatorPage& parent;
 
-    XpLevels levels;
+    XpLevels xpLevels;
 
     QChart* chart = nullptr;
     QBarSet* class1 = nullptr;
@@ -93,21 +93,20 @@ struct DualCalculatorPage::Private
 
 void DualCalculatorPage::Private::loaded()
 {
-    for (const QString& name : levels.classes()) { // clazy:exclude=range-loop
+    const QVector<XpLevels::Level> levels = xpLevels.levels();
+    for (const XpLevels::Level& level : levels) {
         QVector<QPointF> points;
-        // TODO: check the validity of the string conversion to number.
-        const QVector<quint32> values = levels.data().value(name);
-        for (int level = 1; level < values.count() && level <= 40; ++level) {
-            const uint x = qMax(uint(1), values.at(level));
-            points.append(QPointF(x, level));
+        for (int index = 1; index < level.thresholds.count() && index <= 40; ++index) {
+            const uint x = qMax(uint(1), level.thresholds.at(index));
+            points.append(QPointF(x, index));
         }
     }
 
     for (auto& widget : widgets) {
         QSignalBlocker blocker1(widget.firstClass);
         QSignalBlocker blocker2(widget.secondClass);
-        widget.firstClass->addItems(levels.classes());
-        widget.secondClass->addItems(levels.classes());
+        widget.firstClass->addItems(xpLevels.classes());
+        widget.secondClass->addItems(xpLevels.classes());
     }
     // TODO: now we should enable the "add new" button here, which should be disabled initially
 
@@ -139,8 +138,8 @@ void DualCalculatorPage::Private::addCalculation()
 
     inputsLayout->insertWidget(index + 1, input);
 
-    widget.firstClass->addItems(levels.classes());
-    widget.secondClass->addItems(levels.classes());
+    widget.firstClass->addItems(xpLevels.classes());
+    widget.secondClass->addItems(xpLevels.classes());
 
     auto recalculateThis = [this, index] { recalculate(index); };
 
@@ -164,14 +163,12 @@ void DualCalculatorPage::Private::addCalculation()
 
 void DualCalculatorPage::Private::recalculate(int index)
 {
-    const QHash<QString, QVector<quint32>> levelsData = levels.data();
-
     const Ui::DualCalculatorWidget& widget = widgets.at(index);
     const QString firstClass = widget.firstClass->currentText();
     const QString secondClass = widget.secondClass->currentText();
 
-    const QVector<quint32> firstClassData = levelsData.value(firstClass);
-    const QVector<quint32> secondClassData = levelsData.value(secondClass);
+    const QVector<quint32> firstClassData = xpLevels.thresholds(firstClass);
+    const QVector<quint32> secondClassData = xpLevels.thresholds(secondClass);
     const int firstLevel = qBound(0, widget.firstClassLevel->value(), firstClassData.size() - 1);
     const int secondLevel = qBound(0, widget.secondClassLevel->value(), secondClassData.size() - 1);
 
@@ -208,7 +205,7 @@ DualCalculatorPage::DualCalculatorPage(QWidget* parent)
     : QWidget(parent)
     , d(new Private(*this, m_currentLocation))
 {
-    connect(&d->levels, &XpLevels::loaded, this, [this]{ d->loaded(); });
+    connect(&d->xpLevels, &XpLevels::loaded, this, [this]{ d->loaded(); });
 
     d->class1 = new QBarSet(tr("First class"));
     d->class2 = new QBarSet(tr("Second class"));

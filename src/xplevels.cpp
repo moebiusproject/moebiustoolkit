@@ -35,9 +35,8 @@ struct XpLevels::Private
     XpLevels& parent;
     ResourceManager manager;
     QString path;
-    QHash<QString, QVector<quint32>> data;
+    QVector<XpLevels::Level> levels;
     QStringList classes;
-    QStringList levels;
 
     void readData();
     QByteArray fileData() const;
@@ -53,7 +52,6 @@ void XpLevels::Private::readData()
     buffer.close();
 
     classes = file.rowNames();
-    levels = file.headers;
 
     for (const QStringList& entry : file.entries) {
         // entry: "CLASS 0 1250 2500 ..."
@@ -68,7 +66,7 @@ void XpLevels::Private::readData()
             values.append(value);
         }
 
-        data.insert(key, values);
+        levels.append(XpLevels::Level{key, values});
     }
     // This lines sometimes run, directly or indirectly, from the constructor.
     // We need to defer emiting the signal to allow for it to be connected to
@@ -100,9 +98,18 @@ QStringList XpLevels::classes() const
     return d.classes;
 }
 
-QHash<QString, QVector<quint32>> XpLevels::data() const
+const QVector<XpLevels::Level>& XpLevels::levels() const
 {
-    return d.data;
+    return d.levels;
+}
+
+QVector<quint32> XpLevels::thresholds(const QString& name) const
+{
+    for (const Level& level : qAsConst(d.levels)) {
+        if (level.name == name)
+            return level.thresholds;
+    }
+    return QVector<quint32>();
 }
 
 QByteArray XpLevels::Private::fileData() const

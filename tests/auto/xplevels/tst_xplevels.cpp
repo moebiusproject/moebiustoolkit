@@ -33,21 +33,20 @@ void tst_XpLevels::test()
 {
     // Empty string == no path == use built ins == synchronous
     const XpLevels levels((QString()));
-    const QHash<QString, QVector<quint32>> data = levels.data();
 
-    const QVector<quint32> thief = data.value(QLatin1String("THIEF"));
+    const QVector<quint32> thief = levels.thresholds(QLatin1String("THIEF"));
     QVERIFY(!thief.isEmpty());
     QCOMPARE(thief.at(0),  0u);
     QCOMPARE(thief.at(1),  1'250u);
     QCOMPARE(thief.at(39), 8'000'000u);
 
-    const QVector<quint32> fighter = data.value(QLatin1String("FIGHTER"));
+    const QVector<quint32> fighter = levels.thresholds(QLatin1String("FIGHTER"));
     QVERIFY(!fighter.isEmpty());
     QCOMPARE(fighter.at(0),  0u);
     QCOMPARE(fighter.at(1),  2'000u);
     QCOMPARE(fighter.at(39), 8'000'000u);
 
-    const QVector<quint32> mage = data.value(QLatin1String("MAGE"));
+    const QVector<quint32> mage = levels.thresholds(QLatin1String("MAGE"));
     QVERIFY(!mage.isEmpty());
     QCOMPARE(mage.at(0),  0u);
     QCOMPARE(mage.at(1),  2'500u);
