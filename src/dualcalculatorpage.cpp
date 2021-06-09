@@ -74,6 +74,13 @@ struct DualCalculatorPage::Private
     void loaded();
     void addCalculation();
     void recalculate(int index);
+    void setNamesAxis(int index, const QString& text)
+    {
+        if (namesAxis->count() <= index)
+            namesAxis->append(text);
+        else
+            namesAxis->replace(namesAxis->at(index), text);
+    }
 
     DualCalculatorPage& parent;
 
@@ -154,10 +161,7 @@ void DualCalculatorPage::Private::addCalculation()
 
     connect(widget.name, &QLineEdit::textChanged, [this, index](const QString& text)
     {
-        if (namesAxis->count() <= index)
-            namesAxis->append(text);
-        else
-            namesAxis->replace(namesAxis->at(index), text);
+        setNamesAxis(index, text);
     });
 }
 
@@ -196,6 +200,14 @@ void DualCalculatorPage::Private::recalculate(int index)
     }
     xpAxis->setRange(0, max);
     xpAxis->applyNiceNumbers();
+
+    if (widget.name->text().isEmpty()) {
+        const QString text = secondLevel > 1 ?
+                tr("%1 %2 > %3 %4").arg(firstClass).arg(firstLevel)
+                                   .arg(secondClass).arg(secondLevel) :
+                tr("%1 %2").arg(firstClass).arg(firstLevel);
+        setNamesAxis(index, text);
+    }
 }
 
 
@@ -222,6 +234,7 @@ DualCalculatorPage::DualCalculatorPage(QWidget* parent)
     // Hide it later? see the temperature examples, it's done a bit below
 
     d->xpAxis = new QValueAxis;
+    d->xpAxis->setLabelFormat(QLatin1String("%i"));
     d->chart->addAxis(d->xpAxis, Qt::AlignLeft);
     series->attachAxis(d->xpAxis);
 
