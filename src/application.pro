@@ -10,6 +10,7 @@ HEADERS = \
     basepage.h \
     buffcalculatorpage.h \
     damagecalculatorpage.h \
+    debugcharts.h \
     dualcalculatorpage.h \
     gamebrowserpage.h \
     mainwindow.h \
@@ -26,6 +27,7 @@ SOURCES = main.cpp \
     basepage.cpp \
     buffcalculatorpage.cpp \
     damagecalculatorpage.cpp \
+    debugcharts.cpp \
     dualcalculatorpage.cpp \
     gamebrowserpage.cpp \
     mainwindow.cpp \
@@ -42,6 +44,7 @@ FORMS += \
     dualcalculatorwidget.ui \
     enemy.ui \
     gamebrowserpage.ui \
+    progressionchartswidget.ui \
     specialdamagewidget.ui \
     weaponarrangementwidget.ui \
     welcomepage.ui \

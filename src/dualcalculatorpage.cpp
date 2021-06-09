@@ -20,6 +20,7 @@
 #include "dualcalculatorpage.h"
 #include "ui_dualcalculatorwidget.h"
 
+#include "debugcharts.h"
 #include "xplevels.h"
 
 #include <QBarCategoryAxis>
@@ -31,38 +32,6 @@
 #include <QValueAxis>
 
 using namespace QtCharts;
-
-QDebug operator<<(QDebug dbg, QAbstractAxis* axis)
-{
-    if (!axis)
-        return dbg << "QAbstractAxis(nullptr)", dbg;
-
-    QDebugStateSaver saver(dbg);
-    dbg.nospace();
-
-    switch (axis->type())
-    {
-    case QAbstractAxis::AxisTypeNoAxis:
-    case QAbstractAxis::AxisTypeValue:
-    {
-        auto value = static_cast<QValueAxis*>(axis);
-        dbg << "QValueAxis("
-            << " min " << value->min()
-            << " max " << value->max()
-            << ")"
-               ;
-        return dbg;
-    }
-    case QAbstractAxis::AxisTypeBarCategory:
-    case QAbstractAxis::AxisTypeCategory:
-    case QAbstractAxis::AxisTypeDateTime:
-    case QAbstractAxis::AxisTypeLogValue:
-        break;
-    }
-    dbg.maybeSpace() << static_cast<QObject*>(axis);
-
-    return dbg;
-}
 
 struct DualCalculatorPage::Private
 {
