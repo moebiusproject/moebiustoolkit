@@ -13,9 +13,9 @@ DLLDESTDIR = $$BUILD_TREE/bin
 win32:!win32-g++:QMAKE_CXXFLAGS += /Zi
 
 HEADERS = \
+    backstabstats.h \
     bifffile.h \
     calculators.h \
-    backstabstats.h \
     diceroll.h \
     keyfile.h \
     packed.h \
@@ -26,9 +26,9 @@ HEADERS = \
     xplevels.h \
 
 SOURCES = \
+    backstabstats.cpp \
     bifffile.cpp \
     calculators.cpp \
-    backstabstats.cpp \
     diceroll.cpp \
     keyfile.cpp \
     resourcemanager.cpp \
