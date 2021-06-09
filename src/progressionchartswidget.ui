@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ProgressionChartsWidget</class>
+ <widget class="QWidget" name="ProgressionChartsWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>776</width>
+    <height>803</height>
+   </rect>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="classNameLabel">
+     <property name="text">
+      <string>Class</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="className"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="progressionLabel">
+     <property name="text">
+      <string>Progression</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="progression">
+     <item>
+      <property name="text">
+       <string>Single class</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Double class</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Triple class</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="typeLabel">
+     <property name="text">
+      <string>Type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="type">
+     <item>
+      <property name="text">
+       <string>Level</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>THAC0 (1/1, e.g. Fighter)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>THAC0 (2/3, e.g. Cleric)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>THAC0 (1/2, e.g. Thief)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>THAC0 (1/3, e.g. Mage)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="nameLabel">
+     <property name="text">
+      <string>Name</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="name"/>
+   </item>
+   <item row="4" column="0" colspan="2">
+    <widget class="QPushButton" name="add">
+     <property name="text">
+      <string>Add</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QPushButton" name="remove">
+     <property name="text">
+      <string>Remove</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QTableWidget" name="table">
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Class</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Progression</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Type</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Name</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>className</tabstop>
+  <tabstop>progression</tabstop>
+  <tabstop>type</tabstop>
+  <tabstop>name</tabstop>
+  <tabstop>add</tabstop>
+  <tabstop>remove</tabstop>
+  <tabstop>table</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
