@@ -772,6 +772,18 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
             std::bind(&Private::updateAllSeries, d));
     connect(d->enemy.slashingResistance, qOverload<int>(&QSpinBox::valueChanged),
             std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.acidResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.coldResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.electricityResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.fireResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.magicDamageResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
+    connect(d->enemy.poisonDamageResistance, qOverload<int>(&QSpinBox::valueChanged),
+            std::bind(&Private::updateAllSeries, d));
     connect(d->enemy.helmet, &QCheckBox::toggled, std::bind(&Private::updateAllSeries, d));
 
     // Tab widget with calculations / //////////////////////////////////////////
@@ -1149,7 +1161,9 @@ WeaponArrangement DamageCalculatorPage::Private::makeArrangement(WeaponArrangeme
     for (auto entry = result.damage.keyValueBegin(),
          last = result.damage.keyValueEnd(); entry != last; ++entry)
     {
-        entry.base().value().resistance(enemy.resistanceFactor(entry.base().key()));
+        const Calculators::DamageType type = entry.base().key();
+        DiceRoll& roll = entry.base().value();
+        roll.resistance(enemy.resistanceFactor(type));
     }
 
     return result;
@@ -1162,6 +1176,8 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     const bool maximumDamage = c.maximumDamage->isChecked();
     const bool criticalStrike = c.criticalStrike->isChecked();
 
+    // TODO: support damage resistance over 100%, which should obviously heal
+    // a creature, and hence subtract from the total damage.
     const WeaponArrangement weapon1 = makeArrangement(c.weapon1, c.luck->value());
     const WeaponArrangement weapon2 = makeArrangement(c.weapon2, c.luck->value());
 
