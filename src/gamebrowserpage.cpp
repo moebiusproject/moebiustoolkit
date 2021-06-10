@@ -51,6 +51,7 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
     , d(new Private(*this))
 {
     d->ui.setupUi(this);
+    d->ui.log->setFontFamily(QLatin1String("monospace"));
     d->ui.resources->setModel(&d->model);
     d->model.setColumnCount(2);
     d->model.insertRow(BiffsRow, new QStandardItem(tr("BIFFs")));
