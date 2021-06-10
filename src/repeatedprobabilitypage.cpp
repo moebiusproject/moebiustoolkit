@@ -116,6 +116,9 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     d->chart->setAcceptHoverEvents(true);
     QGraphicsSimpleTextItem* tooltip = new QGraphicsSimpleTextItem(d->chart);
     tooltip->setPos(30, 30);
+    QFont tooltipFont = tooltip->font();
+    tooltipFont.setPointSize(tooltipFont.pointSize() + 4);
+    tooltip->setFont(tooltipFont);
     QTimer* hideTimer = new QTimer(this);
     hideTimer->setInterval(1000);
     connect(hideTimer, &QTimer::timeout, series, [tooltip] { tooltip->hide(); });
