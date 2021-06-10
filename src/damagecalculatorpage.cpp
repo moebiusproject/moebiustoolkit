@@ -674,9 +674,9 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     chartControlsLayout->addWidget(d->maximumX);
     // FIXME: improve min/max spinbox values (to disallow crossed values).
     connect(d->minimumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::updateAllSeries, d));
+            std::bind(&Private::setupAxes, d));
     connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::updateAllSeries, d));
+            std::bind(&Private::setupAxes, d));
     d->pointLabels = new QCheckBox(tr("Show point labels"));
     chartControlsLayout->addWidget(d->pointLabels);
     d->pointLabels->setChecked(true);
