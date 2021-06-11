@@ -29,8 +29,6 @@ public:
     explicit GameBrowserPage(QWidget* parent = nullptr);
     ~GameBrowserPage();
 
-    void start(const QString& name, const QString& location);
-
 protected:
     bool event(QEvent* event) override;
 

@@ -26,6 +26,9 @@ struct GameBrowserPage::Private
     Private(GameBrowserPage& page_)
         : page(page_)
     {}
+
+    void start(const QString& name, const QString& location);
+
     GameBrowserPage& page;
     Ui::GameBrowserPage ui;
 
@@ -40,7 +43,6 @@ struct GameBrowserPage::Private
 
     ResourceManager manager;
 
-    QString location;
     QVector<BiffFile> biffs;
 
     void loaded();
@@ -83,25 +85,11 @@ GameBrowserPage::~GameBrowserPage()
     d = nullptr;
 }
 
-void GameBrowserPage::start(const QString& name, const QString& location)
-{
-    d->ui.header->setText(tr("%1 (%2)").arg(name).arg(location));
-    d->location = location.section(QLatin1Char('/'), 0, -2); // Get the root only.
-
-    const auto load = [this, location] { d->manager.load(location); };
-
-#ifndef Q_OS_WASM
-    QThreadPool::globalInstance()->start(QRunnable::create(load));
-#else
-    load();
-#endif
-}
-
 bool GameBrowserPage::event(QEvent *event)
 {
     // On first show, start browsing.
-    if (event->type() == QEvent::Show && d->location.isEmpty())
-        start(m_currentName, m_currentLocation);
+    if (event->type() == QEvent::Show && !d->manager.chitinKey().isValid())
+        d->start(m_currentName, m_currentLocation);
 
     return QWidget::event(event);
 }
@@ -135,4 +123,17 @@ void GameBrowserPage::Private::loaded()
                              << new QStandardItem(biffName)
                         );
     }
+}
+
+void GameBrowserPage::Private::start(const QString& name, const QString& location)
+{
+    ui.header->setText(tr("%1 (%2)").arg(name).arg(location));
+
+    const auto load = [this, location] { manager.load(location); };
+
+#ifndef Q_OS_WASM
+    QThreadPool::globalInstance()->start(QRunnable::create(load));
+#else
+    load();
+#endif
 }
