@@ -1096,6 +1096,12 @@ void DamageCalculatorPage::Private::newPage()
         font.setStrikeOut(!series->isVisible());
         marker->setFont(font);
     });
+    connect(marker, &QLegendMarker::hovered, chart, [series](bool over) {
+        static int defaultSize = series->pen().width();
+        QPen pen = series->pen();
+        pen.setWidth(defaultSize + (over ? 1 : 0));
+        series->setPen(pen);
+    });
 
     setColorInButton(series->color(), calculation.color);
 
