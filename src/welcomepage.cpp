@@ -56,6 +56,9 @@ WelcomePage::WelcomePage(QWidget* parent)
     , d(new Private(*this))
 {
     d->ui.setupUi(this);
+#ifndef QT_DEBUG
+    d->ui.buffCalculator->setEnabled(false);
+#endif
     d->ui.locationError->hide();
 
     d->games = qobject_cast<QStandardItemModel*>(d->ui.configuredGames->model());
