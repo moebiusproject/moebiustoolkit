@@ -307,10 +307,9 @@ void ProgressionChartsPage::Private::updateSeries(int index)
     series->replace(points);
     series->setPointsVisible(true);
 
-
-    // TODO verify if it's needed to be overly cautious. If the QtCharts functions
-    // don't do anything when attaching to the already attached, and detaching to
-    // the already detached, we can skip so many "ifs".
+    // TODO: This series of calls to contains and attach and detach would be
+    // simpler if QAbstractSeries would not print a warning on the calls. We
+    // can only fix it on the QtCharts side.
     const QList<QAbstractAxis*> attached = series->attachedAxes();
     if (!attached.contains(xpAxis))
         series->attachAxis(xpAxis);
