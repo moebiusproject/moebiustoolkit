@@ -166,11 +166,12 @@ void ProgressionChartsPage::Private::addNew()
     };
     connect(series, &QLineSeries::hovered,
             [this, series, closestSeriesPoint](QPointF point, bool over) {
+        if (!over)
+            return;
         point = closestSeriesPoint(series->pointsVector(), point);
-        if (over)
-            parent.statusBar()->showMessage(tr("%1. Level: %L2. XP: %L3") .arg(series->name())
-                                            .arg(static_cast<long>(point.y()))
-                                            .arg(static_cast<long>(point.x())), 2000);
+        parent.statusBar()->showMessage(tr("%1. Level: %L2. XP: %L3") .arg(series->name())
+                                        .arg(static_cast<long>(point.y()))
+                                        .arg(static_cast<long>(point.x())), 2000);
     });
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {

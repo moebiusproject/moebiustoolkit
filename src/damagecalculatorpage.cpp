@@ -1083,9 +1083,10 @@ void DamageCalculatorPage::Private::newPage()
     };
     connect(series, &QLineSeries::hovered,
             [this, series, closestSeriesPoint](QPointF point, bool over) {
+        if (!over)
+            return;
         point = closestSeriesPoint(series->pointsVector(), point);
-        if (over)
-            q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
+        q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
     });
     chart->addSeries(series);
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
