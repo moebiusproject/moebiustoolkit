@@ -5,6 +5,7 @@
 #include <QChartView>
 #include <QDebug>
 #include <QStackedBarSeries>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QValueAxis>
 #include <QtMath>
@@ -97,13 +98,17 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     d->chart->setAcceptHoverEvents(true);
     QGraphicsSimpleTextItem* tooltip = new QGraphicsSimpleTextItem(d->chart);
     tooltip->setPos(30, 30);
+    QTimer* hideTimer = new QTimer(this);
+    hideTimer->setInterval(1000);
+    connect(hideTimer, &QTimer::timeout, series, [tooltip] { tooltip->hide(); });
     QObject::connect(series, &QAbstractBarSeries::hovered,
-                     d->chart, [tooltip, series, results](bool over, int index, QBarSet* set)
+                     d->chart, [hideTimer, tooltip, series, results](bool over, int index, QBarSet* set)
     {
         if (!over) {
-            tooltip->hide();
+            hideTimer->start();
             return;
         }
+        hideTimer->stop();
 
         const int setIndex = series->barSets().indexOf(set);
         double value = 0.0;
