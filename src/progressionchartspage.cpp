@@ -35,6 +35,7 @@
 #include <QLineSeries>
 #include <QSpinBox>
 #include <QSplitter>
+#include <QStatusBar>
 #include <QStyledItemDelegate>
 #include <QThreadPool>
 #include <QValueAxis>
@@ -86,7 +87,15 @@ class SpinBox : public QSpinBox
 {
     Q_OBJECT
 public:
-    explicit SpinBox() {}
+    explicit SpinBox(QWidget* parentObject = nullptr)
+        : QSpinBox(parentObject)
+    {}
+
+    void stepBy(int step) override
+    {
+        QSpinBox::stepBy(step);
+    }
+
 };
 
 struct ProgressionChartsPage::Private
@@ -137,6 +146,32 @@ void ProgressionChartsPage::Private::addNew()
     chart->addSeries(series);
     mapper->toNext();
 
+    //
+    // TODO: this is duplicated from the damage calculator. Move somewhere shared.
+    //
+    auto closestSeriesPoint = [](const QVector<QPointF>& realPoints,
+                                 const QPointF& domainPoint)
+    {
+        QPointF closest;
+        qreal minimum = qInf();
+        for (const auto& point : realPoints) {
+            const QPointF delta = domainPoint - point;
+            const qreal distance = qAbs(delta.manhattanLength());
+            if (distance < minimum) {
+                minimum = distance;
+                closest = point;
+            }
+        }
+        return closest;
+    };
+    connect(series, &QLineSeries::hovered,
+            [this, series, closestSeriesPoint](QPointF point, bool over) {
+        point = closestSeriesPoint(series->pointsVector(), point);
+        if (over)
+            parent.statusBar()->showMessage(tr("%1. Level: %L2. XP: %L3") .arg(series->name())
+                                            .arg(static_cast<long>(point.y()))
+                                            .arg(static_cast<long>(point.x())), 2000);
+    });
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
         series->setVisible(!series->isVisible());
@@ -144,6 +179,12 @@ void ProgressionChartsPage::Private::addNew()
         QFont font = marker->font();
         font.setStrikeOut(!series->isVisible());
         marker->setFont(font);
+    });
+    connect(marker, &QLegendMarker::hovered, chart, [series](bool over) {
+        static int defaultSize = series->pen().width();
+        QPen pen = series->pen();
+        pen.setWidth(defaultSize + (over ? 1 : 0));
+        series->setPen(pen);
     });
 }
 
@@ -303,11 +344,13 @@ ProgressionChartsPage::ProgressionChartsPage(QWidget* parent)
     d->minimumX->setMinimum(0);
     d->minimumX->setMaximum(8000000);
     d->minimumX->setValue(d->minimumX->minimum());
+    d->minimumX->setStepType(QAbstractSpinBox::StepType::AdaptiveDecimalStepType);
     chartControlsLayout->addWidget(d->minimumX);
     d->maximumX = new SpinBox;
     d->maximumX->setMinimum(0);
     d->maximumX->setMaximum(8000000);
     d->maximumX->setValue(d->maximumX->maximum());
+    d->maximumX->setStepType(QAbstractSpinBox::StepType::AdaptiveDecimalStepType);
     chartControlsLayout->addWidget(d->maximumX);
     // TODO: A line input to change the chart title.
 
