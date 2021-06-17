@@ -56,9 +56,6 @@ WelcomePage::WelcomePage(QWidget* parent)
     , d(new Private(*this))
 {
     d->ui.setupUi(this);
-#ifndef QT_DEBUG
-    d->ui.buffCalculator->setEnabled(false);
-#endif
     d->ui.locationError->hide();
 
     d->games = qobject_cast<QStandardItemModel*>(d->ui.configuredGames->model());
@@ -67,6 +64,21 @@ WelcomePage::WelcomePage(QWidget* parent)
     d->loadGameList();
     d->configuredGamesChanged(d->ui.configuredGames->currentIndex());
     d->updateUi();
+
+#ifndef QT_DEBUG // Unreleased for now.
+    d->ui.buffCalculator->setEnabled(false);
+#endif
+#ifdef Q_OS_WASM // Force enable the modules without the UI to setup locations.
+    d->ui.configuredGames->setEnabled(false);
+    d->ui.name->setEnabled(false);
+    d->ui.location->setEnabled(false);
+    d->ui.addNew->setEnabled(false);
+    d->ui.save->setEnabled(false);
+    d->ui.remove->setEnabled(false);
+    d->ui.remove->setEnabled(false);
+    d->ui.progressionCharts->setEnabled(true);
+    d->ui.dualCalculator->setEnabled(true);
+#endif
 
     connect(d->ui.configuredGames, qOverload<int>(&QComboBox::currentIndexChanged),
             std::bind(&Private::configuredGamesChanged, d, std::placeholders::_1));

@@ -37,7 +37,6 @@
 #include <QSplitter>
 #include <QStatusBar>
 #include <QStyledItemDelegate>
-#include <QThreadPool>
 #include <QValueAxis>
 
 using namespace QtCharts;
