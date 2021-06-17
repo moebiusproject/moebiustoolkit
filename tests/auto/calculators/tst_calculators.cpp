@@ -97,7 +97,7 @@ void tst_Calculators::testDamage_data()
             << 4.5;
 
     auto common = defaultCommon;
-    common.strengthDamage = +7;
+    common.statDamage = +7;
     QTest::addRow("19 STR")
             << common << defaultWeapon << defaultWeapon
             << 11.5;

@@ -45,7 +45,7 @@ DamageType WeaponArrangement::physicalDamageType() const
 int Damage::thac0(Damage::Hand hand) const
 {
     // Common to both hands.
-    int result = m_common.thac0 - m_common.strengthToHit - m_common.otherToHit;
+    int result = m_common.thac0 - m_common.statToHit - m_common.otherToHit;
 
     const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
     result -= (arrangement.proficiencyToHit + arrangement.styleToHit + arrangement.weaponToHit);
@@ -56,7 +56,7 @@ int Damage::thac0(Damage::Hand hand) const
 QHash<DamageType, double> Damage::onHitDamages(Damage::Hand hand, Damage::Stat stat) const
 {
     const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
-    const double bonusPhysicalDamage = m_common.strengthDamage + m_common.otherDamage;
+    const double bonusPhysicalDamage = m_common.statDamage + m_common.otherDamage;
     DiceRoll physicalDamageRoll = arrangement.physicalDamage();
     physicalDamageRoll.bonus(physicalDamageRoll.bonus() + bonusPhysicalDamage);
 

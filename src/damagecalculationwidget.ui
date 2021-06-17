@@ -65,14 +65,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="strengthThac0BonusLabel">
+         <widget class="QLabel" name="statThac0BonusLabel">
           <property name="text">
-           <string>Strength bonus</string>
+           <string>Stat bonus</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="strengthThac0Bonus"/>
+         <widget class="QSpinBox" name="statThac0Bonus"/>
         </item>
         <item>
          <widget class="QLabel" name="classThac0BonusLabel">
@@ -116,14 +116,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="strengthDamageBonusLabel">
+         <widget class="QLabel" name="statDamageBonusLabel">
           <property name="text">
-           <string>Strength dmg. bonus</string>
+           <string>Stat dmg. bonus</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="strengthDamageBonus"/>
+         <widget class="QSpinBox" name="statDamageBonus"/>
         </item>
         <item>
          <widget class="QLabel" name="classDamageBonusLabel">

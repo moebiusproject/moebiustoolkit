@@ -856,16 +856,8 @@ bool DamageCalculatorPage::event(QEvent* event)
 
 void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data)
 {
-    // TODO: remove for any kind of release. Is just a backwards compatibility
-    // addition to ease my testing with the old configuration.
-    if (data.contains(QLatin1String("doubleCriticalChance"))) {
-        if (data.take(QLatin1String("doubleCriticalChance")).toBool()) {
-            if (QSpinBox* box = root->findChild<QSpinBox*>(QLatin1String("criticalHitChance1"))) {
-                box->setValue(10);
-            }
-        }
-    }
-    // TODO: ditto. Inject some values for the new features not in the old saves.
+    // TODO: remove on newer releases.
+    // Inject some values for the new features not in the old saves.
     if (!data.contains(QLatin1String("criticalHitChance1")))
         data.insert(QLatin1String("criticalHitChance1"), 5);
     if (!data.contains(QLatin1String("criticalHitChance2")))
@@ -874,6 +866,19 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         data.insert(QLatin1String("criticalStrike"), false);
     if (!data.contains(QLatin1String("maximumDamage")))
         data.insert(QLatin1String("maximumDamage"), false);
+
+    auto migrateKey = [&data](const QString& from, const QString& to, QVariant value) {
+        if (!data.contains(to)) {
+            if (data.contains(from))
+                value = data.take(from);
+            data.insert(to, value);
+        }
+    };
+    // TODO: Likewise. This is a trival change to apply to my saved files. I
+    // doubt anyone else is caring for the format as in 0.1. This change was
+    // done right before 0.2 was published, and saved files can easily be modified.
+    migrateKey(QLatin1String("strengthThac0Bonus"), QLatin1String("statThac0Bonus"), 0);
+    migrateKey(QLatin1String("strengthDamageBonus"), QLatin1String("statDamageBonus"), 0);
 
     for (auto child : root->findChildren<QWidget*>()) {
         if (child->isHidden()) // Skip the duplicated APR spinbox (int/double)
@@ -1190,10 +1195,10 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
 
     Damage::Common common;
     common.thac0 = c.baseThac0->value();
-    common.strengthToHit = c.strengthThac0Bonus->value();
+    common.statToHit = c.statThac0Bonus->value();
     common.otherToHit = c.classThac0Bonus->value() + c.miscThac0Bonus->value();
 
-    common.strengthDamage = c.strengthDamageBonus->value();
+    common.statDamage = c.statDamageBonus->value();
     common.otherDamage = c.classDamageBonus->value() + c.miscDamageBonus->value();
 
     const int mainAcModifier = enemy.acModifier(c.weapon1->damageType());

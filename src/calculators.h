@@ -86,10 +86,10 @@ public:
     struct Common {
         int thac0 = 20;
 
-        int strengthToHit = 0;
+        int statToHit = 0;
         int otherToHit = 0;
 
-        int strengthDamage = 0;
+        int statDamage = 0;
         int otherDamage = 0;
     };
 
