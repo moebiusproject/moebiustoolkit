@@ -379,6 +379,8 @@ ProgressionChartsPage::ProgressionChartsPage(QWidget* parent)
 
     auto inputs = new QWidget;
     d->ui.setupUi(inputs);
+    // TODO: Implement the removal feature.
+    d->ui.remove->hide();
 
     setLayout(new QHBoxLayout);
     auto splitter = new QSplitter;
