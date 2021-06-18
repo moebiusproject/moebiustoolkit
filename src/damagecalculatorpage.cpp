@@ -1067,6 +1067,7 @@ void DamageCalculatorPage::Private::newPage()
     // TODO: Decouple this, from setting the UI to setting the whole calculation.
     auto series = new QLineSeries;
     lineSeries.append(series);
+    chart->addSeries(series);
     series->setPointsVisible(true);
     series->setPointLabelsVisible(pointLabels->isChecked());
     series->setPointLabelsClipping(pointLabelsClipping->isChecked());
@@ -1093,7 +1094,6 @@ void DamageCalculatorPage::Private::newPage()
         point = closestSeriesPoint(series->pointsVector(), point);
         q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
     });
-    chart->addSeries(series);
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
         series->setVisible(!series->isVisible());
