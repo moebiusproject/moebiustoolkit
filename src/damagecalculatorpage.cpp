@@ -924,7 +924,7 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
             // TODO: Many old saves don't have this yet. Remove the check eventually.
             if (qobject_cast<SpecialDamageWidget*>(child->parent()))
                 continue;
-            qInfo() << child << "not loaded. Data searched with key" << name;
+            qInfo() << "Data for" << child << "not found; using key:" << name;
             continue;
         }
         if (auto spinbox1 = qobject_cast<QSpinBox*>(child)) {
