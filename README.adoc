@@ -2,75 +2,80 @@
 
 Moebius Tookit is an application to help players, modders, and hopefully even
 developers of one of the best video games of all time, the Baldur's Gate saga
-(based on Advanced Dungeons and Dragons 2nd edition, another very successful
-product which also gave me much joy in my youth).
+(and/or the pen and paper rules on which the game is based).
 
 Given the richness, depth and complexity of the rules of these games, I ended up
 starting this project, which is the home of a humble personal initiative to
 address some issues:
 
 . The lack of charts, specially interactive ones, of some interesting data for
-power gamers or new players. Some excellent tables are provided by the
-https://baldursgate.fandom.com/wiki/Baldur's_Gate_Wiki[Baldur's Gate wiki], but
-there is a lot more room to fill.
+  power gamers, new players, or just people wanting to find analyze the balance
+  of the game (to be able to tweak or mod it for example).
+  Some excellent tables are provided on the
+  https://baldursgate.fandom.com/wiki/Baldur's_Gate_Wiki[Baldur's Gate wiki],
+  but there is a lot more room to fill.
 
 . The lack of an editor for the saved game files (like ShadowKeeper or EEKeeper)
-which works on Linux, that is in a maintained state, and with a suitable license.
+  which works well on Linux, that is in a maintained state, and with a suitable
+  license.
 
 . The (at a times) unsatisfactory experience of using NearInfinity (extremely
-useful and with many features, but slow and sometimes buggy).
+  useful and with many features, but slow and sometimes buggy, specially on
+  Linux).
 
 . The interest in programming and trying new technologies that complement what I
-already do or have done for paid work, like trying out chart libraries or
-https://en.wikipedia.org/wiki/WebAssembly[WebAssembly] for redistributing the
-application to users, Test Driven Development, and learning about game
-engines.
+  already do or have done for paid work, like trying out chart libraries or
+  https://en.wikipedia.org/wiki/WebAssembly[WebAssembly] for redistributing the
+  application to users, Test Driven Development, and learning about how (some)
+  game engines work.
+
 
 == The application
 
 The application is called a "toolkit" because it contains different modules
-grouped together, with features a bit loosely related:
+grouped together, with features a bit loosely related.
+It is described, together with pictures and videos on the
+https://moebiusproject.gitlab.io/moebius_toolkit[Moebius Toolkit page].
 
-* A damage calculator. This is the most mature, complete and feature rich part
-  of the application, because it was first developed standalone, and it's the
-  code that originated the more ambitious plan.
-
-* A game browser and save game editor. This is the most ambitious part, and it's
-  in fully vaporware state. There is an implementation of several Infinity
-  Engine file formats with decent unit tests, but some more would have to be
-  parsed to at least get to the point of editing a saved game, which is the
-  first milestone goal.
-
-* Other charts and calculators in half baked state, but which hopefully be
-  complete in just some months, given that it's easy to do, and fairly
-  rewarding.
-
-See more about the application in the
-https://moebiusproject.gitlab.io/moebius_toolkit[Moebius Toolkit website].
 
 == The library
 
 Many parts of the application are developed as a library to easy the unit
 testing, and to be used with https://github.com/vgvassilev/cling[cling's REPL].
-The long term plan (or, more likely, the pipe dream), is that the project could
+The long term plan (or, more likely, the pipe dream), is that the library could
 get some traction, and hopefully be able to make the library useful for other
 project.
 
+
 == Roadmap and current status
 
-The current status is almost vaporware, but useful enough to have a first public
-release, and hopefully gain some users, and maybe even some developers. The
-shared library has support for reading a few file formats of the engine, and
-there is some extra code for representing dice rolls, calculating averages, etc.
-And that's almost all of it. But to achieve the feature of just the very basic
-opening of a saved game, modifying it in the UI, and saving it to disk, still
-requires some more effort.
+Despite being a "0.x" release, the application is fairly stable, and it should
+not crash at all.
+It is unit tested as much tested as possible, and I'm always looking to improve
+the design and architechture to allow for more automated testing.
+There are some rough edges given that it started as a quick and dirty UI for
+plotting a chart, and that's it, so there is a bit of legacy to clean up.
+
+Since the library contains the code for parsing the file formats to be able to
+provide a browser, I've entertained the idea of creating tools that translate
+the file formats, maybe like https://www.gibberlings3.net/mods/tools/igi/[igi's
+tools].
+I've also seriously considered making a simple kit mod using the library, and
+not relying on WeiDU at all.
+
+My plan is to add full support for reading the missing SPL, ITM and EFF file
+formats soon, and start making a very fast browser for the usual poking of the
+mechanics of spells and items when playing.
+Achieving feature parity with Near Infinity is out of scope, but growing the
+browser so it can be used to end up being a better EEKeeper is much more likely.
+Being able to browse and do tweaks to saved games is of high priority as well.
+
 
 == Much more reading
 
-This project is not only about an application, but also some focused articles
-that don't fit elsewhere, including an extensive spell guide, and an analysis
-done with the Damage Calculator.
+The Moebius Project is not only about an application, but also some focused
+articles that don't fit elsewhere, including an extensive spell guide, and game
+analysis done with the Damage Calculator, or the other tools of Moebius Toolkit.
 
-https://moebiusproject.gitlab.io/[See much more at the website!]
+https://moebiusproject.gitlab.io/[See much more at the Moebius Project website!]
 
