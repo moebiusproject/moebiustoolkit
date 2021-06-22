@@ -38,6 +38,7 @@ public:
      * \param parentObject
      */
     explicit XpLevels(const QString& path, QObject* parentObject = nullptr);
+    ~XpLevels();
 
     QStringList classes() const;
     const QVector<Level>& levels() const;

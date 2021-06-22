@@ -53,6 +53,10 @@ enum ChartType {
 class CustomDelegate : public QStyledItemDelegate
 {
 public:
+    explicit CustomDelegate(QObject* parentObject = nullptr)
+        : QStyledItemDelegate(parentObject)
+    {}
+
     void setEditorData(QWidget* editor, const QModelIndex& index) const override
     {
         if (auto comboBox = qobject_cast<QComboBox*>(editor))
@@ -209,7 +213,7 @@ void ProgressionChartsPage::Private::loaded()
 
     mapper = new QDataWidgetMapper(&parent);
     mapper->setSubmitPolicy(QDataWidgetMapper::AutoSubmit);
-    mapper->setItemDelegate(new CustomDelegate);
+    mapper->setItemDelegate(new CustomDelegate(mapper));
     mapper->setModel(ui.table->model());
     mapper->addMapping(ui.className, 0);
     mapper->addMapping(ui.progression, 1);

@@ -151,7 +151,7 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
         stream.readRawData(rawName, sizeof(rawName));
         stream >> entry.type >> entry.locator;
 
-        const uint nameLength = qMin(uint(8), qstrlen(rawName));
+        const uint nameLength = qstrnlen(rawName, 8);
         entry.name = QString::fromLatin1(rawName, nameLength);
 
         entry.index  = (entry.locator & 0x00003FFF);

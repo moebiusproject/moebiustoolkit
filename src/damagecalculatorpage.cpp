@@ -390,7 +390,7 @@ struct DamageCalculatorPage::Private
             }
             const auto table = result.table();
             const toml::node* title = table.get("title");
-            if (title->is_string())
+            if (title && title->is_string())
                 titleLine->setText(QString::fromStdString(title->as_string()->get()));
 
             const std::string keyCalculations = keyDamageCalculations.toStdString();
@@ -399,7 +399,7 @@ struct DamageCalculatorPage::Private
                 return;
             }
             const toml::node* arrayNode = table.get(keyCalculations);
-            if (!arrayNode->is_array()) {
+            if (!arrayNode || !arrayNode->is_array()) {
                 errorOut("Cannot load TOML: the calculations entry is not an array!");
                 return;
             }
@@ -603,9 +603,9 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
 
-    d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"));
+    d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"), d->mainMenu);
     d->mainMenu->addMenu(d->loadSavedMenu);
-    d->deleteSavedMenu = new QMenu(tr("Delete calculation from preferences"));
+    d->deleteSavedMenu = new QMenu(tr("Delete calculation from preferences"), d->mainMenu);
     d->mainMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
 

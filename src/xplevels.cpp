@@ -93,6 +93,11 @@ XpLevels::XpLevels(const QString& path, QObject* parentObject)
     }
 }
 
+XpLevels::~XpLevels()
+{
+    delete &d;
+}
+
 QStringList XpLevels::classes() const
 {
     return d.classes;
