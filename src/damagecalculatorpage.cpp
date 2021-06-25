@@ -269,7 +269,15 @@ struct DamageCalculatorPage::Private
     {
         const bool json = chosenFileName.endsWith(QLatin1String(".json"), Qt::CaseInsensitive);
         const bool toml = chosenFileName.endsWith(QLatin1String(".toml"), Qt::CaseInsensitive);
+        // We use TOML by default, so append it.
+        const QString fileName = (toml || json) ? chosenFileName : chosenFileName + QLatin1String(".toml");
+        QFile file(fileName);
+        file.open(QIODevice::WriteOnly);
+        saveCalculationsToDevice(&file, json);
+    }
 
+    void saveCalculationsToDevice(QIODevice* device, bool json)
+    {
         toml::table tomlRoot;
         QJsonObject jsonRoot;
         const QString title = chart->title();
@@ -315,20 +323,16 @@ struct DamageCalculatorPage::Private
             tomlArray.push_back(calculation);
         }
 
-        // We use TOML by default, so append it.
-        const QString fileName = (toml || json) ? chosenFileName : chosenFileName + QLatin1String(".toml");
-        QFile file(fileName);
-        file.open(QIODevice::WriteOnly);
         if (json) {
             jsonRoot.insert(keyDamageCalculations, jsonArray);
             QJsonDocument document(jsonRoot);
-            file.write(document.toJson(QJsonDocument::Indented));
+            device->write(document.toJson(QJsonDocument::Indented));
         }
         else {
             tomlRoot.insert(keyDamageCalculations.toStdString(), tomlArray);
             std::stringstream stream;
             stream << tomlRoot;
-            file.write(stream.str().c_str());
+            device->write(stream.str().c_str());
         }
     }
 
