@@ -276,7 +276,7 @@ struct DamageCalculatorPage::Private
         saveCalculationsToDevice(&file, json);
     }
 
-    void saveCalculationsToDevice(QIODevice* device, bool json)
+    void saveCalculationsToDevice(QIODevice* device, bool json = false)
     {
         toml::table tomlRoot;
         QJsonObject jsonRoot;
@@ -543,6 +543,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
+#ifndef Q_OS_WASM
         auto dialog = new QFileDialog(this);
         dialog->setAcceptMode(QFileDialog::AcceptSave);
         dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json)"));
@@ -550,6 +551,13 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
             std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
         dialog->setModal(true);
         dialog->show();
+#else
+        QByteArray fileData;
+        QBuffer buffer(&fileData);
+        buffer.open(QIODevice::WriteOnly);
+        d->saveCalculationsToDevice(&buffer);
+        QFileDialog::saveFileContent(fileData, QLatin1String("calculations.toml"));
+#endif
     });
 
     action = new QAction(tr("Load calculations from..."), this);
