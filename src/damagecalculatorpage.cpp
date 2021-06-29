@@ -629,6 +629,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     action = new QAction(tr("Save current calculation to preferences"), this);
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
+#ifdef Q_OS_WASM
+     // TODO. WebAssembly requires us to implement this with async QSettings. Pass for now.
+    action->setEnabled(false);
+#endif
 
     d->loadSavedMenu = new QMenu(tr("Load calculation from preferences"), d->mainMenu);
     d->mainMenu->addMenu(d->loadSavedMenu);
@@ -639,7 +643,10 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     action = new QAction(tr("Manage entries"), this);
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
     d->mainMenu->addAction(action);
-    d->mainMenu->setEnabled(false);
+#ifdef Q_OS_WASM
+     // TODO. WebAssembly requires us to implement this with async QSettings. Pass for now.
+    action->setEnabled(false);
+#endif
 
     d->manageDialog = new ManageDialog(this);
     // TODO: pick something reasonable, yet not hardcoded?
