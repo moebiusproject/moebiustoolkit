@@ -58,6 +58,7 @@
 #include <functional>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 
 using namespace Calculators;
 using namespace QtCharts;

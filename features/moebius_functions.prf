@@ -16,7 +16,7 @@ defineTest(projectGlobals) {
     }
     export(QMAKE_CXXFLAGS)
 
-    CONFIG += c++17
+    CONFIG += c++latest
     export(CONFIG)
 }
 
