@@ -336,19 +336,24 @@ struct DamageCalculatorPage::Private
         }
     }
 
-    void loadCalculationsFromFile(const QString& fileName)
+    void loadCalculationsFromFile(const QString& fileName,
+                                  const QByteArray& fileContents = QByteArray())
     {
         auto errorOut = [this](const char* text) {
             q.statusBar()->showMessage(tr("The file can not be loaded"));
             qWarning() << text;
         };
 
-        QFile file(fileName);
-        if (!file.open(QIODevice::ReadOnly)) {
+        auto readFile = [&]() {
+            QFile file(fileName);
+            if (file.open(QIODevice::ReadOnly))
+                return file.readAll();
             errorOut("File could not be opened");
+            return QByteArray();
+        };
+        const QByteArray fileData = fileContents.isEmpty() ? readFile() : fileContents;
+        if (fileData.isEmpty()) // The read function errored out.
             return;
-        }
-        const QByteArray fileData = file.readAll();
 
         const bool json = fileName.endsWith(QLatin1String(".json"), Qt::CaseInsensitive);
         const bool toml = fileName.endsWith(QLatin1String(".toml"), Qt::CaseInsensitive);
@@ -564,12 +569,25 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
+#ifndef Q_OS_WASM
         auto dialog = new QFileDialog(this);
         dialog->setFileMode(QFileDialog::ExistingFile);
-        connect(dialog, &QFileDialog::fileSelected, this,
-            std::bind(&Private::loadCalculationsFromFile, d, std::placeholders::_1));
+        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json)"));
+        connect(dialog, &QFileDialog::fileSelected,
+                this, [this, dialog](const QString& filePath)
+        {
+            d->loadCalculationsFromFile(filePath);
+            dialog->deleteLater();
+        });
         dialog->setModal(true);
         dialog->show();
+#else
+        auto load = [this](const QString& fileName, const QByteArray& fileContent) {
+            qDebug() << "Load callback" << fileName << fileContent.size();
+            d->loadCalculationsFromFile(fileName, fileContent);
+        };
+        QFileDialog::getOpenFileContent(tr("Calculations (*.toml *.json)"), load);
+#endif
     });
 
     action = new QAction(tr("Copy chart to clipboard"), this);
