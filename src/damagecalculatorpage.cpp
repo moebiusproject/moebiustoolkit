@@ -415,7 +415,7 @@ struct DamageCalculatorPage::Private
                 return;
             }
             const toml::array* array = arrayNode->as_array();
-            for (int index = 0, last = array->size(); index < last; ++index) {
+            for (std::size_t index = 0, last = array->size(); index < last; ++index) {
                 const toml::node* value = array->get(index);
                 if (!value->is_table()) {
                     errorOut("Cannot load TOML element in calculations: is not a table");
