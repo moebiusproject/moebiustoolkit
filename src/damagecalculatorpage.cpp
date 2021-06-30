@@ -65,6 +65,7 @@ using namespace Calculators;
 using namespace QtCharts;
 
 static const auto keyDamageCalculations = QStringLiteral("DamageCalculations");
+static const auto keyDamageCalculator   = QStringLiteral("DamageCalculator");
 
 struct ArmorModifiers
 {
@@ -123,6 +124,25 @@ struct Calculation : public Ui::calculation
         weapon2->ui->attacksPerRound1->hide();
         weapon2->ui->styleModifier->setMinimum(-8);
     }
+};
+
+class ToolBox : public QToolBox {
+    Q_OBJECT
+public:
+    QSize sizeHint() const override
+    {
+        if (count() == 0)
+            return QToolBox::sizeHint();
+
+        QSize result;
+        for (int index = 0, last = count(); index < last; ++index) {
+            QSize hint = widget(index)->sizeHint();
+            result.setWidth(qMax(result.width(), hint.width()));
+            result.setHeight(qMax(result.height(), hint.height()));
+        }
+        return result;
+    }
+
 };
 
 // Dialogs /////////////////////////////////////////////////////////////////////
@@ -862,27 +882,21 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
 
     // Layout grouping the calculations and the enemy controls /////////////////
-    auto inputArea = new QToolBox;
+    auto inputArea = new ToolBox;
     inputArea->addItem(enemyControls, tr("Opponent"));
     inputArea->addItem(d->tabs, tr("Attacker"));
     inputArea->setCurrentWidget(d->tabs);
-    inputArea->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
 
     // Now group everything together ///////////////////////////////////////////
     auto splitter = new QSplitter;
+    const int initialHandleWidth = splitter->handleWidth();
+    splitter->setHandleWidth(initialHandleWidth + 10);
     setLayout(new QHBoxLayout);
     layout()->addWidget(splitter);
     auto chartViewWidget = new QWidget;
     chartViewWidget->setLayout(chartViewLayout);
     splitter->addWidget(chartViewWidget);
     splitter->addWidget(inputArea);
-#if 0 // TODO: Figure how to make this work better.
-    const int inputAreaWidth = inputArea->sizeHint().width();
-    const int remainingWidth = splitter->width() - inputAreaWidth;
-    splitter->setSizes(QList<int>{remainingWidth, inputAreaWidth});
-#else
-    splitter->setSizes(QList<int>{splitter->width()*2/3, splitter->width()/3});
-#endif
     statusBar()->showMessage(tr("Hover the lines to see the value"));
 
     d->newPage();
@@ -896,14 +910,45 @@ DamageCalculatorPage::~DamageCalculatorPage()
 
 bool DamageCalculatorPage::event(QEvent* event)
 {
+    static const auto splitterKey = QStringLiteral("QSplitterData");
+
+    auto loadInterface = [this]() {
+        static bool initialized = false;
+        if (initialized)
+            return;
+        initialized = true;
+
+        auto splitter = findChild<QSplitter*>();
+
+        QSettings settings;
+        settings.beginGroup(keyDamageCalculator);
+        if (settings.contains(splitterKey))
+            splitter->restoreState(settings.value(splitterKey).toByteArray());
+        else {
+            auto inputArea = findChild<QToolBox*>();
+            const int inputAreaWidth = inputArea->sizeHint().width();
+            const int remainingWidth = splitter->width() - inputAreaWidth - splitter->handleWidth();
+            splitter->setSizes(QList<int>{remainingWidth, inputAreaWidth});
+        }
+    };
+
+    auto saveInterface = [this]() {
+        QSettings settings;
+        settings.beginGroup(keyDamageCalculator);
+        auto splitter = findChild<QSplitter*>();
+        settings.setValue(splitterKey, splitter->saveState());
+    };
+
     // FIXME: Doesn't work on Plasma with the global menu, debug why.
     if (event->type() == QEvent::Hide) {
         d->fileMenu->menuAction()->setVisible(false);
         d->mainMenu->menuAction()->setVisible(false);
+        saveInterface();
     }
-    if (event->type() == QEvent::Show) {
+    else if (event->type() == QEvent::Show) {
         d->fileMenu->menuAction()->setVisible(true);
         d->mainMenu->menuAction()->setVisible(true);
+        loadInterface();
     }
 
     return QWidget::event(event);
