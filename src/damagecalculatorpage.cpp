@@ -61,6 +61,8 @@
 #include <numeric>
 #include <sstream>
 
+// TODO: Qt 6. Move some QKeySequence to QKeyCombination?
+
 using namespace Calculators;
 using namespace QtCharts;
 
@@ -567,7 +569,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->fileMenu = menuBar()->addMenu(tr("File"));
 
     auto action = new QAction(tr("Save visible calculations as..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    action->setShortcut(QKeySequence::Save);
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
 #ifndef Q_OS_WASM
@@ -588,7 +590,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
 
     action = new QAction(tr("Load calculations from..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+    action->setShortcut(QKeySequence::Open);
     d->fileMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
 #ifndef Q_OS_WASM
@@ -613,7 +615,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
 
     action = new QAction(tr("Copy chart to clipboard"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_C));
+    action->setShortcut(QKeySequence(tr("Ctrl+Shift+C")));
     d->fileMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
@@ -628,7 +630,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 #endif
 
     action = new QAction(tr("Save chart as..."), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
+    action->setShortcut(QKeySequence(tr("Ctrl+Shift+S")));
     d->fileMenu->addAction(action);
 
     connect(action, &QAction::triggered, [this] {
@@ -653,7 +655,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
 
     action = new QAction(tr("Duplicate current calculation"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    action->setShortcut(QKeySequence(tr("Ctrl+D")));
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
         const QVariantHash saved = d->serialize(d->tabs->currentWidget());
@@ -680,8 +682,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->mainMenu->addMenu(d->deleteSavedMenu);
     d->populateEntriesMenu();
 
-    action = new QAction(tr("Manage entries"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
+    action = new QAction(tr("Manage calculations in preferences"), this);
     d->mainMenu->addAction(action);
 #ifdef Q_OS_WASM
      // TODO. WebAssembly requires us to implement this with async QSettings. Pass for now.

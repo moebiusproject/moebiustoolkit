@@ -62,13 +62,13 @@ MainWindow::MainWindow(QWidget* parentWidget)
 
     d->mainMenu = menuBar()->addMenu(tr("Moebius Toolkit"));
     auto action = new QAction(tr("Show full screen"), this);
-    action->setShortcut(QKeySequence(Qt::Key_F11));
+    action->setShortcut(QKeySequence::FullScreen);
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered,
             this, [this]{ setWindowState(windowState() ^ Qt::WindowFullScreen); });
 
     action = new QAction(tr("Quit"), this);
-    action->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    action->setShortcut(QKeySequence::Quit);
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered,
             qApp, &QCoreApplication::quit, Qt::QueuedConnection);
