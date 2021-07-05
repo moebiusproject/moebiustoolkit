@@ -18,15 +18,17 @@
 
 #pragma once
 
+#include <QList>
 #include <QString>
 
+class QMenu;
 class QMenuBar;
 class QStatusBar;
 
 class BasePage
 {
 public:
-
+    virtual QList<QMenu*> makeMenus() { return QList<QMenu*>(); };
 protected:
     QMenuBar* menuBar();
     QStatusBar* statusBar();

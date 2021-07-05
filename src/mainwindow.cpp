@@ -49,6 +49,7 @@ struct MainWindow::Private
     PageSelector* selector;
     WelcomePage* welcomePage;
     QStackedWidget* view;
+    QHash<QWidget*, QList<QMenu*>> pageMenus;
 
     QMenu* mainMenu = nullptr;
 };
@@ -77,7 +78,17 @@ MainWindow::MainWindow(QWidget* parentWidget)
 
     d->selector = new PageSelector(this);
     connect(d->selector, &PageSelector::buttonActivated, this, [this](int index) {
+        QWidget* currentWidget = d->view->currentWidget();
+        for (QMenu* menu : d->pageMenus.value(currentWidget)) {
+            menu->menuAction()->setVisible(false);
+        }
+
         d->view->setCurrentIndex(index);
+
+        currentWidget = d->view->currentWidget();
+        for (QMenu* menu : d->pageMenus.value(currentWidget)) {
+            menu->menuAction()->setVisible(true);
+        }
     });
 
     d->welcomePage = new WelcomePage(this);
@@ -141,4 +152,15 @@ void MainWindow::Private::addNewPage(PageType type)
     }
 
     view->setCurrentIndex(view->count() - 1);
+
+    auto page = dynamic_cast<BasePage*>(view->currentWidget());
+    if (!page)
+        return;
+
+    const QList<QMenu*> newMenus = page->makeMenus();
+    if (newMenus.isEmpty())
+        return;
+    pageMenus.insert(view->currentWidget(), newMenus);
+    for (auto pageMenu : newMenus)
+        parent.menuBar()->addMenu(pageMenu);
 }

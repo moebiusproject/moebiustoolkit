@@ -20,12 +20,15 @@
 
 #include <QWidget>
 
-class BackstabCalculatorPage : public QWidget
+#include "basepage.h"
+
+class BackstabCalculatorPage : public QWidget, public BasePage
 {
     Q_OBJECT
 public:
     explicit BackstabCalculatorPage(QWidget* parent = nullptr);
     ~BackstabCalculatorPage();
+    QList<QMenu*> makeMenus() override;
 
 private:
     struct Private;

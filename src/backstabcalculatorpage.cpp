@@ -5,9 +5,11 @@
 #include <QBoxLayout>
 #include <QChart>
 #include <QChartView>
+#include <QClipboard>
 #include <QDebug>
 #include <QHorizontalStackedBarSeries>
 #include <QLabel>
+#include <QMenu>
 #include <QPushButton>
 #include <QTabWidget>
 #include <QValueAxis>
@@ -109,6 +111,21 @@ BackstabCalculatorPage::~BackstabCalculatorPage()
 {
     delete d;
     d = nullptr;
+}
+
+QList<QMenu*> BackstabCalculatorPage::makeMenus()
+{
+    auto menu = new QMenu(tr("Backstab Calculator"));
+    auto action = new QAction(tr("Copy chart to clipboard"), this);
+    action->setShortcut(QKeySequence::Copy);
+    menu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        const QPixmap pixmap = d->chartView->grab();
+        QClipboard* clipboard = QGuiApplication::clipboard();
+        clipboard->setPixmap(pixmap);
+    });
+
+    return { menu };
 }
 
 void BackstabCalculatorPage::Private::setupChart()
