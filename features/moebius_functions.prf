@@ -13,6 +13,7 @@ defineTest(projectGlobals) {
         QMAKE_CXXFLAGS += -Wall
         QMAKE_CXXFLAGS += -Wshadow
         QMAKE_CXXFLAGS += -Wextra
+        clang:QMAKE_CXXFLAGS += -Wno-error=deprecated-enum-enum-conversion
     }
     export(QMAKE_CXXFLAGS)
 
