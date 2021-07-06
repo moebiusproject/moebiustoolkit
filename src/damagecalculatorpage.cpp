@@ -557,7 +557,7 @@ struct DamageCalculatorPage::Private
 // Main class //////////////////////////////////////////////////////////////////
 
 DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this))
 {
     for (int i = 10; i >= -20; --i)
@@ -614,43 +614,6 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 #endif
     });
 
-    action = new QAction(tr("Copy chart to clipboard"), this);
-    action->setShortcut(QKeySequence(tr("Ctrl+Shift+C")));
-    d->fileMenu->addAction(action);
-
-    connect(action, &QAction::triggered, [this] {
-        const QPixmap pixmap = d->chartView->grab();
-        QClipboard* clipboard = QGuiApplication::clipboard();
-        clipboard->setPixmap(pixmap);
-    });
-#ifdef Q_OS_WASM
-    // Seems that it only supports copying text for now. :-/
-    // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API
-    action->setEnabled(false);
-#endif
-
-    action = new QAction(tr("Save chart as..."), this);
-    action->setShortcut(QKeySequence(tr("Ctrl+Shift+S")));
-    d->fileMenu->addAction(action);
-
-    connect(action, &QAction::triggered, [this] {
-        const QPixmap pixmap = d->chartView->grab();
-#ifndef Q_OS_WASM
-        auto dialog = new QFileDialog(this);
-        dialog->setAcceptMode(QFileDialog::AcceptSave);
-        connect(dialog, &QFileDialog::fileSelected, [pixmap, dialog](const QString& name) {
-            pixmap.save(name, "png");
-            dialog->deleteLater();
-        });
-        dialog->open();
-#else
-        QByteArray fileData;
-        QBuffer buffer(&fileData);
-        buffer.open(QIODevice::WriteOnly);
-        pixmap.save(&buffer, "png");
-        QFileDialog::saveFileContent(fileData, QLatin1String("chart.png"));
-#endif
-    });
 
     d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
 
@@ -907,6 +870,11 @@ DamageCalculatorPage::~DamageCalculatorPage()
 {
     delete d;
     d = nullptr;
+}
+
+QList<QChartView*> DamageCalculatorPage::charts() const
+{
+    return { d->chartView };
 }
 
 bool DamageCalculatorPage::event(QEvent* event)

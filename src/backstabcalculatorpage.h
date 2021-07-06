@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,15 @@
 
 #pragma once
 
-#include <QWidget>
-
 #include "basepage.h"
 
-class BackstabCalculatorPage : public QWidget, public BasePage
+class BackstabCalculatorPage : public BasePage
 {
     Q_OBJECT
 public:
     explicit BackstabCalculatorPage(QWidget* parent = nullptr);
     ~BackstabCalculatorPage();
-    QList<QMenu*> makeMenus() override;
+    QList<QtCharts::QChartView*> charts() const override;
 
 private:
     struct Private;

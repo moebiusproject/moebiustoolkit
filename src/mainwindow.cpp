@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019 Alejandro Exojo Piqueras
+ * Copyright (C) 2019-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,12 @@
 #include "repeatedprobabilitypage.h"
 #include "welcomepage.h"
 
+#include <QBuffer>
+#include <QChart>
+#include <QChartView>
+#include <QClipboard>
 #include <QDebug>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QMenu>
 #include <QMenuBar>
@@ -44,12 +49,17 @@ struct MainWindow::Private
     {}
 
     void addNewPage(PageType type);
+    void updateMainMenu();
 
     MainWindow& parent;
     PageSelector* selector;
     WelcomePage* welcomePage;
     QStackedWidget* view;
+
     QHash<QWidget*, QList<QMenu*>> pageMenus;
+    QAction* rotateChartTheme = nullptr;
+    QAction* copyChartToClipboard = nullptr;
+    QAction* saveChartAs = nullptr;
 
     QMenu* mainMenu = nullptr;
 };
@@ -61,8 +71,69 @@ MainWindow::MainWindow(QWidget* parentWidget)
     BasePage::m_menuBar = menuBar();
     BasePage::m_statusBar = statusBar();
 
+    //
+    // Setup application-wide menu ("Moebius Toolkit").
+    //
     d->mainMenu = menuBar()->addMenu(tr("Moebius Toolkit"));
-    auto action = new QAction(tr("Show full screen"), this);
+
+    auto action = new QAction(tr("Change chart theme"), this);
+    d->rotateChartTheme = action;
+    action->setShortcut(tr("Ctrl+T"));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, this, [this]() {
+        auto page = qobject_cast<BasePage*>(d->view->currentWidget());
+        for (QtCharts::QChartView* view : page->charts()) {
+            int themeInt = view->chart()->theme() + 1;
+            themeInt = themeInt % (QtCharts::QChart::ChartThemeQt + 1);
+            view->chart()->setTheme(QtCharts::QChart::ChartTheme(themeInt));
+        }
+    });
+    action->setEnabled(false); // Starts disabled. No charts on the welcome.
+
+    action = new QAction(tr("Copy chart to clipboard"), this);
+    d->copyChartToClipboard = action;
+    action->setShortcut(QKeySequence(tr("Ctrl+Shift+C")));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, this, [this]() {
+        auto page = qobject_cast<BasePage*>(d->view->currentWidget());
+        if (page->charts().isEmpty())
+            return;
+        const QPixmap pixmap = page->charts().first()->grab();
+        QClipboard* clipboard = QGuiApplication::clipboard();
+        clipboard->setPixmap(pixmap);
+    });
+    action->setEnabled(false); // Starts disabled. No charts on the welcome.
+
+    action = new QAction(tr("Save chart as..."), this);
+    d->saveChartAs = action;
+    action->setShortcut(QKeySequence(tr("Ctrl+Shift+S")));
+    d->mainMenu->addAction(action);
+    connect(action, &QAction::triggered, [this] {
+        auto page = qobject_cast<BasePage*>(d->view->currentWidget());
+        if (page->charts().isEmpty())
+            return;
+        const QPixmap pixmap = page->charts().first()->grab();
+#ifndef Q_OS_WASM
+        auto dialog = new QFileDialog(this);
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
+        connect(dialog, &QFileDialog::fileSelected, [pixmap, dialog](const QString& name) {
+            pixmap.save(name, "png");
+            dialog->deleteLater();
+        });
+        dialog->open();
+#else
+        QByteArray fileData;
+        QBuffer buffer(&fileData);
+        buffer.open(QIODevice::WriteOnly);
+        pixmap.save(&buffer, "png");
+        QFileDialog::saveFileContent(fileData, QLatin1String("chart.png"));
+#endif
+    });
+    action->setEnabled(false); // Starts disabled. No charts on the welcome.
+
+    d->mainMenu->addSeparator();
+
+    action = new QAction(tr("Show full screen"), this);
     action->setShortcut(QKeySequence::FullScreen);
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered,
@@ -89,6 +160,8 @@ MainWindow::MainWindow(QWidget* parentWidget)
         for (QMenu* menu : d->pageMenus.value(currentWidget)) {
             menu->menuAction()->setVisible(true);
         }
+
+        d->updateMainMenu();
     });
 
     d->welcomePage = new WelcomePage(this);
@@ -153,14 +226,27 @@ void MainWindow::Private::addNewPage(PageType type)
 
     view->setCurrentIndex(view->count() - 1);
 
-    auto page = dynamic_cast<BasePage*>(view->currentWidget());
-    if (!page)
-        return;
-
+    updateMainMenu();
+    auto page = qobject_cast<BasePage*>(view->currentWidget());
     const QList<QMenu*> newMenus = page->makeMenus();
     if (newMenus.isEmpty())
         return;
     pageMenus.insert(view->currentWidget(), newMenus);
     for (auto pageMenu : newMenus)
         parent.menuBar()->addMenu(pageMenu);
+}
+
+void MainWindow::Private::updateMainMenu()
+{
+    auto page = qobject_cast<BasePage*>(view->currentWidget());
+    const bool hasCharts = !page->charts().isEmpty();
+    rotateChartTheme->setEnabled(hasCharts);
+    copyChartToClipboard->setEnabled(hasCharts);
+    saveChartAs->setEnabled(hasCharts);
+#ifdef Q_OS_WASM
+    // Seems that it only supports copying text for now. :-/
+    // https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API
+    copyChartToClipboard->setEnabled(false);
+#endif
+
 }

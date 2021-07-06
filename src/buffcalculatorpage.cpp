@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ struct BuffCalculatorPage::Private
 };
 
 BuffCalculatorPage::BuffCalculatorPage(QWidget* parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this))
 {
 }

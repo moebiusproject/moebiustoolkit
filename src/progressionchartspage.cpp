@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -335,7 +335,7 @@ void ProgressionChartsPage::Private::updateSeries(int index)
 // Public //////////////////////////////////////////////////////////////////////
 
 ProgressionChartsPage::ProgressionChartsPage(QWidget* parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this, m_currentLocation))
 {
     connect(&d->xplevels, &XpLevels::loaded, this, [this]{ d->loaded(); });

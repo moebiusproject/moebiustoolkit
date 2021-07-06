@@ -183,7 +183,7 @@ void DualCalculatorPage::Private::recalculate(int index)
 // Public //////////////////////////////////////////////////////////////////////
 
 DualCalculatorPage::DualCalculatorPage(QWidget* parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this, m_currentLocation))
 {
     connect(&d->xpLevels, &XpLevels::loaded, this, [this]{ d->loaded(); });

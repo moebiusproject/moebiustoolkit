@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,21 +18,21 @@
 
 #pragma once
 
-#include <QWidget>
-
 #include "basepage.h"
 
 // TODO: Remove from this header, but requires adjusting promoted widgets.
 #include "specialdamagewidget.h"
 #include "weaponarrangementwidget.h"
 
-class DamageCalculatorPage : public QWidget, public BasePage
+class DamageCalculatorPage : public BasePage
 {
     Q_OBJECT
 
 public:
     explicit DamageCalculatorPage(QWidget* parent = nullptr);
     ~DamageCalculatorPage();
+
+    QList<QtCharts::QChartView*> charts() const override;
 
 protected:
     bool event(QEvent* event) override;

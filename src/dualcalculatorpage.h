@@ -20,9 +20,7 @@
 
 #include "basepage.h"
 
-#include <QWidget>
-
-class DualCalculatorPage : public QWidget, public BasePage
+class DualCalculatorPage : public BasePage
 {
     Q_OBJECT
 public:

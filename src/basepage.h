@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,24 @@
 
 #include <QList>
 #include <QString>
+#include <QWidget>
 
 class QMenu;
 class QMenuBar;
 class QStatusBar;
 
-class BasePage
+namespace QtCharts {
+    class QChartView;
+}
+
+class BasePage : public QWidget
 {
+    Q_OBJECT
 public:
+    explicit BasePage(QWidget* parent = nullptr) : QWidget(parent) {}
     virtual QList<QMenu*> makeMenus() { return QList<QMenu*>(); };
+    virtual QList<QtCharts::QChartView*> charts() const { return {}; }
+
 protected:
     QMenuBar* menuBar();
     QStatusBar* statusBar();

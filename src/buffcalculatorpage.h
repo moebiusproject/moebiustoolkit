@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,7 @@
 
 #include "basepage.h"
 
-#include <QWidget>
-
-class BuffCalculatorPage : public QWidget, public BasePage
+class BuffCalculatorPage : public BasePage
 {
     Q_OBJECT
 public:

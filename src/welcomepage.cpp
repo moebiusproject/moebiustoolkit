@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2019 Alejandro Exojo Piqueras
+ * Copyright (C) 2019-2021 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ static const auto keyName = QStringLiteral("Name");
 static const auto keyLocation = QStringLiteral("Location");
 
 WelcomePage::WelcomePage(QWidget* parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this))
 {
     d->ui.setupUi(this);

@@ -1,3 +1,21 @@
+/*
+ * This file is part of Moebius Toolkit.
+ * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "backstabcalculatorpage.h"
 
 #include <QBarCategoryAxis>
@@ -5,11 +23,9 @@
 #include <QBoxLayout>
 #include <QChart>
 #include <QChartView>
-#include <QClipboard>
 #include <QDebug>
 #include <QHorizontalStackedBarSeries>
 #include <QLabel>
-#include <QMenu>
 #include <QPushButton>
 #include <QTabWidget>
 #include <QValueAxis>
@@ -51,7 +67,7 @@ struct BackstabCalculatorPage::Private
 };
 
 BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
-    : QWidget(parent)
+    : BasePage(parent)
     , d(new Private(*this))
 {
     auto chartControlsLayout = new QHBoxLayout;
@@ -113,19 +129,9 @@ BackstabCalculatorPage::~BackstabCalculatorPage()
     d = nullptr;
 }
 
-QList<QMenu*> BackstabCalculatorPage::makeMenus()
+QList<QChartView*> BackstabCalculatorPage::charts() const
 {
-    auto menu = new QMenu(tr("Backstab Calculator"));
-    auto action = new QAction(tr("Copy chart to clipboard"), this);
-    action->setShortcut(QKeySequence::Copy);
-    menu->addAction(action);
-    connect(action, &QAction::triggered, [this] {
-        const QPixmap pixmap = d->chartView->grab();
-        QClipboard* clipboard = QGuiApplication::clipboard();
-        clipboard->setPixmap(pixmap);
-    });
-
-    return { menu };
+    return { d->chartView };
 }
 
 void BackstabCalculatorPage::Private::setupChart()
