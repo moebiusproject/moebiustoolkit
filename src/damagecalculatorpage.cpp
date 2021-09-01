@@ -1171,7 +1171,8 @@ void DamageCalculatorPage::Private::newPage()
         if (!over)
             return;
         point = closestSeriesPoint(series->pointsVector(), point);
-        q.statusBar()->showMessage(tr("%1. Damage: %2").arg(series->name()).arg(point.y()), 2000);
+        q.statusBar()->showMessage(tr("%1 Damage: %2 AC: %3")
+                                   .arg(series->name()).arg(point.y()).arg(point.x()), 5000);
     });
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
