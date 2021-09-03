@@ -34,7 +34,16 @@
    <item>
     <widget class="QLabel" name="browserIntroductionLabel">
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Some of the modules of the application (for example, the Game Browser) need the data of a game to work. Some may work with a small portion of the data. Other modules don't require an installed game at all.&lt;/p&gt;&lt;p&gt;To browse a game or use one of the other modules, first introduce the location of the installation directory (where the &amp;quot;chitin.key&amp;quot; file is), give it a name of your liking, and save.&lt;/p&gt;&lt;p&gt;Then press the button of the Game Browser or other module that requires a game location to work. Without a valid location, the buttons of the modules that require it will be disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
+&lt;p&gt;Some of the modules of the application (for example, the Game Browser) need to read the data of an installed game to work. Other modules don't require an installed game at all.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;You can skip this section&lt;/strong&gt; if the modules that you want to use are enabled already. To enable the disabled buttons, configure a game first:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Press &amp;quot;New&amp;quot;.&lt;/li&gt;
+&lt;li&gt;Provide the location where a game is installed. This is done by choosing the full path to a &quot;chitin.key&quot; file, which is always in the root of an Infinity Engine game. Press the &amp;quot;Change...&amp;quot; button to open a dialog to browse your disk.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Optionally&lt;/em&gt;, give a name to the game you are configuring (e.g. &amp;quot;BG2EE&amp;quot;). The name is only used for your convenience if you have many game installations.&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;Optionally&lt;/em&gt;, press &quot;Save&quot; to keep the settings for the next time.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Then press the button of the Game Browser or other module that requires a game location to work. Without a valid location, the buttons of the modules that require it will be disabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -106,7 +115,7 @@
      <item row="1" column="2">
       <widget class="QPushButton" name="locationOpen">
        <property name="text">
-        <string>Change</string>
+        <string>Change...</string>
        </property>
        <property name="icon">
         <iconset theme="folder-open">
