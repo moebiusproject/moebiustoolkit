@@ -69,6 +69,8 @@ WelcomePage::WelcomePage(QWidget* parent)
     d->ui.buffCalculator->setEnabled(false);
 #endif
 #ifdef Q_OS_WASM // Force enable the modules without the UI to setup locations.
+    // This are disabled, then hidden, which is pointless. It's just in case I
+    // change my mind and want to go back to have then shown and disabled.
     d->ui.configuredGames->setEnabled(false);
     d->ui.name->setEnabled(false);
     d->ui.location->setEnabled(false);
@@ -78,6 +80,40 @@ WelcomePage::WelcomePage(QWidget* parent)
     d->ui.remove->setEnabled(false);
     d->ui.progressionCharts->setEnabled(true);
     d->ui.dualCalculator->setEnabled(true);
+
+    d->ui.configuredGames->setVisible(false);
+    d->ui.name->setVisible(false);
+    d->ui.location->setVisible(false);
+    d->ui.addNew->setVisible(false);
+    d->ui.save->setVisible(false);
+    d->ui.remove->setVisible(false);
+    d->ui.remove->setVisible(false);
+    d->ui.progressionCharts->setVisible(true);
+    d->ui.dualCalculator->setVisible(true);
+
+    d->ui.configuredGamesLabel->setVisible(false);
+    d->ui.configuredGames->setVisible(false);
+    d->ui.nameLabel->setVisible(false);
+    d->ui.name->setVisible(false);
+    d->ui.location->setVisible(false);
+    d->ui.locationLabel->setVisible(false);
+    d->ui.locationOpen->setVisible(false);
+    d->ui.addNew->setVisible(false);
+    d->ui.save->setVisible(false);
+    d->ui.remove->setVisible(false);
+    d->ui.remove->setVisible(false);
+    d->ui.progressionCharts->setVisible(true);
+    d->ui.dualCalculator->setVisible(true);
+
+    d->ui.browserIntroductionLabel->setText(tr("<html><head/><body>\n"
+"<p>This version of the application doesn't have full access to the disk, so it "
+"cannot read your game files. Some modules will always appear disabled, while "
+"some others will have placeholder data from a vanilla Shadows of Amn game. If "
+"possible, get the desktop version of the application (Windows, Linux) to have "
+"them enabled.</p>\n"
+"</body></html>"
+));
+
 #endif
 
     connect(d->ui.configuredGames, qOverload<int>(&QComboBox::currentIndexChanged),
