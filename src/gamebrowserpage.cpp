@@ -74,6 +74,7 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
     d->ui.log->setFontFamily(QLatin1String("monospace"));
     d->ui.resources->setModel(&d->model);
     d->model.setColumnCount(2);
+    d->model.setHorizontalHeaderLabels(QStringList() << tr("Resource") << tr("Location"));
     d->model.insertRow(BiffsRow, new QStandardItem(tr("BIFFs")));
     d->model.insertRow(SpellsRow, new QStandardItem(tr("Spells")));
     d->model.insertRow(ItemsRow, new QStandardItem(tr("Items")));
