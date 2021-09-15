@@ -727,7 +727,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     });
     d->pointLabelsClipping = new QCheckBox(tr("Clip point labels"));
     chartControlsLayout->addWidget(d->pointLabelsClipping);
-    d->pointLabelsClipping->setChecked(false);
+    d->pointLabelsClipping->setChecked(true);
     connect(d->pointLabelsClipping, &QCheckBox::toggled, [this](bool value) {
         for (auto series : d->chart->series()) {
             if (auto line = qobject_cast<QLineSeries*>(series)) {
