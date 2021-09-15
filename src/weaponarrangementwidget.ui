@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>220</width>
-    <height>636</height>
+    <height>656</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -91,7 +91,7 @@
            <x>0</x>
            <y>0</y>
            <width>178</width>
-           <height>211</height>
+           <height>199</height>
           </rect>
          </property>
          <attribute name="label">
@@ -198,7 +198,7 @@
            <x>0</x>
            <y>0</y>
            <width>178</width>
-           <height>211</height>
+           <height>199</height>
           </rect>
          </property>
          <attribute name="label">
@@ -211,7 +211,7 @@
            <x>0</x>
            <y>0</y>
            <width>178</width>
-           <height>211</height>
+           <height>199</height>
           </rect>
          </property>
          <attribute name="label">
@@ -224,7 +224,7 @@
            <x>0</x>
            <y>0</y>
            <width>178</width>
-           <height>211</height>
+           <height>199</height>
           </rect>
          </property>
          <attribute name="label">
@@ -237,7 +237,7 @@
            <x>0</x>
            <y>0</y>
            <width>178</width>
-           <height>211</height>
+           <height>199</height>
           </rect>
          </property>
          <attribute name="label">
@@ -287,26 +287,55 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_9">
-     <item>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
       <widget class="QLabel" name="criticalHitChanceLabel">
        <property name="text">
         <string>Critical hit chance</string>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QSpinBox" name="criticalHitChance">
        <property name="suffix">
         <string>%</string>
        </property>
        <property name="minimum">
-        <number>5</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <number>100</number>
        </property>
        <property name="singleStep">
+        <number>5</number>
+       </property>
+       <property name="value">
+        <number>5</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="criticalMissChanceLabel">
+       <property name="text">
+        <string>Critical miss chance</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="criticalMissChance">
+       <property name="suffix">
+        <string>%</string>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="singleStep">
+        <number>5</number>
+       </property>
+       <property name="value">
         <number>5</number>
        </property>
       </widget>

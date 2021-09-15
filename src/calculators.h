@@ -56,7 +56,8 @@ struct WeaponArrangement {
 
     QHash<DamageType, DiceRoll> damage;
     double attacks = 1.0;
-    double critical = 0.05;
+    double criticalHit = 0.05;
+    double criticalMiss = 0.05;
 
     /// Returns the physical damage roll with the arrangment modifiers applied.
     /// Doesn't include the "global" modifiers like Strength, class.

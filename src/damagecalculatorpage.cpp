@@ -941,10 +941,18 @@ void DamageCalculatorPage::Private::deserialize(QWidget* root, QVariantHash data
         data.insert(QLatin1String("criticalHitChance1"), 5);
     if (!data.contains(QLatin1String("criticalHitChance2")))
         data.insert(QLatin1String("criticalHitChance2"), 5);
+    if (!data.contains(QLatin1String("criticalMissChance1")))
+        data.insert(QLatin1String("criticalMissChance1"), 5);
+    if (!data.contains(QLatin1String("criticalMissChance2")))
+        data.insert(QLatin1String("criticalMissChance2"), 5);
     if (!data.contains(QLatin1String("criticalStrike")))
         data.insert(QLatin1String("criticalStrike"), false);
     if (!data.contains(QLatin1String("maximumDamage")))
         data.insert(QLatin1String("maximumDamage"), false);
+    if (!data.contains(QLatin1String("miscThac0Bonus")))
+        data.insert(QLatin1String("miscThac0Bonus"), 0);
+    if (!data.contains(QLatin1String("miscDamageBonus")))
+        data.insert(QLatin1String("miscDamageBonus"), 0);
 
     auto migrateKey = [&data](const QString& from, const QString& to, QVariant value) {
         if (!data.contains(to)) {

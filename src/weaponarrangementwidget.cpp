@@ -78,7 +78,7 @@ WeaponArrangement WeaponArrangementWidget::toData() const
     }
 
     result.attacks = attacksPerRound();
-    result.critical = criticalHitChance();
+    result.criticalHit = criticalHitChance();
 
     return result;
 }
