@@ -399,5 +399,10 @@ ProgressionChartsPage::~ProgressionChartsPage()
     d = nullptr;
 }
 
+QList<QChartView *> ProgressionChartsPage::charts() const
+{
+    return { d->chartView };
+}
+
 
 #include "progressionchartspage.moc"
