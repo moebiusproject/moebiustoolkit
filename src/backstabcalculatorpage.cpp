@@ -160,15 +160,7 @@ void BackstabCalculatorPage::Private::newPage()
     setup.setupUi(widget);
 
     // Hide/change parts that are irrelevant to us.
-    setup.weapon->ui->damageGroup->setTitle(tr("Weapon damage"));
-    setup.weapon->ui->thac0Group->hide();
-    setup.weapon->ui->damageType->hide();
-    setup.weapon->ui->damageTypeLabel->hide();
-    setup.weapon->ui->attacksPerRound1->hide();
-    setup.weapon->ui->attacksPerRound2->hide();
-    setup.weapon->ui->attacksPerRoundLabel->hide();
-    setup.weapon->ui->criticalHitChance->hide();
-    setup.weapon->ui->criticalHitChanceLabel->hide();
+    setup.weapon->setAsBackstabWeapon();
 
     tabs->addTab(widget, tr("Setup %1").arg(tabs->count() + 1));
     tabs->setCurrentWidget(widget);

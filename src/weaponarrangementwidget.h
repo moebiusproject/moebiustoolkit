@@ -34,14 +34,15 @@ public:
     explicit WeaponArrangementWidget(QWidget* parent = nullptr);
     ~WeaponArrangementWidget();
 
+    // Serialize to a struct.
     Calculators::WeaponArrangement toData() const;
-
-    Ui::WeaponArrangementWidget* ui;
-
-    double attacksPerRound() const;
-    double criticalHitChance() const;
-    Calculators::DamageType damageType() const;
+    void setAsWeaponOne();
+    void setAsWeaponTwo();
+    void setAsBackstabWeapon();
 
 private:
+    Ui::WeaponArrangementWidget* ui;
+    double attacksPerRound() const;
     QList<QPair<Calculators::DamageType, DiceRoll>> elementalDamages() const;
 };
+

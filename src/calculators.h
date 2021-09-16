@@ -47,6 +47,9 @@ enum DamageType
     // effect in many weapons ("get poisoned" vs "direct poison damage").
 };
 
+/*!
+ * \brief Struct mapping the inputs in WeaponArrangementWidget
+ */
 struct WeaponArrangement {
     int proficiencyToHit = 0;
     int styleToHit = 0;

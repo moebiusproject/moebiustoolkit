@@ -78,9 +78,34 @@ WeaponArrangement WeaponArrangementWidget::toData() const
     }
 
     result.attacks = attacksPerRound();
-    result.criticalHit = criticalHitChance();
+    result.criticalHit = ui->criticalHitChance->value();
+    result.criticalMiss = ui->criticalMissChance->value();
 
     return result;
+}
+
+void WeaponArrangementWidget::setAsWeaponOne()
+{
+    ui->attacksPerRound2->hide();
+}
+
+void WeaponArrangementWidget::setAsWeaponTwo()
+{
+    ui->attacksPerRound1->hide();
+    ui->styleModifier->setMinimum(-8);
+}
+
+void WeaponArrangementWidget::setAsBackstabWeapon()
+{
+    ui->damageGroup->setTitle(tr("Weapon damage"));
+    ui->thac0Group->hide();
+    ui->damageType->hide();
+    ui->damageTypeLabel->hide();
+    ui->attacksPerRound1->hide();
+    ui->attacksPerRound2->hide();
+    ui->attacksPerRoundLabel->hide();
+    ui->criticalHitChance->hide();
+    ui->criticalHitChanceLabel->hide();
 }
 
 QList<QPair<DamageType, DiceRoll>>
@@ -99,15 +124,5 @@ double WeaponArrangementWidget::attacksPerRound() const
 {
     return !ui->attacksPerRound1->isHidden() ? ui->attacksPerRound1->value()
                                              : double(ui->attacksPerRound2->value());
-}
-
-double WeaponArrangementWidget::criticalHitChance() const
-{
-    return ui->criticalHitChance->value() / 100.0;
-}
-
-DamageType WeaponArrangementWidget::damageType() const
-{
-    return ui->damageType->currentData().value<DamageType>();
 }
 

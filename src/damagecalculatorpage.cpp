@@ -121,10 +121,8 @@ struct Calculation : public Ui::calculation
     void setupUi(QWidget* widget)
     {
         Ui::calculation::setupUi(widget);
-        // Change the two weapons for the different limits of the two weapons.
-        weapon1->ui->attacksPerRound2->hide();
-        weapon2->ui->attacksPerRound1->hide();
-        weapon2->ui->styleModifier->setMinimum(-8);
+        weapon1->setAsWeaponOne();
+        weapon2->setAsWeaponTwo();
     }
 };
 
@@ -1289,8 +1287,8 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     common.statDamage = c.statDamageBonus->value();
     common.otherDamage = c.classDamageBonus->value() + c.miscDamageBonus->value();
 
-    const int mainAcModifier = enemy.acModifier(c.weapon1->damageType());
-    const int offAcModifier  = enemy.acModifier(c.weapon2->damageType());
+    const int mainAcModifier = enemy.acModifier(weapon1.physicalDamageType());
+    const int offAcModifier  = enemy.acModifier(weapon2.physicalDamageType());
 
     const Damage calculator(weapon1, weapon2, common);
     const Damage::Stat stat = maximumDamage ? Damage::Maximum : Damage::Average;
@@ -1305,8 +1303,8 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     for (auto damage : damages2)
         totalDamage2 += damage;
 
-    const auto criticalHitChance1 = criticalStrike ? 1.0 : c.weapon1->criticalHitChance();
-    const auto criticalHitChance2 = criticalStrike ? 1.0 : c.weapon2->criticalHitChance();
+    const auto criticalHitChance1 = criticalStrike ? 1.0 : weapon1.criticalHit / 100.0;
+    const auto criticalHitChance2 = criticalStrike ? 1.0 : weapon2.criticalHit / 100.0;
 
     QVector<QPointF> points;
     for (const int ac : armorClasses) {
