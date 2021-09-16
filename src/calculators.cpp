@@ -42,6 +42,22 @@ DamageType WeaponArrangement::physicalDamageType() const
     return DamageType::Crushing;
 }
 
+int Damage::hit(Hand hand, int ac, int roll) const
+{
+    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
+    // According to IESDP, on the documentation of effect #362 ("critical miss
+    // bonus"), a critical hit bonus has precedence over critical miss one.
+    const int criticalHitRoll = 21 - (arrangement.criticalHit/5);
+    if (roll >= criticalHitRoll)
+        return 2;
+    else if (roll <= arrangement.criticalMiss/5)
+        return 0;
+    const int toHit = thac0(hand) - ac;
+    if (roll >= toHit)
+        return 1;
+    return 0;
+}
+
 int Damage::thac0(Damage::Hand hand) const
 {
     // Common to both hands.

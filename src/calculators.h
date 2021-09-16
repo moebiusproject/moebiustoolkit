@@ -56,8 +56,8 @@ struct WeaponArrangement {
 
     QHash<DamageType, DiceRoll> damage;
     double attacks = 1.0;
-    double criticalHit = 0.05;
-    double criticalMiss = 0.05;
+    int criticalHit = 5;
+    int criticalMiss = 5;
 
     /// Returns the physical damage roll with the arrangment modifiers applied.
     /// Doesn't include the "global" modifiers like Strength, class.
@@ -108,6 +108,7 @@ public:
     // physical damage be maximum, but the elemental damages still be average.
     enum Stat {Average, Maximum};
 
+    int hit(Hand hand, int ac, int roll) const;
     int thac0(Hand hand) const;
     QHash<DamageType, double> onHitDamages(Hand hand, Stat stat) const;
 
