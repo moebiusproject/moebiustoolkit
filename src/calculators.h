@@ -57,10 +57,16 @@ struct WeaponArrangement {
 
     int proficiencyDamage = 0;
 
+    // Each damage roll is purely from the weapon.
     QHash<DamageType, DiceRoll> damage;
     double attacks = 1.0;
     int criticalHit = 5;
     int criticalMiss = 5;
+
+    // This silly helpers just serve making apparent which part of the code
+    // needs to change if fields are changed in the future.
+    int toHitBonuses() const  { return proficiencyToHit  + styleToHit + weaponToHit; }
+    int damageBonuses() const { return proficiencyDamage; }
 
     /// Returns the physical damage roll with the arrangment modifiers applied.
     /// Doesn't include the "global" modifiers like Strength, class.
@@ -94,7 +100,13 @@ public:
         int otherToHit = 0;
 
         int statDamage = 0;
+        // Class+misc damage. To split(?) if the breakdown chart gets implemented.
         int otherDamage = 0;
+
+        // This silly helpers just serve making apparent which part of the code
+        // needs to change if fields are changed in the future.
+        int toHitBonuses() const  { return statToHit  + otherToHit; }
+        int damageBonuses() const { return statDamage + otherDamage; }
     };
 
     explicit Damage(const WeaponArrangement& one, const WeaponArrangement& two,
@@ -105,28 +117,23 @@ public:
     {
     }
 
-    enum Hand {Main, OffHand};
-    // TODO: This probably should be expanded to cover more use cases. One, for
-    // example, might be "average but with critical strike" which makes the
-    // physical damage be maximum, but the elemental damages still be average.
-    enum Stat {Average, Maximum};
+    enum Hand {One, Two};
+    enum Stat {Regular, Critical};
 
     int hit(Hand hand, int ac, int roll) const;
+    // Returns how many rolls should be a normal or a critical hit (in the 1-20
+    // range). No need to return the failures, because those are the remaining.
+    QPair<int, int> hitDistribution(Hand hand, int ac) const;
+    // TODO: The name is not too good as the THAC0 should be used only for base THAC0.
+    // But effectively, this is the number to hit AC 0, once modifiers are applied.
     int thac0(Hand hand) const;
     QHash<DamageType, double> onHitDamages(Hand hand, Stat stat) const;
+    double onHitDamage(Hand hand, Stat stat) const;
 
 private:
     WeaponArrangement m_1, m_2;
     Damage::Common m_common;
 };
-
-/*!
- * \brief Return the chance of hitting for a certain to-hit number in a d20.
- * \param toHit The number to achieve in a d20 to hit a certain AC.
- * \param criticalChance The chance of critical hit. Typically 0.05 or 0.10 (or 1.00 during Critical Strike).
- * \return Chance to hit, from 0.05 to 1.00.
- */
-double chanceToHit(int toHit, double criticalChance);
 
 };
 

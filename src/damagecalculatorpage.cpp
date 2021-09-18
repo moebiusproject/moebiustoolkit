@@ -113,6 +113,7 @@ struct Enemy : public Ui::Enemy
              : type == DamageType::Electricity ? electricityResistance->value()
              : type == DamageType::Fire        ? fireResistance->value()
              : 0;
+        // TODO: Poison and magical damage.
     }
 };
 
@@ -538,7 +539,10 @@ struct DamageCalculatorPage::Private
         updateSeries(calculations[index], lineSeries[index]);
     }
 
-    WeaponArrangement makeArrangement(WeaponArrangementWidget* widget, int luck) const;
+    // The widget class has a simple function to serialize itself (toData()),
+    // but Luck and Critical Strike are globally set, so we pass them to have a
+    // simple wrapper that allows us to be built as const and never modify them.
+    WeaponArrangement makeArrangement(WeaponArrangementWidget* widget, int luck, bool criticalStrike) const;
     QVector<QPointF> pointsFromInput(const Calculation& c) const;
     void updateSeries(const Calculation& c, QLineSeries* series);
 
@@ -1249,10 +1253,12 @@ void DamageCalculatorPage::Private::setupAxes()
 }
 
 WeaponArrangement DamageCalculatorPage::Private::makeArrangement(WeaponArrangementWidget* widget,
-                                                                 int luck) const
+                                                                 int luck, bool criticalStrike) const
 {
     // This does most of the work, missing only the parts not on WeaponArrangementWidget
     WeaponArrangement result = widget->toData();
+    if (criticalStrike)
+        result.criticalHit = 100;
 
     result.damage.find(result.physicalDamageType()).value().luck(luck);
 
@@ -1273,11 +1279,13 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     const bool offHand = c.offHandGroup->isChecked();
     const bool maximumDamage = c.maximumDamage->isChecked();
     const bool criticalStrike = c.criticalStrike->isChecked();
+    // Kai and Righteous Magic apply +20 to effect #250 ("Damage Modifier"), like luck.
+    const int luck = c.luck->value() + (maximumDamage ? 20 : 0);
 
     // TODO: support damage resistance over 100%, which should obviously heal
     // a creature, and hence subtract from the total damage.
-    const WeaponArrangement weapon1 = makeArrangement(c.weapon1, c.luck->value());
-    const WeaponArrangement weapon2 = makeArrangement(c.weapon2, c.luck->value());
+    const WeaponArrangement weapon1 = makeArrangement(c.weapon1, luck, criticalStrike);
+    const WeaponArrangement weapon2 = makeArrangement(c.weapon2, luck, criticalStrike);
 
     Damage::Common common;
     common.thac0 = c.baseThac0->value();
@@ -1287,51 +1295,43 @@ QVector<QPointF> DamageCalculatorPage::Private::pointsFromInput(const Calculatio
     common.statDamage = c.statDamageBonus->value();
     common.otherDamage = c.classDamageBonus->value() + c.miscDamageBonus->value();
 
-    const int mainAcModifier = enemy.acModifier(weapon1.physicalDamageType());
-    const int offAcModifier  = enemy.acModifier(weapon2.physicalDamageType());
+    const int acModifier1 = enemy.acModifier(weapon1.physicalDamageType());
+    const int acModifier2 = enemy.acModifier(weapon2.physicalDamageType());
 
     const Damage calculator(weapon1, weapon2, common);
-    const Damage::Stat stat = maximumDamage ? Damage::Maximum : Damage::Average;
 
-    const auto damages1 = calculator.onHitDamages(Damage::Main, stat);
-    const auto damages2 = calculator.onHitDamages(Damage::OffHand, stat);
-
-    double totalDamage1 = 0.0;
-    for (auto damage : damages1)
-        totalDamage1 += damage;
-    double totalDamage2 = 0.0;
-    for (auto damage : damages2)
-        totalDamage2 += damage;
-
-    const auto criticalHitChance1 = criticalStrike ? 1.0 : weapon1.criticalHit / 100.0;
-    const auto criticalHitChance2 = criticalStrike ? 1.0 : weapon2.criticalHit / 100.0;
+    // TODO: The aggregated values are the only ones that we really use, but it
+    // has always been in my mind to chart the distribution of the details. Like
+    // a 2nd chart with the % of damage coming from criticals, elements, etc.
+    const Damage::Stat criticalStat = doubleCriticalDamage ? Damage::Critical : Damage::Regular;
+#if 0
+    const auto damages1R = calculator.onHitDamages(Damage::One, Damage::Regular);
+    const auto damages2R = calculator.onHitDamages(Damage::Two, Damage::Regular);
+    const auto damages1C = calculator.onHitDamages(Damage::One, criticalStat);
+    const auto damages2C = calculator.onHitDamages(Damage::Two, criticalStat);
+#endif
+    const double damage1R = calculator.onHitDamage(Damage::One, Damage::Regular);
+    const double damage2R = calculator.onHitDamage(Damage::Two, Damage::Regular);
+    const double damage1C = calculator.onHitDamage(Damage::One, criticalStat);
+    const double damage2C = calculator.onHitDamage(Damage::Two, criticalStat);
 
     QVector<QPointF> points;
     for (const int ac : armorClasses) {
-        const int mainToHit = calculator.thac0(Damage::Main)    - ac - mainAcModifier;
-        const int offToHit  = calculator.thac0(Damage::OffHand) - ac - offAcModifier;
+        const int ac1 = ac - acModifier1;
+        const int ac2 = ac - acModifier2;
 
-        //
-        // TODO: Move to-hit calculations to the damage calculation code.
-        //
-        const double toHit1 = Calculators::chanceToHit(mainToHit, criticalHitChance1);
-        const double toHit2 = Calculators::chanceToHit(offToHit, criticalHitChance2);
-        double damage = toHit1 * totalDamage1 * weapon1.attacks;
+        // TODO: Move the last math remainings to the calculator, and unit test that.
+        const auto distribution1 = calculator.hitDistribution(Damage::One, ac1);
+        const auto distribution2 = calculator.hitDistribution(Damage::Two, ac2);
+        const double regularDmg1 = distribution1.first  * damage1R;
+        const double regularDmg2 = distribution2.first  * damage2R;
+        const double doubledDmg1 = distribution1.second * damage1C;
+        const double doubledDmg2 = distribution2.second * damage2C;
+
+        double damage = weapon1.attacks * (regularDmg1 + doubledDmg1)/20;
         if (offHand)
-            damage += toHit2 * totalDamage2 * weapon2.attacks;
+            damage   += weapon2.attacks * (regularDmg2 + doubledDmg2)/20;
 
-        // FIXME adjust to the new damage calculation!
-        if (doubleCriticalDamage) { // Unprotected against critical hits.
-            if (criticalStrike) // All damage doubled!
-                damage *= 2;
-            else {
-                // Otherwise, consider the damage again, this time without
-                // chance to failure, but scaled by the chance of critical hit.
-                damage += criticalHitChance1 * weapon1.physicalDamage().average() * weapon1.attacks;
-                if (offHand)
-                    damage += criticalHitChance2 * weapon2.physicalDamage().average() * weapon2.attacks;
-            }
-        }
         points.append(QPointF(ac, damage));
     }
     return points;

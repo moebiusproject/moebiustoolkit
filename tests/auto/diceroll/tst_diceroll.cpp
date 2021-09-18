@@ -218,6 +218,15 @@ void tst_DiceRoll::test()
     QCOMPARE(dice.minimum(), minimum);
     QCOMPARE(dice.average(), average);
     QCOMPARE(dice.sigma(), sigma);
+
+    // Pseudo sanity check. The dice average with maximized luck should be the
+    // same result as asking for the maximum. The first implementations of "max
+    // damage" were using the maximum() function, but the new ones are using
+    // luck, for consistency with the IE implementation.
+    // TODO: move to a different test. Since we overwrite the luck, we are
+    // basically re-doing some assertions with the same values.
+    dice = dice.luck(100);
+    QCOMPARE(dice.average(), dice.maximum());
 }
 
 QTEST_MAIN(tst_DiceRoll)

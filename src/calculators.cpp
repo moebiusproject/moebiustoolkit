@@ -25,9 +25,8 @@ using namespace Calculators;
 DiceRoll WeaponArrangement::physicalDamage() const
 {
     Q_ASSERT(damage.contains(physicalDamageType()));
-    DiceRoll result = damage.find(physicalDamageType()).value();
-    // TODO: This could be a nice opportunity for operator overloading in DiceRoll
-    result.bonus(result.bonus() + proficiencyDamage);
+    DiceRoll result = damage.value(physicalDamageType());
+    result.bonus(result.bonus() + damageBonuses());
     return result;
 }
 
@@ -44,7 +43,7 @@ DamageType WeaponArrangement::physicalDamageType() const
 
 int Damage::hit(Hand hand, int ac, int roll) const
 {
-    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
+    const WeaponArrangement& arrangement = hand == One ? m_1 : m_2;
     // According to IESDP, on the documentation of effect #362 ("critical miss
     // bonus"), a critical hit bonus has precedence over critical miss one.
     const int criticalHitRoll = 21 - (arrangement.criticalHit/5);
@@ -58,26 +57,32 @@ int Damage::hit(Hand hand, int ac, int roll) const
     return 0;
 }
 
+QPair<int, int> Damage::hitDistribution(Hand hand, int ac) const
+{
+    QPair<int, int> result;
+    for (int roll = 1; roll <= 20; ++roll) {
+        const int outcome = hit(hand, ac, roll);
+        if (outcome == 1)
+            ++result.first;
+        else if (outcome == 2)
+            ++result.second;
+    }
+    return result;
+}
+
 int Damage::thac0(Damage::Hand hand) const
 {
-    // Common to both hands.
-    int result = m_common.thac0 - m_common.statToHit - m_common.otherToHit;
-
-    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
-    result -= (arrangement.proficiencyToHit + arrangement.styleToHit + arrangement.weaponToHit);
-
-    return result;
+    const WeaponArrangement& arrangement = hand == One ? m_1 : m_2;
+    return m_common.thac0 - m_common.toHitBonuses() - arrangement.toHitBonuses();
 }
 
 QHash<DamageType, double> Damage::onHitDamages(Damage::Hand hand, Damage::Stat stat) const
 {
-    const WeaponArrangement& arrangement = hand == Main ? m_1 : m_2;
-    const double bonusPhysicalDamage = m_common.statDamage + m_common.otherDamage;
+    const WeaponArrangement& arrangement = hand == One ? m_1 : m_2;
     DiceRoll physicalDamageRoll = arrangement.physicalDamage();
-    physicalDamageRoll.bonus(physicalDamageRoll.bonus() + bonusPhysicalDamage);
+    physicalDamageRoll.bonus(physicalDamageRoll.bonus() + m_common.damageBonuses());
 
-    const double physicalDamage = stat == Average ? physicalDamageRoll.average()
-                                                  : physicalDamageRoll.maximum();
+    const double physicalDamage = physicalDamageRoll.average() * (stat == Regular ? 1 : 2);
 
     QHash<DamageType, double> result;
     for (auto entry = arrangement.damage.constBegin(), last = arrangement.damage.constEnd();
@@ -96,20 +101,12 @@ QHash<DamageType, double> Damage::onHitDamages(Damage::Hand hand, Damage::Stat s
     return result;
 }
 
-double Calculators::chanceToHit(int toHit, double criticalChance)
+double Damage::onHitDamage(Hand hand, Stat stat) const
 {
-    Q_ASSERT(criticalChance >= 0.05 && criticalChance <= 1.00);
-
-    if (qFuzzyCompare(1.0, criticalChance))
-        return 1.0;
-
-    const int firstCriticalRoll = (21 - criticalChance*20);
-    // Equivalent to:
-    // const int firstCriticalRoll = (105 - criticalChance*100) / 5;
-    if (toHit <= 2) // Only critical failures fail: 95% chance of hitting
-        return 0.95;
-    if (toHit < firstCriticalRoll)
-        return 1 - (0.05 * (toHit-1));
-    else // Only critical hits work.
-        return criticalChance;
+    const auto damages = onHitDamages(hand, stat);
+    double result = 0.0;
+    for (auto damage : damages)
+        result += damage;
+    return result;
 }
+

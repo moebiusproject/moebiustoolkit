@@ -29,10 +29,31 @@ class tst_Calculators : public QObject
 private slots:
     void testHitRatio_data();
     void testHitRatio();
-    void testToHit_data();
-    void testToHit();
     void testDamage_data();
     void testDamage();
+private:
+    WeaponArrangement defaultWeapon() // Quarterstaff at Wintrhop's
+    {
+        WeaponArrangement result;
+        result.damage.insert(DamageType::Crushing, DiceRoll().sides(6));
+        return result;
+    }
+
+    WeaponArrangement ashideena()
+    {
+        WeaponArrangement result;
+        result.damage.insert(DamageType::Crushing, DiceRoll().sides(4).bonus(3));
+        result.damage.insert(DamageType::Electricity, DiceRoll().number(0).bonus(1));
+        return result;
+    }
+
+    WeaponArrangement varscona()
+    {
+        WeaponArrangement result;
+        result.damage.insert(DamageType::Slashing, DiceRoll().sides(8).bonus(2));
+        result.damage.insert(DamageType::Cold, DiceRoll().number(0).bonus(1));
+        return result;
+    }
 };
 
 void tst_Calculators::testHitRatio_data()
@@ -46,14 +67,6 @@ void tst_Calculators::testHitRatio_data()
     QTest::addColumn<int>("roll");
     QTest::addColumn<int>("result");
 
-    const Damage::Common defaultCommon;
-    const DiceRoll defaultDamage = DiceRoll().sides(8);
-    WeaponArrangement defaultWeapon;
-    defaultWeapon.damage.insert(DamageType::Crushing, defaultDamage);
-
-    const auto armors = {10, 8, 5, 1, -1, -10};
-    const auto rolls = {1, 2, 9, 10, 11, 15, 18, 19, 20};
-
     // To avoid testing the implementation by doing again the implementation in
     // the unit test, I sort of flip the numbers a bit by using an ascending
     // armor class system that I call "hit 11". I choose 11 because is the start
@@ -65,19 +78,67 @@ void tst_Calculators::testHitRatio_data()
     // AC: armor class.  TH: to hit
     // AB: attack bonus  DB: defense bonus
 
-    for (int ac : armors) {
-        for (int roll : rolls) {
-            const int ab = 1;
-            const int db = 10 - ac;
-            const int th = 11 - ab + db;
-            const int result = roll == 20 ? 2
-                             : roll ==  1 ? 0
-                             : roll >= th ? 1 : 0;
-            QTest::addRow("defaults vs. AC %d, roll %d", ac, roll)
-                    << defaultCommon << defaultWeapon << defaultWeapon
-                    << ac << roll << result;
+    const Damage::Common defaultCommon;
+    Damage::Common common = defaultCommon;
+    WeaponArrangement weapon = defaultWeapon();
+
+    auto ab = [&common, &weapon]() {
+        return 1 + (20 - common.thac0) + common.toHitBonuses() + weapon.toHitBonuses();
+    };
+
+    int ch = 20; // critical hit
+    int cm = 1; // critical miss
+
+    const auto armors = {10, 8, 5, 1, -1, -10};
+
+    auto addRows = [&](const char* name) {
+        for (int ac : armors) {
+            for (int roll = 1; roll <= 20; ++roll) {
+                const int db = 10 - ac;
+                const int th = 11 + db - ab();
+                const int result = roll >= ch ? 2
+                                 : roll <= cm ? 0
+                                 : roll >= th ? 1 : 0;
+                QTest::addRow("%s vs. AC %d, roll %d", name, ac, roll)
+                        << common << weapon << weapon
+                        << ac << roll << result;
+            }
         }
-    }
+    };
+
+    addRows("defaults");
+
+    common.thac0 = 18;
+    addRows("defaults, THAC0 18");
+
+    common.thac0 = 8;
+    addRows("defaults, THAC0 8");
+
+    common.thac0 = 0;
+    addRows("defaults, THAC0 0");
+
+    common = defaultCommon;
+    weapon.proficiencyToHit = 1;
+    weapon.proficiencyDamage = 2; // Irrelevant, but for consistency.
+    weapon.attacks = 1.5;         // Irrelevant, but for consistency.
+    addRows("defaults, specialization");
+
+    weapon.weaponToHit = 1;
+    addRows("defaults, specialization, +1 weapon");
+
+    weapon.criticalHit = 10;
+    ch = 19;
+    addRows("defaults, specialization, +1 weapon, 10% criticals");
+
+    weapon.criticalMiss = 0;
+    cm = 0;
+    addRows("defaults, specialization, +1 weapon, 10% criticals, 0% critical miss");
+
+    weapon.criticalHit = 0;
+    ch = 21;
+    weapon.criticalMiss = 15;
+    cm = 3;
+    addRows("defaults, specialization, +1 weapon, 0% criticals, 15% critical miss");
 }
 
 void tst_Calculators::testHitRatio()
@@ -90,53 +151,22 @@ void tst_Calculators::testHitRatio()
     QFETCH(int, result);
 
     const Damage calculator(weapon1, weapon2, common);
-    QCOMPARE(calculator.hit(Damage::Main, ac, roll), result);
+    QCOMPARE(calculator.hit(Damage::One, ac, roll), result);
 }
 
-void tst_Calculators::testToHit_data()
-{
-    QTest::addColumn<int>("toHit");
-    QTest::addColumn<double>("criticalChance");
-    QTest::addColumn<double>("result");
-
-    QTest::addRow("Fifty-fifty")                      << 11 << 0.05 << 0.50;
-    QTest::addRow("Only criticals, on the edge")      << 20 << 0.05 << 0.05;
-    QTest::addRow("Only criticals, past the edge")    << 24 << 0.05 << 0.05;
-
-    for (int toHit = -10; toHit <= 30; ++toHit) {
-        const double result = toHit >= 20 ? 0.05 :
-                              toHit <= 2  ? 0.95 :
-                              qBound(0.05, 0.05 + (20 - toHit) * 0.05, 0.95);
-        QTest::addRow("Critical on 20; to hit: %d", toHit) << toHit << 0.05 << result;
-    }
-
-    for (int toHit = -10; toHit <= 30; ++toHit) {
-        const double result = toHit >= 20 ? 0.10 :
-                              toHit <= 2  ? 0.95 :
-                              qBound(0.10, 0.05 + (20 - toHit) * 0.05, 0.95);
-        QTest::addRow("Critical on 19; to hit: %d", toHit) << toHit << 0.10 << result;
-    }
-
-    for (int toHit = -10; toHit <= 30; ++toHit) {
-        const double result = toHit >= 20 ? 0.15 :
-                              toHit <= 2  ? 0.95 :
-                              qBound(0.15, 0.05 + (20 - toHit) * 0.05, 0.95);
-        QTest::addRow("Critical on 18; to hit: %d", toHit) << toHit << 0.15 << result;
-    }
-
-    for (int toHit = -10; toHit <= 30; ++toHit) {
-        QTest::addRow("Critical Strike; to hit: %d", toHit) << toHit << 1.00 << 1.00;
-    }
-}
-
-void tst_Calculators::testToHit()
-{
-    QFETCH(int, toHit);
-    QFETCH(double, criticalChance);
-    QFETCH(double, result);
-
-    QCOMPARE(Calculators::chanceToHit(toHit, criticalChance), result);
-}
+// Note to self. This maybe "over tests" a bit. We do well in testing the
+// DiceRoll extensively, which does some heavy lifting on the tricky math for
+// the damage resistance, etc. But doing some complex tests here again maybe
+// it's not strictly necessary. The calculator is adding up the values of the
+// dice and the other sources of bonuses into the same bonus, and the DiceRoll
+// class returns the average damage with all the bonuses merged. It's ignorant
+// if a +7 comes from a +7 weapon or a +2 weapon with +5 from proficiency. The
+// math for the average with resistance would be the same. Maybe we should be
+// fine just testing that the calculator adds bonuses, and call it a day. But
+// maybe not... Maybe we actually do well in ensuring that bonuses of
+// proficiency are taken into account in the resistance, for example. So here I
+// am, talking with myself because coding alone is lonely and I don't have with
+// who to bounce ideas and problems with.
 
 void tst_Calculators::testDamage_data()
 {
@@ -144,31 +174,60 @@ void tst_Calculators::testDamage_data()
     QTest::addColumn<WeaponArrangement>("weapon1");
     QTest::addColumn<WeaponArrangement>("weapon2");
 
-    // TODO: Many more output values!
-    QTest::addColumn<double>("average");
+    QTest::addColumn<double>("physical");
+    QTest::addColumn<double>("elemental");
 
     const Damage::Common defaultCommon;
 
     QTest::addRow("defaults")
             << defaultCommon << defaultWeapon() << defaultWeapon()
-            << 3.5;
+            << 3.5 << 0.0;
 
     auto common = defaultCommon;
     common.statDamage = +7;
     QTest::addRow("19 STR")
             << common << defaultWeapon() << defaultWeapon()
-            << 10.5;
+            << 10.5 << 0.0;
 
     common.otherDamage = +2;
     QTest::addRow("19 STR with +2 bonus")
             << common << defaultWeapon() << defaultWeapon()
-            << 12.5;
+            << 12.5 << 0.0;
 
     WeaponArrangement weapon = defaultWeapon();
     weapon.damage.find(DamageType::Crushing).value().resistance(0.5);
     QTest::addRow("19 STR with +2 bonus at 50%% resistance")
             << common << weapon << weapon
-            << 6.5;
+            << 6.5 << 0.0;
+
+    weapon = ashideena();
+    QTest::addRow("Ashideena, 19 STR with +2 bonus")
+            << common << weapon << weapon
+            << 14.5 << 1.0;
+
+    weapon.damage.find(DamageType::Electricity).value().resistance(0.75);
+    QTest::addRow("Ashideena, 19 STR with +2 bonus, 75%% resistance to element")
+            << common << weapon << weapon
+            << 14.5 << 1.0;
+
+    weapon.damage.find(DamageType::Electricity).value().resistance(1.0);
+    QTest::addRow("Ashideena, 19 STR with +2 bonus, 100%% resistance to element")
+            << common << weapon << weapon
+            << 14.5 << 0.0;
+
+    common = defaultCommon;
+    common.statDamage = 1;
+    weapon = varscona();
+    weapon.proficiencyDamage = weapon.proficiencyToHit = 3; // to hit irrelevant, but for consistency
+    QTest::addRow("Varscona, 17 STR, mastery")
+            << common << weapon << weapon
+            << 10.5 << 1.0;
+
+    weapon.damage.find(DamageType::Slashing).value().resistance(0.5);
+    weapon.damage.find(DamageType::Cold).value().resistance(1.0);
+    QTest::addRow("Varscona, 17 STR, mastery, 50%% slashing, 100%% cold")
+            << common << weapon << weapon
+            << 5.5 << 0.0;
 }
 
 void tst_Calculators::testDamage()
@@ -177,12 +236,20 @@ void tst_Calculators::testDamage()
     QFETCH(WeaponArrangement, weapon1);
     QFETCH(WeaponArrangement, weapon2);
 
-    QFETCH(double, average);
+    QFETCH(double, physical);
+    QFETCH(double, elemental);
 
     const Damage calculator(weapon1, weapon2, common);
-    auto averageDamages = calculator.onHitDamages(Damage::Main, Damage::Average);
-    QCOMPARE(averageDamages.count(), 1);
-    QCOMPARE(averageDamages.value(DamageType::Crushing), average);
+    const auto averageDamages = calculator.onHitDamages(Damage::One, Damage::Regular);
+    QCOMPARE(averageDamages.value(weapon1.physicalDamageType()), physical);
+
+    QHash<DamageType, double>::const_key_value_iterator result = averageDamages.keyValueBegin();
+    for (; result != averageDamages.keyValueEnd(); ++result) {
+        if (result.base().key() & DamageType::ElementalBit) {
+            break;
+        }
+    }
+    QCOMPARE(result.base().value(), elemental);
 }
 
 QTEST_MAIN(tst_Calculators)
