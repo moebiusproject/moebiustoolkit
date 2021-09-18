@@ -148,30 +148,27 @@ void tst_Calculators::testDamage_data()
     QTest::addColumn<double>("average");
 
     const Damage::Common defaultCommon;
-    const DiceRoll defaultDamage = DiceRoll().sides(8);
-    WeaponArrangement defaultWeapon;
-    defaultWeapon.damage.insert(DamageType::Crushing, defaultDamage);
 
     QTest::addRow("defaults")
-            << defaultCommon << defaultWeapon << defaultWeapon
-            << 4.5;
+            << defaultCommon << defaultWeapon() << defaultWeapon()
+            << 3.5;
 
     auto common = defaultCommon;
     common.statDamage = +7;
     QTest::addRow("19 STR")
-            << common << defaultWeapon << defaultWeapon
-            << 11.5;
+            << common << defaultWeapon() << defaultWeapon()
+            << 10.5;
 
     common.otherDamage = +2;
     QTest::addRow("19 STR with +2 bonus")
-            << common << defaultWeapon << defaultWeapon
-            << 13.5;
+            << common << defaultWeapon() << defaultWeapon()
+            << 12.5;
 
-    WeaponArrangement weapon = defaultWeapon;
+    WeaponArrangement weapon = defaultWeapon();
     weapon.damage.find(DamageType::Crushing).value().resistance(0.5);
     QTest::addRow("19 STR with +2 bonus at 50%% resistance")
             << common << weapon << weapon
-            << 7.0;
+            << 6.5;
 }
 
 void tst_Calculators::testDamage()
