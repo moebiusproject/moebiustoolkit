@@ -109,8 +109,8 @@ WelcomePage::WelcomePage(QWidget* parent)
 "<p>This version of the application doesn't have full access to the disk, so it "
 "cannot read your game files. Some modules will always appear disabled, while "
 "some others will have placeholder data from a vanilla Shadows of Amn game. If "
-"possible, get the desktop version of the application (Windows, Linux) to have "
-"them enabled.</p>\n"
+"you wish, get the desktop version of the application (Windows, Linux) to have "
+"them enabled and/or to use the real game data.</p>\n"
 "</body></html>"
 ));
 
