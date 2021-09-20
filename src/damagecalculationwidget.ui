@@ -56,6 +56,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="baseThac0">
+          <property name="toolTip">
+           <string>&lt;p&gt;Base THAC0 of the attacker. Lower is better. All level 1 characters start at 20. &lt;!-- See &lt;a href=&quot;https://pihwiki.bgforge.net/Baldur%27s_Gate:_Progression_Charts&quot;&gt;the progression charts at PIH wiki&lt;/a&gt; or &lt;a href=&quot;https://baldursgate.fandom.com/wiki/THAC0#THAC0_Progression&quot;&gt;THAC0 progression&lt;/a&gt; at the Fandom wiki.--&gt;&lt;/p&gt;</string>
+          </property>
           <property name="maximum">
            <number>20</number>
           </property>
@@ -72,7 +75,32 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="statThac0Bonus"/>
+         <widget class="QSpinBox" name="statThac0Bonus">
+          <property name="toolTip">
+           <string>&lt;p&gt;Bonus &lt;strong&gt;to hit&lt;/strong&gt; from stats (Strength for melee, Dexterity for ranged). Typical high Strength bonuses:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;19: 3&lt;/li&gt;
+&lt;li&gt;20: 3&lt;/li&gt;
+&lt;li&gt;21: 4&lt;/li&gt;
+&lt;li&gt;22: 4&lt;/li&gt;
+&lt;li&gt;23: 5&lt;/li&gt;
+&lt;li&gt;24: 6&lt;/li&gt;
+&lt;li&gt;25: 7&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Typical high Dexterity bonuses:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;17: 2&lt;/li&gt;
+&lt;li&gt;18: 2&lt;/li&gt;
+&lt;li&gt;19: 3&lt;/li&gt;
+&lt;li&gt;20: 3&lt;/li&gt;
+&lt;li&gt;21: 4&lt;/li&gt;
+&lt;li&gt;22: 4&lt;/li&gt;
+&lt;li&gt;23: 4&lt;/li&gt;
+&lt;li&gt;24: 5&lt;/li&gt;
+&lt;li&gt;25: 5&lt;/li&gt;
+&lt;/ul&gt;</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="classThac0BonusLabel">
@@ -82,7 +110,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="classThac0Bonus"/>
+         <widget class="QSpinBox" name="classThac0Bonus">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bonus &lt;span style=&quot; font-weight:600;&quot;&gt;to hit&lt;/span&gt; from class or kit. Assassin or Skald get +1 at level 1. Kensai and Archer get +1 each 3 levels, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="miscThac0BonusLabel">
@@ -92,7 +124,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="miscThac0Bonus"/>
+         <widget class="QSpinBox" name="miscThac0Bonus">
+          <property name="toolTip">
+           <string>Other bonus &lt;strong&gt;to hit&lt;/strong&gt;, like spells or equipment.</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
@@ -107,6 +143,9 @@
         </item>
         <item>
          <widget class="QSpinBox" name="luck">
+          <property name="toolTip">
+           <string>Value for the luck stat. This input &lt;strong&gt;only affects&lt;/strong&gt; damage rolls, not to hit rolls.</string>
+          </property>
           <property name="minimum">
            <number>-20</number>
           </property>
@@ -123,7 +162,20 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="statDamageBonus"/>
+         <widget class="QSpinBox" name="statDamageBonus">
+          <property name="toolTip">
+           <string>&lt;p&gt;Bonuses to &lt;strong&gt;damage&lt;/strong&gt; from Strength. Typical high Strength values:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;19: 7&lt;/li&gt;
+&lt;li&gt;20: 8&lt;/li&gt;
+&lt;li&gt;21: 9&lt;/li&gt;
+&lt;li&gt;22: 10&lt;/li&gt;
+&lt;li&gt;23: 11&lt;/li&gt;
+&lt;li&gt;24: 12&lt;/li&gt;
+&lt;li&gt;25: 14&lt;/li&gt;
+&lt;/ul&gt;</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="classDamageBonusLabel">
@@ -133,7 +185,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="classDamageBonus"/>
+         <widget class="QSpinBox" name="classDamageBonus">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bonus to &lt;span style=&quot; font-weight:600;&quot;&gt;damage&lt;/span&gt; from class or kit. Assassin or Skald get +1 at level 1. Kensai and Archer get +1 each 3 levels, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="miscDamageBonusLabel">
@@ -143,7 +199,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="miscDamageBonus"/>
+         <widget class="QSpinBox" name="miscDamageBonus">
+          <property name="toolTip">
+           <string>Other bonus to &lt;strong&gt;damage&lt;/strong&gt;, like spells or equipment.</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>
