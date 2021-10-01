@@ -65,7 +65,9 @@
 // TODO: Qt 6. Move some QKeySequence to QKeyCombination?
 
 using namespace Calculators;
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 using namespace QtCharts;
+#endif
 
 static const auto keyDamageCalculations = QStringLiteral("DamageCalculations");
 static const auto keyDamageCalculator   = QStringLiteral("DamageCalculator");
@@ -1185,7 +1187,7 @@ void DamageCalculatorPage::Private::newPage()
     series->setPointLabelsVisible(pointLabels->isChecked());
     series->setPointLabelsClipping(pointLabelsClipping->isChecked());
     series->setPointLabelsFormat(QLatin1String("@yPoint"));
-    auto closestSeriesPoint = [](const QVector<QPointF>& realPoints,
+    auto closestSeriesPoint = [](const QList<QPointF>& realPoints,
                                  const QPointF& domainPoint)
     {
         QPointF closest;
@@ -1204,7 +1206,7 @@ void DamageCalculatorPage::Private::newPage()
             [this, series, closestSeriesPoint](QPointF point, bool over) {
         if (!over)
             return;
-        point = closestSeriesPoint(series->pointsVector(), point);
+        point = closestSeriesPoint(series->points(), point);
         q.statusBar()->showMessage(tr("%1 Damage: %2 AC: %3")
                                    .arg(series->name()).arg(point.y()).arg(point.x()), 5000);
     });
@@ -1253,7 +1255,7 @@ void DamageCalculatorPage::Private::setupAxes()
         double min = +qInf();
         double max = -qInf();
         for (auto series : qAsConst(lineSeries)) {
-            const QVector<QPointF> points = series->pointsVector();
+            const QList<QPointF> points = series->points();
             for (auto point : points) {
                 if (point.x() > maximumX->value() || point.x() < minimumX->value())
                     continue;

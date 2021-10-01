@@ -26,7 +26,7 @@ class BackstabCalculatorPage : public BasePage
 public:
     explicit BackstabCalculatorPage(QWidget* parent = nullptr);
     ~BackstabCalculatorPage();
-    QList<QtCharts::QChartView*> charts() const override;
+    QList<QChartView*> charts() const override;
 
 private:
     struct Private;

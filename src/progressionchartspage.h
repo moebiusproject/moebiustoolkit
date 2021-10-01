@@ -26,7 +26,7 @@ class ProgressionChartsPage : public BasePage
 public:
     explicit ProgressionChartsPage(QWidget* parent = nullptr);
     ~ProgressionChartsPage();
-    QList<QtCharts::QChartView*> charts() const override;
+    QList<QChartView*> charts() const override;
 
 private:
     struct Private;

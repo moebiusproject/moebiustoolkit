@@ -20,6 +20,7 @@
 
 #include <QDebug>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtCharts {
 class QAbstractAxis;
 class QLineSeries;
@@ -27,3 +28,10 @@ class QLineSeries;
 
 QDebug operator<<(QDebug dbg, QtCharts::QAbstractAxis* axis);
 QDebug operator<<(QDebug dbg, QtCharts::QLineSeries* series);
+#else
+class QAbstractAxis;
+class QLineSeries;
+
+QDebug operator<<(QDebug dbg, QAbstractAxis* axis);
+QDebug operator<<(QDebug dbg, QLineSeries* series);
+#endif

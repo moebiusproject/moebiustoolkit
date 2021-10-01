@@ -32,7 +32,7 @@ public:
     explicit DamageCalculatorPage(QWidget* parent = nullptr);
     ~DamageCalculatorPage();
 
-    QList<QtCharts::QChartView*> charts() const override;
+    QList<QChartView*> charts() const override;
 
 protected:
     bool event(QEvent* event) override;

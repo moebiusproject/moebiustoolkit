@@ -2,9 +2,7 @@ defineTest(projectGlobals) {
     DEFINES += QT_NO_CAST_FROM_ASCII
     DEFINES += QT_NO_CAST_TO_ASCII
     DEFINES += QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
-    # TODO: not sure what I want yet.
-    # DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x051200
-    DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000
+    DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x051500
     DEFINES += TOML_HEADER_ONLY=0
     export(DEFINES)
 
@@ -13,6 +11,7 @@ defineTest(projectGlobals) {
         QMAKE_CXXFLAGS += -Wall
         QMAKE_CXXFLAGS += -Wshadow
         QMAKE_CXXFLAGS += -Wextra
+        QMAKE_CXXFLAGS += -Wno-error=deprecated-declarations
         clang:QMAKE_CXXFLAGS += -Wno-error=deprecated-enum-enum-conversion
         QMAKE_CXXFLAGS += -Wno-error=deprecated-enum-enum-conversion
     }

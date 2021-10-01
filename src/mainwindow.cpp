@@ -42,6 +42,10 @@
 
 #include <functional>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
+using namespace QtCharts;
+#endif
+
 struct MainWindow::Private
 {
     Private(MainWindow& window)
@@ -82,10 +86,10 @@ MainWindow::MainWindow(QWidget* parentWidget)
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, this, [this]() {
         auto page = qobject_cast<BasePage*>(d->view->currentWidget());
-        for (QtCharts::QChartView* view : page->charts()) {
+        for (QChartView* view : page->charts()) {
             int themeInt = view->chart()->theme() + 1;
-            themeInt = themeInt % (QtCharts::QChart::ChartThemeQt + 1);
-            view->chart()->setTheme(QtCharts::QChart::ChartTheme(themeInt));
+            themeInt = themeInt % (QChart::ChartThemeQt + 1);
+            view->chart()->setTheme(QChart::ChartTheme(themeInt));
         }
     });
     action->setEnabled(false); // Starts disabled. No charts on the welcome.

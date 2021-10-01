@@ -22,7 +22,9 @@
 #include <QLineSeries>
 #include <QValueAxis>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 using namespace QtCharts;
+#endif
 
 QDebug operator<<(QDebug dbg, QAbstractAxis* axis)
 {
@@ -49,6 +51,9 @@ QDebug operator<<(QDebug dbg, QAbstractAxis* axis)
     case QAbstractAxis::AxisTypeCategory:
     case QAbstractAxis::AxisTypeDateTime:
     case QAbstractAxis::AxisTypeLogValue:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+    case QAbstractAxis::AxisTypeColor:
+#endif
         break;
     }
     dbg.maybeSpace() << static_cast<QObject*>(axis);

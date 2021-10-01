@@ -30,7 +30,9 @@
 
 #include <array>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 using namespace QtCharts;
+#endif
 
 static unsigned long factorial(unsigned n)
 {
