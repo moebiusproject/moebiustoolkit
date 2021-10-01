@@ -39,7 +39,9 @@
 #include "weaponarrangementwidget.h"
 
 using namespace Calculators;
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 using namespace QtCharts;
+#endif
 
 struct BackstabCalculatorPage::Private
 {

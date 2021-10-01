@@ -26,9 +26,14 @@ class QMenu;
 class QMenuBar;
 class QStatusBar;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 namespace QtCharts {
     class QChartView;
 }
+using QChartView = QtCharts::QChartView;
+#else
+class QChartView;
+#endif
 
 class BasePage : public QWidget
 {
@@ -36,7 +41,7 @@ class BasePage : public QWidget
 public:
     explicit BasePage(QWidget* parent = nullptr) : QWidget(parent) {}
     virtual QList<QMenu*> makeMenus() { return QList<QMenu*>(); };
-    virtual QList<QtCharts::QChartView*> charts() const { return {}; }
+    virtual QList<QChartView*> charts() const { return {}; }
 
 protected:
     QMenuBar* menuBar();

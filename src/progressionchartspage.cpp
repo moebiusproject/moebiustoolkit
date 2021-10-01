@@ -39,7 +39,9 @@
 #include <QStyledItemDelegate>
 #include <QValueAxis>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 using namespace QtCharts;
+#endif
 
 enum Progression {
     SingleClass = 0, DoubleClass = 1, TripleClass = 2
@@ -241,13 +243,17 @@ void ProgressionChartsPage::Private::setupAxes()
     xpAxis->setMin(minimumX->value());
     xpAxis->setMax(maximumX->value());
 
+    // TODO: This function is duplicated in damagecalculator.cpp, but this version
+    // here is a bit more generic, as it checks for the axis being attached to some series.
     auto setYAxis = [this](QValueAxis* yAxis) {
         double min = +qInf();
         double max = -qInf();
+        bool attachedSomewhere = false;
         for (QLineSeries* series : qAsConst(lineSeries)) {
             if (!series->attachedAxes().contains(yAxis))
                 continue;
-            const QVector<QPointF> points = series->pointsVector();
+            attachedSomewhere = true;
+            const QList<QPointF> points = series->points();
             for (auto point : points) {
                 if (point.x() > maximumX->value() || point.x() < minimumX->value())
                     continue;
@@ -255,6 +261,8 @@ void ProgressionChartsPage::Private::setupAxes()
                 max = qMax(point.y(), max);
             }
         }
+        if (!attachedSomewhere)
+            return;
         yAxis->setRange(min, max);
         yAxis->applyNiceNumbers();
     };
