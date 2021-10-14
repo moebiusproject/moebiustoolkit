@@ -27,6 +27,7 @@
 #include <QHorizontalStackedBarSeries>
 #include <QLabel>
 #include <QPushButton>
+#include <QSplitter>
 #include <QTabWidget>
 #include <QValueAxis>
 
@@ -114,10 +115,20 @@ BackstabCalculatorPage::BackstabCalculatorPage(QWidget *parent)
     inputArea->setWidgetResizable(true);
     inputLayout->addWidget(d->tabs);
 
-    auto layout = new QHBoxLayout;
-    setLayout(layout);
-    layout->addLayout(chartViewLayout, 1);
-    layout->addWidget(inputArea, 0);
+    auto splitter = new QSplitter;
+    setLayout(new QHBoxLayout);
+    layout()->addWidget(splitter);
+    auto chartViewWidget = new QWidget;
+    chartViewWidget->setLayout(chartViewLayout);
+    splitter->addWidget(chartViewWidget);
+    splitter->addWidget(inputArea);
+#if 0 // TODO: Figure how to make this work better.
+    const int inputAreaWidth = inputArea->sizeHint().width();
+    const int remainingWidth = splitter->width() - inputAreaWidth;
+    splitter->setSizes(QList<int>{remainingWidth, inputAreaWidth});
+#else
+    splitter->setSizes(QList<int>{splitter->width()*2/3, splitter->width()/3});
+#endif
 
     d->setupChart();
     d->newPage();
