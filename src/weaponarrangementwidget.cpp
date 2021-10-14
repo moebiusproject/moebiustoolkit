@@ -106,6 +106,8 @@ void WeaponArrangementWidget::setAsBackstabWeapon()
     ui->attacksPerRoundLabel->hide();
     ui->criticalHitChance->hide();
     ui->criticalHitChanceLabel->hide();
+    ui->criticalMissChance->hide();
+    ui->criticalMissChanceLabel->hide();
 }
 
 QList<QPair<DamageType, DiceRoll>>
