@@ -920,11 +920,19 @@ bool DamageCalculatorPage::event(QEvent* event)
     if (event->type() == QEvent::Hide) {
         d->fileMenu->menuAction()->setVisible(false);
         d->mainMenu->menuAction()->setVisible(false);
+        d->fileMenu->setEnabled(false);
+        d->mainMenu->setEnabled(false);
+        for (auto child : findChildren<QAction*>())
+            child->setEnabled(false);
         saveInterface();
     }
     else if (event->type() == QEvent::Show) {
         d->fileMenu->menuAction()->setVisible(true);
         d->mainMenu->menuAction()->setVisible(true);
+        d->fileMenu->setEnabled(true);
+        d->mainMenu->setEnabled(true);
+        for (auto child : findChildren<QAction*>())
+            child->setEnabled(true);
         loadInterface();
     }
 
