@@ -205,7 +205,6 @@ struct DamageCalculatorPage::Private
     DamageCalculatorPage& q;
     QVector<int> armorClasses;
 
-    QMenu* fileMenu = nullptr;
     QMenu* mainMenu = nullptr;
     QMenu* loadSavedMenu = nullptr;
     QMenu* deleteSavedMenu = nullptr;
@@ -570,11 +569,11 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->loadSavedCalculations();
 
     // Menus ///////////////////////////////////////////////////////////////////
-    d->fileMenu = menuBar()->addMenu(tr("File"));
+    d->mainMenu = menuBar()->addMenu(tr("Damage Calculator"));
 
     auto action = new QAction(tr("Save visible calculations as..."), this);
     action->setShortcut(QKeySequence::Save);
-    d->fileMenu->addAction(action);
+    d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
 #ifndef Q_OS_WASM
         auto dialog = new QFileDialog(this);
@@ -595,7 +594,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 
     action = new QAction(tr("Load calculations from..."), this);
     action->setShortcut(QKeySequence::Open);
-    d->fileMenu->addAction(action);
+    d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, [this] {
 #ifndef Q_OS_WASM
         auto dialog = new QFileDialog(this);
@@ -618,8 +617,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
 #endif
     });
 
-
-    d->mainMenu = menuBar()->addMenu(tr("Damage calculator calculations"));
+    d->mainMenu->addSeparator();
 
     action = new QAction(tr("Duplicate current calculation"), this);
     action->setShortcut(QKeySequence(tr("Ctrl+D")));
@@ -918,18 +916,14 @@ bool DamageCalculatorPage::event(QEvent* event)
 
     // FIXME: Doesn't work on Plasma with the global menu, debug why.
     if (event->type() == QEvent::Hide) {
-        d->fileMenu->menuAction()->setVisible(false);
         d->mainMenu->menuAction()->setVisible(false);
-        d->fileMenu->setEnabled(false);
         d->mainMenu->setEnabled(false);
         for (auto child : findChildren<QAction*>())
             child->setEnabled(false);
         saveInterface();
     }
     else if (event->type() == QEvent::Show) {
-        d->fileMenu->menuAction()->setVisible(true);
         d->mainMenu->menuAction()->setVisible(true);
-        d->fileMenu->setEnabled(true);
         d->mainMenu->setEnabled(true);
         for (auto child : findChildren<QAction*>())
             child->setEnabled(true);
