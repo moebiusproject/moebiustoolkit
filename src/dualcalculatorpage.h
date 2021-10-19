@@ -26,6 +26,7 @@ class DualCalculatorPage : public BasePage
 public:
     explicit DualCalculatorPage(QWidget* parent = nullptr);
     ~DualCalculatorPage();
+    QList<QtCharts::QChartView*> charts() const override;
 
 private:
     struct Private;

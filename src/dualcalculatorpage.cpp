@@ -56,6 +56,7 @@ struct DualCalculatorPage::Private
     XpLevels xpLevels;
 
     QChart* chart = nullptr;
+    QChartView* chartView = nullptr;
     QBarSet* class1 = nullptr;
     QBarSet* class2 = nullptr;
     QValueAxis* xpAxis = nullptr;
@@ -211,8 +212,8 @@ DualCalculatorPage::DualCalculatorPage(QWidget* parent)
     d->chart->addAxis(d->namesAxis, Qt::AlignBottom);
     series->attachAxis(d->namesAxis);
 
-    auto chartView = new QChartView(d->chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    d->chartView = new QChartView(d->chart);
+    d->chartView->setRenderHint(QPainter::Antialiasing);
 
     // A vertical column with inputs
     auto inputs = new QWidget;
@@ -234,7 +235,7 @@ DualCalculatorPage::DualCalculatorPage(QWidget* parent)
     // Main layout of this page: an horizontal row chart<->inputs
     setLayout(new QHBoxLayout);
     auto splitter = new QSplitter;
-    splitter->addWidget(chartView);
+    splitter->addWidget(d->chartView);
     splitter->addWidget(inputs);
     splitter->setSizes(QList<int>{splitter->width()*2/3, splitter->width()/3});
     layout()->addWidget(splitter);
@@ -244,5 +245,10 @@ DualCalculatorPage::~DualCalculatorPage()
 {
     delete d;
     d = nullptr;
+}
+
+QList<QChartView*> DualCalculatorPage::charts() const
+{
+    return { d->chartView };
 }
 

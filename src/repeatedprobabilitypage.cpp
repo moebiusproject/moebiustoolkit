@@ -55,6 +55,7 @@ struct RepeatedProbabilityPage::Private
 
     RepeatedProbabilityPage& q;
     QChart* chart = nullptr;
+    QChartView* chartView = nullptr;
 };
 
 // TODO: Unroll the mess of the constructor to be able to regenerate teh chart
@@ -142,15 +143,20 @@ RepeatedProbabilityPage::RepeatedProbabilityPage(QWidget* parent)
     // so the bar emits the hovered signal to a destroyed tooltip, so crashes.
     Qt::QueuedConnection);
 
-    auto chartView = new QChartView(d->chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+    d->chartView = new QChartView(d->chart);
+    d->chartView->setRenderHint(QPainter::Antialiasing);
 
     setLayout(new QVBoxLayout);
-    layout()->addWidget(chartView);
+    layout()->addWidget(d->chartView);
 }
 
 RepeatedProbabilityPage::~RepeatedProbabilityPage()
 {
     delete d;
     d = nullptr;
+}
+
+QList<QChartView*> RepeatedProbabilityPage::charts() const
+{
+    return { d->chartView };
 }
