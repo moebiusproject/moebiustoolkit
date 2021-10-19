@@ -781,17 +781,17 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->enemy.armor->addItem(tr("Neutral"),
                             QVariant::fromValue(ArmorModifiers(+0, +0, +0, +0)));
     d->enemy.armor->addItem(tr("Leather"),
-                            QVariant::fromValue(ArmorModifiers(+0, +0, +2, +2)));
+                            QVariant::fromValue(ArmorModifiers(+0, -2, -2, +0)));
     d->enemy.armor->addItem(tr("Studded Leather"),
-                            QVariant::fromValue(ArmorModifiers(+0, -1, -1, -2)));
+                            QVariant::fromValue(ArmorModifiers(+0, +1, +1, +2)));
     d->enemy.armor->addItem(tr("Chain Mail"),
-                            QVariant::fromValue(ArmorModifiers(+2, +0, +0, -2)));
+                            QVariant::fromValue(ArmorModifiers(-2, +0, +0, +2)));
     d->enemy.armor->addItem(tr("Splint Mail"),
-                            QVariant::fromValue(ArmorModifiers(-2, -1, -1, +0)));
+                            QVariant::fromValue(ArmorModifiers(+2, +1, +1, +0)));
     d->enemy.armor->addItem(tr("Plate Mail"),
-                            QVariant::fromValue(ArmorModifiers(+0, +0, +0, -3)));
+                            QVariant::fromValue(ArmorModifiers(+0, +0, +0, +3)));
     d->enemy.armor->addItem(tr("Full Plate Mail"),
-                            QVariant::fromValue(ArmorModifiers(+0, -3, -3, -4)));
+                            QVariant::fromValue(ArmorModifiers(+0, +3, +3, +4)));
     // TODO: add more armors, or modifiers from creatures.
 
     connect(d->enemy.armor, &QComboBox::currentTextChanged,

@@ -30,7 +30,7 @@
    <item>
     <widget class="QGroupBox" name="armorClassModifersGroup">
      <property name="title">
-      <string>Armor class modifiers</string>
+      <string>Armor class bonuses</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
