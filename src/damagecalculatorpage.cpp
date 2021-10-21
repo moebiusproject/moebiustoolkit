@@ -208,6 +208,9 @@ struct DamageCalculatorPage::Private
     QMenu* mainMenu = nullptr;
     QMenu* loadSavedMenu = nullptr;
     QMenu* deleteSavedMenu = nullptr;
+    QAction* pointLabels = nullptr;
+    QAction* pointLabelsClipping = nullptr;
+    QAction* axisTitle = nullptr;
 
     ManageDialog* manageDialog = nullptr;
 
@@ -218,9 +221,6 @@ struct DamageCalculatorPage::Private
     QLineEdit* titleLine = nullptr;
     QSpinBox* minimumX = nullptr;
     QSpinBox* maximumX = nullptr;
-    QCheckBox* pointLabels = nullptr;
-    QCheckBox* pointLabelsClipping = nullptr;
-    QCheckBox* axisTitle = nullptr;
     QCheckBox* reverse = nullptr;
 
     Enemy enemy;
@@ -633,6 +633,8 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         d->setColorInButton(color, d->calculations.last().color);
     });
 
+    d->mainMenu->addSeparator();
+
     action = new QAction(tr("Save current calculation to preferences"), this);
     d->mainMenu->addAction(action);
     connect(action, &QAction::triggered, std::bind(&Private::saveCurrentCalculation, d));
@@ -669,6 +671,46 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         d->newPage();
         d->deserialize(d->tabs->currentWidget(), d->savedCalculations.at(index));
     });
+
+    d->mainMenu->addSeparator();
+
+    d->pointLabels = new QAction(tr("Show numeric values"), this);
+    d->pointLabels->setCheckable(true);
+    d->pointLabels->setChecked(true);
+    d->mainMenu->addAction(d->pointLabels);
+    connect(d->pointLabels, &QAction::toggled, [this](bool value) {
+        for (auto series : d->chart->series()) {
+            if (auto line = qobject_cast<QLineSeries*>(series)) {
+                line->setPointLabelsVisible(value);
+            }
+        }
+    });
+
+    d->pointLabelsClipping = new QAction(tr("Clip point labels"), this);
+    d->pointLabelsClipping->setCheckable(true);
+    d->pointLabelsClipping->setChecked(true);
+    d->mainMenu->addAction(d->pointLabelsClipping);
+    connect(d->pointLabelsClipping, &QAction::toggled, [this](bool value) {
+        for (auto series : d->chart->series()) {
+            if (auto line = qobject_cast<QLineSeries*>(series)) {
+                line->setPointLabelsClipping(value);
+            }
+        }
+    });
+
+    d->axisTitle = new QAction(tr("Show axis description"));
+    d->axisTitle->setCheckable(true);
+    d->axisTitle->setChecked(true);
+    d->mainMenu->addAction(d->axisTitle);
+    connect(d->axisTitle, &QAction::toggled, [this](bool value) {
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).constFirst())) {
+            axis->setTitleVisible(value);
+        }
+        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).constFirst())) {
+            axis->setTitleVisible(value);
+        }
+    });
+
 
 #if 0 // TODO: migrate to its own page
     QMenu* extrasMenu = menuBar()->addMenu(tr("Extras"));
@@ -717,37 +759,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
             std::bind(&Private::setupAxes, d));
     connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged),
             std::bind(&Private::setupAxes, d));
-    d->pointLabels = new QCheckBox(tr("Show point labels"));
-    chartControlsLayout->addWidget(d->pointLabels);
-    d->pointLabels->setChecked(true);
-    connect(d->pointLabels, &QCheckBox::toggled, [this](bool value) {
-        for (auto series : d->chart->series()) {
-            if (auto line = qobject_cast<QLineSeries*>(series)) {
-                line->setPointLabelsVisible(value);
-            }
-        }
-    });
-    d->pointLabelsClipping = new QCheckBox(tr("Clip point labels"));
-    chartControlsLayout->addWidget(d->pointLabelsClipping);
-    d->pointLabelsClipping->setChecked(true);
-    connect(d->pointLabelsClipping, &QCheckBox::toggled, [this](bool value) {
-        for (auto series : d->chart->series()) {
-            if (auto line = qobject_cast<QLineSeries*>(series)) {
-                line->setPointLabelsClipping(value);
-            }
-        }
-    });
-    d->axisTitle = new QCheckBox(tr("Axis description"));
-    chartControlsLayout->addWidget(d->axisTitle);
-    d->axisTitle->setChecked(true);
-    connect(d->axisTitle, &QCheckBox::toggled, [this](bool value) {
-        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).constFirst())) {
-            axis->setTitleVisible(value);
-        }
-        if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Vertical).constFirst())) {
-            axis->setTitleVisible(value);
-        }
-    });
+
     d->reverse = new QCheckBox(tr("AC: worst to best"));
     chartControlsLayout->addWidget(d->reverse);
     d->reverse->setChecked(true);
