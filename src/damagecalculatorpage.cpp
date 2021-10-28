@@ -698,7 +698,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         }
     });
 
-    d->axisTitle = new QAction(tr("Show axis description"));
+    d->axisTitle = new QAction(tr("Show axis description"), this);
     d->axisTitle->setCheckable(true);
     d->axisTitle->setChecked(true);
     d->mainMenu->addAction(d->axisTitle);
