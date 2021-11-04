@@ -146,6 +146,7 @@ void ResourceManager::load(const QString& path)
     qCDebug(log) << "Loaded:" << timer.elapsed() << "ms";
 }
 
+// TODO: Probably sanitize a bit the name argument, and look for ".." or "/" in it.
 QByteArray ResourceManager::resource(const QString& name) const
 {
     // Try to find the resource on the overridden directory first.
