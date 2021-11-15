@@ -26,7 +26,7 @@ class RepeatedProbabilityPage : public BasePage
 public:
     explicit RepeatedProbabilityPage(QWidget* parent = nullptr);
     ~RepeatedProbabilityPage();
-    QList<QtCharts::QChartView*> charts() const override;
+    QList<QChartView*> charts() const override;
 
 private:
     struct Private;
