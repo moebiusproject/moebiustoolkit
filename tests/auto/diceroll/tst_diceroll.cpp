@@ -33,6 +33,10 @@ private slots:
     void test();
 };
 
+// This include here makes my eye sore, but it's a workaround for an issue with
+// MOC or the build system, which chokes on the modern C++ digit separator below.
+#include "tst_diceroll.moc"
+
 void tst_DiceRoll::debugOperatorAndConstructor()
 {
     QTest::ignoreMessage(QtDebugMsg, "1d1+0@0");
@@ -230,5 +234,3 @@ void tst_DiceRoll::test()
 }
 
 QTEST_MAIN(tst_DiceRoll)
-
-#include "tst_diceroll.moc"
