@@ -28,6 +28,7 @@ private slots:
     void test();
 };
 
+#include "tst_xplevels.moc"
 
 void tst_XpLevels::test()
 {
@@ -55,4 +56,3 @@ void tst_XpLevels::test()
 
 QTEST_MAIN(tst_XpLevels)
 
-#include "tst_xplevels.moc"

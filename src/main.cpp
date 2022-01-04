@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
 
     MainWindow window;
     window.showMaximized();
+    window.setWindowTitle(QCoreApplication::translate(
+                              "Global", "Moebius Toolkit. Infinity Engine tools"));
 
     return application.exec();
 }
