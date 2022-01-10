@@ -233,7 +233,7 @@
      <item>
       <widget class="QGroupBox" name="mainHandGroup">
        <property name="title">
-        <string>Main Hand</string>
+        <string>Main hand</string>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
@@ -245,7 +245,7 @@
      <item>
       <widget class="QGroupBox" name="offHandGroup">
        <property name="title">
-        <string>Off-hand</string>
+        <string>Off hand</string>
        </property>
        <property name="checkable">
         <bool>true</bool>

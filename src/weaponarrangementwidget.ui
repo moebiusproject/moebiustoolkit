@@ -127,8 +127,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>178</width>
-           <height>199</height>
+           <width>174</width>
+           <height>200</height>
           </rect>
          </property>
          <attribute name="label">
@@ -302,7 +302,7 @@
      <item>
       <widget class="QLabel" name="attacksPerRoundLabel">
        <property name="text">
-        <string>Attacks Per Round</string>
+        <string>Attacks per round</string>
        </property>
       </widget>
      </item>
