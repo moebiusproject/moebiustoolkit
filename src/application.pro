@@ -5,6 +5,24 @@ QT = core gui widgets charts
 projectGlobals()
 useLibMoebius()
 
+DESTDIR = $$BUILD_TREE/bin
+linux {
+    isEmpty(PREFIX) {
+        PREFIX = /usr/local
+    }
+
+    target.path = $$PREFIX/bin
+    desktop_file.files = moebiustoolkit.desktop
+    desktop_file.path  = $$PREFIX/share/applications
+    icon_file.files = moebiustoolkit.png
+    icon_file.path  = $$PREFIX/share/pixmaps
+
+    INSTALLS += target desktop_file icon_file
+    DISTFILES += desktop_file icon_file
+}
+
+RESOURCES += resources.qrc
+
 HEADERS = \
     backstabcalculatorpage.h \
     basepage.h \

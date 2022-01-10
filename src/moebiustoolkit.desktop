@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Moebius Toolkit
+Comment=Infinity Engine Tools
+Exec=moebiustoolkit
+Icon=moebiustoolkit
+Terminal=false
+Categories=Game;Development;

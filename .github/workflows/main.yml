@@ -1,0 +1,69 @@
+on:
+  push:
+    # To limit building on some branches.
+    # branches: [ deploy ]
+  pull_request:
+    branches: [ master ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+env:
+  APP_VERSION: 0.2
+  QT_VERSION: 5.15.2
+
+jobs:
+  # Custom user-defined name(s) for the job(s)
+  packaging-linux:
+    # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-README.md
+    runs-on: ubuntu-18.04
+
+    steps:
+      # Checks-out under $GITHUB_WORKSPACE. See https://github.com/actions/checkout
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ../Qt
+          key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{env.QT_VERSION}}
+          modules: qtcharts
+          aqtversion: '==2.0.2'
+          cached: ${{steps.cache-qt.outputs.cache-hit}}
+
+      - name: Configure
+        run: |
+          qmake CONFIG+=release PREFIX=/usr QMAKE_CC=gcc-10 QMAKE_CXX=g++-10
+      - name: Compile
+        # 2 CPUs, according to https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+        run: make -j2
+      - name: Install linuxdeploy
+        run: |
+          cd src
+          wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-plugin-qt-x86_64.AppImage
+      - name: Create AppImage
+        run: |
+          cd src
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir -e ../bin/moebiustoolkit -d moebiustoolkit.desktop -i moebiustoolkit.png --plugin qt --output appimage
+          rm linuxdeploy-*
+          ls *.AppImage
+          mv *.AppImage MoebiusToolkit-${{env.APP_VERSION}}.AppImage
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v2
+        with:
+          name: MoebiusToolkit-${{env.APP_VERSION}}.AppImage
+          path: src/MoebiusToolkit-${{env.APP_VERSION}}.AppImage
+          if-no-files-found: error
+
+# vim: set et ts=2 sw=2:

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>moebiustoolkit.png</file>
+    </qresource>
+</RCC>

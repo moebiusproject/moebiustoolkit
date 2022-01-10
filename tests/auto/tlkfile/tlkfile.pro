@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = tst_tlkfile
 
 QT = core testlib
-CONFIG += testcase
+CONFIG += testcase no_testcase_installs
 CONFIG -= app_bundle
 
 projectGlobals()

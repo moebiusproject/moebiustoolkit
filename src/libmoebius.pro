@@ -1,5 +1,6 @@
 TEMPLATE = lib
 win32:CONFIG += staticlib
+CONFIG(release, debug|release):CONFIG += staticlib
 TARGET = moebius
 QT = core
 
