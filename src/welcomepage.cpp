@@ -67,6 +67,7 @@ WelcomePage::WelcomePage(QWidget* parent)
 
 #ifndef QT_DEBUG // Unreleased for now.
     d->ui.buffCalculator->setEnabled(false);
+    d->ui.buffCalculator->hide();
 #endif
 #ifdef Q_OS_WASM // Force enable the modules without the UI to setup locations.
     // This are disabled, then hidden, which is pointless. It's just in case I
