@@ -66,4 +66,53 @@ jobs:
           path: src/MoebiusToolkit-${{env.APP_VERSION}}.AppImage
           if-no-files-found: error
 
+  packaging-mac:
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Cache Qt
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ../Qt
+          key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{env.QT_VERSION}}
+          modules: qtcharts
+          aqtversion: '==2.0.2'
+          cached: ${{steps.cache-qt.outputs.cache-hit}}
+
+      - name: Build
+        run: |
+          qmake CONFIG+=release
+          make -j3
+
+      - name: Deploy app
+        run: |
+          ls -l
+          ls -l bin
+          macdeployqt bin/MoebiusToolkit.app
+          macdeployqt bin/MoebiusToolkit.app -dmg
+          mv bin/MoebiusToolkit.app MoebiusToolkit-${{env.APP_VERSION}}.app
+          mv bin/MoebiusToolkit.dmg MoebiusToolkit-${{env.APP_VERSION}}.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v2
+        with:
+          name: MoebiusToolkit-${{env.APP_VERSION}}.dmg
+          path: MoebiusToolkit-${{env.APP_VERSION}}.dmg
+
+      - name: Upload app bundle
+        uses: actions/upload-artifact@v2
+        with:
+          name: MoebiusToolkit-${{env.APP_VERSION}}.app
+          path: MoebiusToolkit-${{env.APP_VERSION}}.app
+
 # vim: set et ts=2 sw=2:

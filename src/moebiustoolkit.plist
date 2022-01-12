@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleDevelopmentRegion</key>
+        <string>English</string>
+        <key>CFBundleExecutable</key>
+        <string>MoebiusToolkit</string>
+        <key>CFBundleGetInfoString</key>
+        <string>Copyright © 2022 Alejandro Exojo</string>
+
+        <!-- <key>CFBundleIconFile</key> -->
+        <!-- <string>icon</string> -->
+
+        <key>CFBundleIdentifier</key>
+        <string>io.gitlab.moebiusproject</string>
+
+        <key>CFBundleInfoDictionaryVersion</key>
+        <string>6.0</string>
+        <key>CFBundleName</key>
+        <string>MoebiusToolkit</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+
+        <key>CFBundleShortVersionString</key>
+        <string>0.2.0</string>
+
+        <!-- <key>LSHasLocalizedDisplayName</key> -->
+        <!-- <true/> -->
+
+        <key>NSPrincipalClass</key>
+        <string>NSApplication</string>
+        <key>NSSupportsSuddenTermination</key>
+        <false/>
+        <key>NSRequiresAquaSystemAppearance</key>
+        <string>False</string>
+    </dict>
+</plist>

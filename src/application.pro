@@ -1,5 +1,6 @@
 TEMPLATE = app
 TARGET = moebiustoolkit
+mac:TARGET = MoebiusToolkit
 QT = core gui widgets charts
 
 projectGlobals()
@@ -19,6 +20,16 @@ linux {
 
     INSTALLS += target desktop_file icon_file
     DISTFILES += desktop_file icon_file
+}
+
+mac {
+    # This silences a warning when using a too new SDK (which Qt has not been
+    # tested with), but really doesn't seem to do much else.
+    # CONFIG += sdk_no_version_check
+
+    # TODO: The plist can have some "templated" values, so that qmake can
+    # replace them based on the build. Review.
+    QMAKE_INFO_PLIST = moebiustoolkit.plist
 }
 
 RESOURCES += resources.qrc
