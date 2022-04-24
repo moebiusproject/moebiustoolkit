@@ -208,6 +208,7 @@ void ProgressionChartsPage::Private::loaded()
     connect(ui.className, &QComboBox::currentTextChanged, updateCurrent);
     connect(ui.progression, &QComboBox::currentTextChanged, updateCurrent);
     connect(ui.type, &QComboBox::currentTextChanged, updateCurrent);
+    connect(ui.thac0Bonus, &QSpinBox::valueChanged, updateCurrent);
     connect(ui.name, &QLineEdit::textChanged, updateCurrent);
     connect(ui.add, &QPushButton::clicked, [this] { addNew(); });
 
@@ -218,7 +219,8 @@ void ProgressionChartsPage::Private::loaded()
     mapper->addMapping(ui.className, 0);
     mapper->addMapping(ui.progression, 1);
     mapper->addMapping(ui.type, 2);
-    mapper->addMapping(ui.name, 3);
+    mapper->addMapping(ui.thac0Bonus, 3);
+    mapper->addMapping(ui.name, 4);
     // TODO: Call this when proper contents exist and makes more sense.
     ui.table->resizeColumnsToContents();
 
@@ -241,7 +243,7 @@ void ProgressionChartsPage::Private::setupAxes()
     xpAxis->setMin(minimumX->value());
     xpAxis->setMax(maximumX->value());
 
-    auto setYAxis = [this](QValueAxis* yAxis) {
+    auto setYAxisRange = [this](QValueAxis* yAxis) {
         double min = +qInf();
         double max = -qInf();
         for (QLineSeries* series : qAsConst(lineSeries)) {
@@ -258,8 +260,8 @@ void ProgressionChartsPage::Private::setupAxes()
         yAxis->setRange(min, max);
         yAxis->applyNiceNumbers();
     };
-    setYAxis(levelAxis);
-    setYAxis(thac0Axis);
+    setYAxisRange(levelAxis);
+    setYAxisRange(thac0Axis);
 }
 
 void ProgressionChartsPage::Private::updateSeries(int index)
@@ -273,7 +275,8 @@ void ProgressionChartsPage::Private::updateSeries(int index)
     const Progression progression = Progression(progressionInt);
     const int typeInt = model->data(model->index(index, 2), Qt::UserRole).toInt();
     const ChartType type = ChartType(typeInt);
-    const QString name = model->data(model->index(index, 3)).toString();
+    const int thac0BonusDenominator = model->data(model->index(index, 3)).toInt();
+    const QString name = model->data(model->index(index, 4)).toString();
 
     auto pen = series->pen();
     pen.setStyle(progression == SingleClass ? Qt::SolidLine
@@ -304,7 +307,12 @@ void ProgressionChartsPage::Private::updateSeries(int index)
             else if (type == Thac0Wizard) // 1/3 ratio
                 thac0 -= validLevel/3;
             thac0 = qBound(0, thac0, 20);
-            points.append(QPointF(x, qBound(0, thac0, 20)));
+            // The THAC0 gets capped at 0, but the bonuses from kits do not.
+            if (thac0BonusDenominator) { // Check division by 0!
+                const int bonus = level / thac0BonusDenominator;
+                thac0 -= bonus;
+            }
+            points.append(QPointF(x, thac0));
         }
     }
     series->replace(points);
@@ -385,6 +393,11 @@ ProgressionChartsPage::ProgressionChartsPage(QWidget* parent)
     d->ui.setupUi(inputs);
     // TODO: Implement the removal feature.
     d->ui.remove->hide();
+
+    d->ui.thac0Bonus->setEnabled(false);
+    connect(d->ui.type, &QComboBox::currentIndexChanged, this, [this](int index) {
+        d->ui.thac0Bonus->setEnabled(index != 0);
+    });
 
     setLayout(new QHBoxLayout);
     auto splitter = new QSplitter;

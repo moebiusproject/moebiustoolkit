@@ -11,40 +11,27 @@
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="classNameLabel">
-     <property name="text">
-      <string>Class</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QComboBox" name="className"/>
+   </item>
+   <item row="10" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="progressionLabel">
      <property name="text">
       <string>Progression</string>
      </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="progression">
-     <item>
-      <property name="text">
-       <string>Single class</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Double class</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Triple class</string>
-      </property>
-     </item>
     </widget>
    </item>
    <item row="2" column="0">
@@ -83,31 +70,31 @@
      </item>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="1">
+    <widget class="QLineEdit" name="name"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="classNameLabel">
+     <property name="text">
+      <string>Class</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
     <widget class="QLabel" name="nameLabel">
      <property name="text">
       <string>Name</string>
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="name"/>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QPushButton" name="add">
-     <property name="text">
-      <string>Add</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="2">
+   <item row="8" column="0" colspan="2">
     <widget class="QPushButton" name="remove">
      <property name="text">
       <string>Remove</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="0" colspan="2">
+   <item row="9" column="0" colspan="2">
     <widget class="QTableWidget" name="table">
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
@@ -135,23 +122,67 @@
      </column>
      <column>
       <property name="text">
+       <string>THAC0 bonus each N levels</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
        <string>Name</string>
       </property>
      </column>
     </widget>
    </item>
-   <item row="7" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+   <item row="7" column="0" colspan="2">
+    <widget class="QPushButton" name="add">
+     <property name="text">
+      <string>Add</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="progression">
+     <item>
+      <property name="text">
+       <string>Single class</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Double class</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Triple class</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="thac0BonusLabel">
+     <property name="text">
+      <string>THAC0 bonus</string>
      </property>
-    </spacer>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QSpinBox" name="thac0Bonus">
+     <property name="toolTip">
+      <string>Set a bonus to THAC0 per level, if available. E.g. Kensai gains one each 3 levels. Swashbuckler each 5, etc.</string>
+     </property>
+     <property name="specialValueText">
+      <string>No special bonus</string>
+     </property>
+     <property name="suffix">
+      <string> level(s)</string>
+     </property>
+     <property name="prefix">
+      <string>each </string>
+     </property>
+     <property name="maximum">
+      <number>20</number>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -159,6 +190,7 @@
   <tabstop>className</tabstop>
   <tabstop>progression</tabstop>
   <tabstop>type</tabstop>
+  <tabstop>thac0Bonus</tabstop>
   <tabstop>name</tabstop>
   <tabstop>add</tabstop>
   <tabstop>remove</tabstop>
