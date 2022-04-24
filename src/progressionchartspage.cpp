@@ -172,7 +172,7 @@ void ProgressionChartsPage::Private::addNew()
         if (!over)
             return;
         point = closestSeriesPoint(series->pointsVector(), point);
-        parent.statusBar()->showMessage(tr("%1. Level: %L2. XP: %L3") .arg(series->name())
+        parent.statusBar()->showMessage(tr("%1. Value: %L2. XP: %L3") .arg(series->name())
                                         .arg(static_cast<long>(point.y()))
                                         .arg(static_cast<long>(point.x())), 2000);
     });
