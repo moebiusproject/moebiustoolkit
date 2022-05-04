@@ -92,7 +92,9 @@ class SpinBox : public QSpinBox
 public:
     explicit SpinBox(QWidget* parentObject = nullptr)
         : QSpinBox(parentObject)
-    {}
+    {
+        setGroupSeparatorShown(true);
+    }
 
     void stepBy(int step) override
     {
