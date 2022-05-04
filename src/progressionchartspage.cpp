@@ -320,6 +320,11 @@ void ProgressionChartsPage::Private::updateSeries(int index)
     series->replace(points);
     series->setPointsVisible(true);
 
+    // FIXME: There is something wrong in the axis setup. The axis don't seem to
+    // really be attached when I intend to. Additionally, this thing gets called
+    // more than needed, and the reason is likely a messed up connection on the
+    // QDataWidgetMapper.
+
     // TODO: This series of calls to contains and attach and detach would be
     // simpler if QAbstractSeries would not print a warning on the calls. We
     // can only fix it on the QtCharts side.
