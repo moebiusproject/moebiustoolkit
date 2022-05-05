@@ -296,9 +296,11 @@ void ProgressionChartsPage::Private::updateSeries(int index)
         if (type == LevelType)
             points.append(QPointF(x, level+1));
         else { // THAC0
-            // Stops improving at level 22, except for Warriors, who don't get
-            // below THAC0=0 (bounded below).
-            const int validLevel = qMin(level, 22);
+            // Stops improving at level 22, except for Rogues, who for some
+            // reason stop at 21 (THAC0=10), or Warriors, who are capped at
+            // THAC0=0 (bounded below).
+            const int levelCap = type == Thac0Rogue ? 21 : 22;
+            const int validLevel = qMin(level, levelCap);
             int thac0 = 20;
             if (type == Thac0Warrior) // 1/1 ratio
                 thac0 -= validLevel;
@@ -311,7 +313,7 @@ void ProgressionChartsPage::Private::updateSeries(int index)
             thac0 = qBound(0, thac0, 20);
             // The THAC0 gets capped at 0, but the bonuses from kits do not.
             if (thac0BonusDenominator) { // Check division by 0!
-                const int bonus = level / thac0BonusDenominator;
+                const int bonus = (validLevel+1) / thac0BonusDenominator;
                 thac0 -= bonus;
             }
             points.append(QPointF(x, thac0));
