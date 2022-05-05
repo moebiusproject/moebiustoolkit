@@ -59,7 +59,7 @@ void XpLevels::Private::readData()
         QVector<quint32> values;
 
         bool ok = false;
-        for (int level = 1; level < entry.count() && level <= 40; ++level) {
+        for (int level = 1; level < entry.count() && level <= 41; ++level) {
             const quint32 value = entry.at(level).toULong(&ok);
             if (!ok)
                 break;
