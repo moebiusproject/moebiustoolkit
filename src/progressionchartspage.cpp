@@ -176,7 +176,7 @@ void ProgressionChartsPage::Private::addNew()
         point = closestSeriesPoint(series->pointsVector(), point);
         parent.statusBar()->showMessage(tr("%1. Value: %L2. XP: %L3") .arg(series->name())
                                         .arg(static_cast<long>(point.y()))
-                                        .arg(static_cast<long>(point.x())), 2000);
+                                        .arg(static_cast<long>(point.x())), 5000);
     });
     QLegendMarker* marker = chart->legend()->markers(series).constFirst();
     connect(marker, &QLegendMarker::clicked, chart, [series, marker] {
