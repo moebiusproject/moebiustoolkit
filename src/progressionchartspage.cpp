@@ -200,13 +200,24 @@ void ProgressionChartsPage::Private::loaded()
     ui.className->setCurrentIndex(0);
 
     // Now that we have loaded data we can connect and set/change values.
-    // FIXME: improve min/max spinbox values (to disallow crossed values).
-    connect(minimumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::setupAxes, this));
-    connect(maximumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::setupAxes, this));
+    connect(minimumX, qOverload<int>(&QSpinBox::valueChanged), minimumX, [this](int value) {
+        setupAxes();
+        maximumX->setMinimum(value);
+    });
+    connect(maximumX, qOverload<int>(&QSpinBox::valueChanged), maximumX, [this](int value) {
+        setupAxes();
+        minimumX->setMaximum(value);
+    });
 
-    auto updateCurrent = [this]() { mapper->submit(); updateSeriesAtCurrentIndex(); };
+    auto updateCurrent = [this]() {
+        // We submit manually because the automatic mode only works on focus
+        // change. We want updates even sooner. So we call submit ourselves.
+        mapper->submit();
+        updateSeriesAtCurrentIndex();
+        ui.table->resizeColumnsToContents();
+        // TODO: This works well only on the startup. Here it seems to do nothing.
+        ui.table->horizontalHeader()->setStretchLastSection(true);
+    };
     connect(ui.className, &QComboBox::currentTextChanged, updateCurrent);
     connect(ui.progression, &QComboBox::currentTextChanged, updateCurrent);
     connect(ui.type, &QComboBox::currentTextChanged, updateCurrent);
@@ -215,7 +226,8 @@ void ProgressionChartsPage::Private::loaded()
     connect(ui.add, &QPushButton::clicked, [this] { addNew(); });
 
     mapper = new QDataWidgetMapper(&parent);
-    mapper->setSubmitPolicy(QDataWidgetMapper::AutoSubmit);
+    mapper->setSubmitPolicy(QDataWidgetMapper::ManualSubmit);
+    // The previous delegate has the mapper as a parent, so it will be deleted.
     mapper->setItemDelegate(new CustomDelegate(mapper));
     mapper->setModel(ui.table->model());
     mapper->addMapping(ui.className, 0);
@@ -223,8 +235,8 @@ void ProgressionChartsPage::Private::loaded()
     mapper->addMapping(ui.type, 2);
     mapper->addMapping(ui.thac0Bonus, 3);
     mapper->addMapping(ui.name, 4);
-    // TODO: Call this when proper contents exist and makes more sense.
     ui.table->resizeColumnsToContents();
+    ui.table->horizontalHeader()->setStretchLastSection(true);
 
     connect(ui.table, &QTableWidget::itemSelectionChanged, [this] {
         const QList<QTableWidgetItem*> selection =  ui.table->selectedItems();
