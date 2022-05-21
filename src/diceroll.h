@@ -50,6 +50,13 @@ public:
     DiceRoll& resistance(double resistance);
     DiceRoll& probability(double probability);
 
+    DiceRoll number(int number) const;
+    DiceRoll sides(int sides) const;
+    DiceRoll bonus(int bonus) const;
+    DiceRoll luck(int luck) const;
+    DiceRoll resistance(double resistance) const;
+    DiceRoll probability(double probability) const;
+
     int maximum() const;
     int minimum() const;
     double average() const;

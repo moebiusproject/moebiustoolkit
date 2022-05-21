@@ -26,6 +26,7 @@ class tst_DiceRoll: public QObject
 
 private slots:
     void debugOperatorAndConstructor();
+    void setters();
     void permutations();
     void luckified();
     void resistified();
@@ -62,6 +63,30 @@ void tst_DiceRoll::debugOperatorAndConstructor()
                           .resistance = 0.5, .probability = 0.1});
     QCOMPARE(roll.resistance(), 0.5);
     QCOMPARE(roll.probability(), 0.1);
+}
+
+void tst_DiceRoll::setters()
+{
+    const auto base = DiceRoll().number(2).sides(4).bonus(1).luck(1).resistance(0.1).probability(0.9);
+    QCOMPARE(base.number(), 2);
+    QCOMPARE(base.sides(), 4);
+    QCOMPARE(base.bonus(), 1);
+    QCOMPARE(base.luck(), 1);
+    QCOMPARE(base.resistance(), 0.1);
+    QCOMPARE(base.probability(), 0.9);
+
+    auto copy = base.number(1);
+    QCOMPARE(copy.number(), 1);
+    copy = base.sides(8);
+    QCOMPARE(copy.sides(), 8);
+    copy = base.bonus(5);
+    QCOMPARE(copy.bonus(), 5);
+    copy = base.luck(-1);
+    QCOMPARE(copy.luck(), -1);
+    copy = base.resistance(0.0);
+    QCOMPARE(copy.resistance(), 0.0);
+    copy = base.probability(1.0);
+    QCOMPARE(copy.probability(), 1.0);
 }
 
 void tst_DiceRoll::permutations()

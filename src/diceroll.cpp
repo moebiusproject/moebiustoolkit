@@ -108,6 +108,36 @@ DiceRoll& DiceRoll::probability(double probability)
     return *this;
 }
 
+DiceRoll DiceRoll::number(int number) const
+{
+    return DiceRoll(*this).number(number);
+}
+
+DiceRoll DiceRoll::sides(int sides) const
+{
+    return DiceRoll(*this).sides(sides);
+}
+
+DiceRoll DiceRoll::bonus(int bonus) const
+{
+    return DiceRoll(*this).bonus(bonus);
+}
+
+DiceRoll DiceRoll::luck(int luck) const
+{
+    return DiceRoll(*this).luck(luck);
+}
+
+DiceRoll DiceRoll::resistance(double resistance) const
+{
+    return DiceRoll(*this).resistance(resistance);
+}
+
+DiceRoll DiceRoll::probability(double probability) const
+{
+    return DiceRoll(*this).probability(probability);
+}
+
 int DiceRoll::maximum() const
 {
     return m_number * qBound(1, m_sides+m_luck, m_sides) + m_bonus;
