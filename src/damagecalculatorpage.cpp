@@ -754,11 +754,14 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     d->maximumX->setMaximum(d->armorClasses.first());
     d->maximumX->setValue(d->maximumX->maximum());
     chartControlsLayout->addWidget(d->maximumX);
-    // FIXME: improve min/max spinbox values (to disallow crossed values).
-    connect(d->minimumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::setupAxes, d));
-    connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged),
-            std::bind(&Private::setupAxes, d));
+    connect(d->minimumX, qOverload<int>(&QSpinBox::valueChanged), d->minimumX, [this](int value) {
+        d->setupAxes();
+        d->maximumX->setMinimum(value);
+    });
+    connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged), d->maximumX, [this](int value) {
+        d->setupAxes();
+        d->minimumX->setMaximum(value);
+    });
 
     d->reverse = new QCheckBox(tr("AC: worst to best"));
     chartControlsLayout->addWidget(d->reverse);
