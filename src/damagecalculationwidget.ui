@@ -114,6 +114,9 @@
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bonus &lt;span style=&quot; font-weight:600;&quot;&gt;to hit&lt;/span&gt; from class or kit. Assassin or Skald get +1 at level 1. Kensai and Archer get +1 each 3 levels, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
+          <property name="minimum">
+           <number>-99</number>
+          </property>
          </widget>
         </item>
         <item>
@@ -127,6 +130,9 @@
          <widget class="QSpinBox" name="miscThac0Bonus">
           <property name="toolTip">
            <string>Other bonus &lt;strong&gt;to hit&lt;/strong&gt;, like spells or equipment.</string>
+          </property>
+          <property name="minimum">
+           <number>-99</number>
           </property>
          </widget>
         </item>
@@ -189,6 +195,9 @@
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Bonus to &lt;span style=&quot; font-weight:600;&quot;&gt;damage&lt;/span&gt; from class or kit. Assassin or Skald get +1 at level 1. Kensai and Archer get +1 each 3 levels, etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
+          <property name="minimum">
+           <number>-99</number>
+          </property>
          </widget>
         </item>
         <item>
@@ -202,6 +211,9 @@
          <widget class="QSpinBox" name="miscDamageBonus">
           <property name="toolTip">
            <string>Other bonus to &lt;strong&gt;damage&lt;/strong&gt;, like spells or equipment.</string>
+          </property>
+          <property name="minimum">
+           <number>-99</number>
           </property>
          </widget>
         </item>
