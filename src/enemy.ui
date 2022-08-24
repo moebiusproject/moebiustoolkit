@@ -16,9 +16,6 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QCheckBox" name="helmet">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
      <property name="text">
       <string>Helmet (or critical hit protected)</string>
      </property>
