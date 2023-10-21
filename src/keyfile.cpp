@@ -46,10 +46,10 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
         file.resourceEntries.clear();
     });
 
-    char header[8];
-    stream.readRawData(header, sizeof(header));
+    char signature[8];
+    stream.readRawData(signature, sizeof(signature));
     constexpr auto start = "KEY V1  ";
-    if (qstrncmp(header, start, sizeof(start)) == 0)
+    if (qstrncmp(signature, start, sizeof(start)) == 0)
         file.version = 1;
     else
         return stream;
@@ -88,11 +88,16 @@ QDataStream& operator>>(QDataStream& stream, KeyFile& file)
     if (stream.status() != QDataStream::Ok)
         return stream;
 
-    constexpr auto headerSize = sizeof(header) * sizeof(char)
+    // The total size of the header. This is just for making a sanity check, and verify our
+    // assumptions. The header should be 0x18 (24) bytes.
+    constexpr auto headerSize = sizeof(signature) * sizeof(char)
             + sizeof(biffCount) + sizeof(resourceCount)
             + sizeof(biffStart) + sizeof(resourceStart);
+    static_assert(headerSize == 24);
 
-    // Location where the sequence of biff strings begin. Substract this to the "start of file name".
+    // Location where the sequence of biff strings begin. It should be the current state
+    // of the file cursor. Substract this value to the "start of resources" to get the size
+    // of the large string to read.
     const auto stringsStart = headerSize + sizeof(BiffIndex) * biffCount;
     const auto stringsLength = resourceStart - stringsStart;
     Q_ASSERT(qint64(stringsStart) == stream.device()->pos());

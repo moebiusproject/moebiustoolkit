@@ -31,8 +31,8 @@ struct BiffFile
     /*!
      * \brief Type of BIFF file
      *
-     * The names are based on the title given in IESDP, more than the characters
-     * at the start of the file. So "BIF V1.0" (header) becomes "BIFC V1"
+     * The names are based on the title given in IESDP, more than the "magic
+     * bytes" at the start of the file. So "BIF V1.0" (bytes) becomes "BIFC V1"
      * (IESDP title).
      */
     enum Type {
