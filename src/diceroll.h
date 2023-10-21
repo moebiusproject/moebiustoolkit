@@ -36,12 +36,12 @@ public:
 
     Permutations permutations() const;
 
-    int number() const {return m_number;}
-    int sides() const {return m_sides;}
-    int bonus() const {return m_bonus;}
-    int luck() const {return m_luck;}
-    double resistance() const {return m_resistance;}
-    double probability() const {return m_probability;}
+    [[nodiscard]] inline constexpr int number() const {return m_number;}
+    [[nodiscard]] inline constexpr int sides() const {return m_sides;}
+    [[nodiscard]] inline constexpr int bonus() const {return m_bonus;}
+    [[nodiscard]] inline constexpr int luck() const {return m_luck;}
+    [[nodiscard]] inline constexpr double resistance() const {return m_resistance;}
+    [[nodiscard]] inline constexpr double probability() const {return m_probability;}
 
     DiceRoll& number(int number);
     DiceRoll& sides(int sides);
