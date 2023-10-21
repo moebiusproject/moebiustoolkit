@@ -577,10 +577,11 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(action, &QAction::triggered, [this] {
 #ifndef Q_OS_WASM
         auto dialog = new QFileDialog(this);
-        dialog->setAcceptMode(QFileDialog::AcceptSave);
-        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json)"));
+        connect(dialog, &QDialog::finished, dialog, &QObject::deleteLater);
         connect(dialog, &QFileDialog::fileSelected, this,
             std::bind(&Private::saveCalculationsToFile, d, std::placeholders::_1));
+        dialog->setAcceptMode(QFileDialog::AcceptSave);
+        dialog->setNameFilter(tr("TOML or JSON files (*.toml *.json)"));
         dialog->setModal(true);
         dialog->show();
 #else
