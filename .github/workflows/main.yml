@@ -14,8 +14,8 @@ env:
 jobs:
   # Custom user-defined name(s) for the job(s)
   packaging-linux:
-    # https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1804-README.md
-    runs-on: ubuntu-18.04
+    # https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
+    runs-on: ubuntu-20.04
 
     steps:
       # Checks-out under $GITHUB_WORKSPACE. See https://github.com/actions/checkout
