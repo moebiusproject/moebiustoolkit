@@ -18,30 +18,35 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
+      - name: Install newer GCC
+        run: |
+          sudo apt install g++-11
+
       # Checks-out under $GITHUB_WORKSPACE. See https://github.com/actions/checkout
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
+      # - name: Cache Qt
+      #   id: cache-qt
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ../Qt
+      #     key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{env.QT_VERSION}}
           modules: qtcharts
-          aqtversion: '==2.0.2'
-          cached: ${{steps.cache-qt.outputs.cache-hit}}
+          # aqtversion: '==2.1.2'
+          # cached: ${{steps.cache-qt.outputs.cache-hit}}
+          cache: true
 
       - name: Configure
         run: |
-          qmake CONFIG+=release PREFIX=/usr QMAKE_CC=gcc-10 QMAKE_CXX=g++-10
+          qmake CONFIG+=release PREFIX=/usr QMAKE_CC=gcc-11 QMAKE_CXX=g++-11
       - name: Compile
         # 2 CPUs, according to https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
         run: make -j2
@@ -60,34 +65,35 @@ jobs:
           ls *.AppImage
           mv *.AppImage MoebiusToolkit-${{env.APP_VERSION}}.AppImage
       - name: Upload AppImage
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: MoebiusToolkit-${{env.APP_VERSION}}.AppImage
           path: src/MoebiusToolkit-${{env.APP_VERSION}}.AppImage
           if-no-files-found: error
 
   packaging-mac:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache Qt
-        id: cache-qt
-        uses: actions/cache@v1
-        with:
-          path: ../Qt
-          key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
+      # - name: Cache Qt
+      #   id: cache-qt
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ../Qt
+      #     key: ${{runner.os}}-qtcachedir-${{env.QT_VERSION}}
 
       - name: Install Qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{env.QT_VERSION}}
           modules: qtcharts
-          aqtversion: '==2.0.2'
-          cached: ${{steps.cache-qt.outputs.cache-hit}}
+          # aqtversion: '==2.1.2'
+          # cached: ${{steps.cache-qt.outputs.cache-hit}}
+          cache: true
 
       - name: Build
         run: |
@@ -104,13 +110,13 @@ jobs:
           mv bin/MoebiusToolkit.dmg MoebiusToolkit-${{env.APP_VERSION}}.dmg
 
       - name: Upload DMG
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: MoebiusToolkit-${{env.APP_VERSION}}.dmg
           path: MoebiusToolkit-${{env.APP_VERSION}}.dmg
 
       - name: Upload app bundle
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: MoebiusToolkit-${{env.APP_VERSION}}.app
           path: MoebiusToolkit-${{env.APP_VERSION}}.app
