@@ -67,7 +67,7 @@ jobs:
       - name: Upload AppImage
         uses: actions/upload-artifact@v3
         with:
-          name: MoebiusToolkit-${{env.APP_VERSION}}.AppImage
+          name: MoebiusToolkit-${{env.APP_VERSION}}-Qt-${{matrix.qt-version}}.AppImage
           path: src/MoebiusToolkit-${{env.APP_VERSION}}.AppImage
           if-no-files-found: error
 
@@ -109,13 +109,58 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v3
         with:
-          name: MoebiusToolkit-${{env.APP_VERSION}}.dmg
+          name: MoebiusToolkit-${{env.APP_VERSION}}-Qt-${{matrix.qt-version}}.dmg
           path: MoebiusToolkit-${{env.APP_VERSION}}.dmg
+          if-no-files-found: error
 
       - name: Upload app bundle
         uses: actions/upload-artifact@v3
         with:
-          name: MoebiusToolkit-${{env.APP_VERSION}}.app
+          name: MoebiusToolkit-${{env.APP_VERSION}}-Qt-${{matrix.qt-version}}.app
           path: MoebiusToolkit-${{env.APP_VERSION}}.app
+          if-no-files-found: error
+
+  packaging-win:
+    strategy:
+      matrix:
+        qt-version:
+          - '5.15.2'
+          - '6.5.3'
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: 'Configure MSVC'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+          spectre: true
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{matrix.qt-version}}
+          modules: qtcharts
+          cache: true
+
+      - name: Build
+        run: |
+          qmake CONFIG+=release
+          nmake
+
+      - name: Run windeployqt
+        run: |
+          windeployqt bin/moebiustoolkit.exe
+
+      - name: Upload portable app
+        uses: actions/upload-artifact@v3
+        with:
+          name: MoebiusToolkit-${{env.APP_VERSION}}-Qt-${{matrix.qt-version}}-portable
+          path: bin
+          if-no-files-found: error
 
 # vim: set et ts=2 sw=2:
