@@ -9,11 +9,16 @@ on:
 
 env:
   APP_VERSION: 0.2
-  QT_VERSION: 5.15.2
 
 jobs:
   # Custom user-defined name(s) for the job(s)
   packaging-linux:
+    strategy:
+      matrix:
+        qt-version:
+          - '5.15.2'
+          - '6.5.3'
+
     # https://github.com/actions/runner-images/blob/main/images/linux/Ubuntu2004-Readme.md
     runs-on: ubuntu-20.04
 
@@ -21,6 +26,10 @@ jobs:
       - name: Install newer GCC
         run: |
           sudo apt install g++-11
+
+      - name: Install other libraries
+        run: |
+          sudo apt install libxcb-cursor0
 
       # Checks-out under $GITHUB_WORKSPACE. See https://github.com/actions/checkout
       - name: Checkout
@@ -31,10 +40,8 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: ${{env.QT_VERSION}}
+          version: ${{matrix.qt-version}}
           modules: qtcharts
-          # aqtversion: '==2.1.2'
-          # cached: ${{steps.cache-qt.outputs.cache-hit}}
           cache: true
 
       - name: Configure
@@ -65,7 +72,13 @@ jobs:
           if-no-files-found: error
 
   packaging-mac:
+    strategy:
+      matrix:
+        qt-version:
+          - '5.15.2'
+          - '6.5.3'
     runs-on: macos-11
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,10 +88,8 @@ jobs:
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: ${{env.QT_VERSION}}
+          version: ${{matrix.qt-version}}
           modules: qtcharts
-          # aqtversion: '==2.1.2'
-          # cached: ${{steps.cache-qt.outputs.cache-hit}}
           cache: true
 
       - name: Build
