@@ -449,7 +449,7 @@ struct DamageCalculatorPage::Private
 
                 QVariantHash calculation;
                 for (const auto& entry : *value->as_table()) {
-                    const QString key = QString::fromStdString(entry.first);
+                    const QString key = QString::fromStdString(entry.first.data());
                     QVariant variant;
 
 #if 0 // TODO: Test that this works in all of our compilers.
