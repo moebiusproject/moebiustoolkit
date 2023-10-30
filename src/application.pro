@@ -48,6 +48,7 @@ HEADERS = \
     progressionchartspage.h \
     repeatedprobabilitypage.h \
     specialdamagewidget.h \
+    tomlplusplus.h \
     weaponarrangementwidget.h \
     welcomepage.h \
 
@@ -64,6 +65,7 @@ SOURCES = main.cpp \
     progressionchartspage.cpp \
     repeatedprobabilitypage.cpp \
     specialdamagewidget.cpp \
+    tomlplusplus.cpp \
     weaponarrangementwidget.cpp \
     welcomepage.cpp \
 

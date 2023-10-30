@@ -53,9 +53,7 @@
 #include <QTimer> // TODO: Remove once we can remove the QTimer-workaround.
 #include <QValueAxis>
 
-#define TOML_EXCEPTIONS 0
-#define TOML_IMPLEMENTATION
-#include "tomlplusplus/include/toml++/toml.h"
+#include "tomlplusplus.h"
 
 #include <functional>
 #include <iostream>
