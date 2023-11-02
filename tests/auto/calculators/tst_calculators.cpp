@@ -243,13 +243,14 @@ void tst_Calculators::testDamage()
     const auto averageDamages = calculator.onHitDamages(Damage::One, Damage::Regular);
     QCOMPARE(averageDamages.value(weapon1.physicalDamageType()), physical);
 
+    // No "find_if" for associative containers. Just loop over it.
     QHash<DamageType, double>::const_key_value_iterator result = averageDamages.keyValueBegin();
     for (; result != averageDamages.keyValueEnd(); ++result) {
         if (result.base().key() & DamageType::ElementalBit) {
+            QCOMPARE(result.base().value(), elemental);
             break;
         }
     }
-    QCOMPARE(result.base().value(), elemental);
 }
 
 QTEST_MAIN(tst_Calculators)
