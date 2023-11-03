@@ -54,6 +54,7 @@ enum ChartType {
 
 class CustomDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
     explicit CustomDelegate(QObject* parentObject = nullptr)
         : QStyledItemDelegate(parentObject)
@@ -157,7 +158,7 @@ void ProgressionChartsPage::Private::addNew()
     // TODO: this is duplicated from the damage calculator. Move somewhere shared.
     //
     auto closestSeriesPoint = [](const QVector<QPointF>& realPoints,
-                                 const QPointF& domainPoint)
+                                 QPointF domainPoint)
     {
         QPointF closest;
         qreal minimum = qInf();

@@ -20,7 +20,6 @@
 
 #include "ui_gamebrowserpage.h"
 
-#include "bifffile.h"
 #include "keyfile.h"
 #include "resourcemanager.h"
 #include "resourcetype.h"

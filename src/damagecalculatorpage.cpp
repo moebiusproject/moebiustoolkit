@@ -1186,7 +1186,7 @@ void DamageCalculatorPage::Private::newPage()
     series->setPointLabelsClipping(pointLabelsClipping->isChecked());
     series->setPointLabelsFormat(QLatin1String("@yPoint"));
     auto closestSeriesPoint = [](const QList<QPointF>& realPoints,
-                                 const QPointF& domainPoint)
+                                 QPointF domainPoint)
     {
         QPointF closest;
         qreal minimum = qInf();
