@@ -177,6 +177,10 @@ QByteArray ResourceManager::resource(const QString& name) const
 
 QByteArray ResourceManager::resource(const QString& name, ResourceType type)
 {
+    // TODO: to refactor once the support for files in override gets better.
+    // It's pretty silly that we have the name and the type separated, and we
+    // merge them to check on override, but then split again to look in the
+    // default game files.
     return resource(resourceFileName(name, type));
 }
 
@@ -225,26 +229,30 @@ QByteArray ResourceManager::defaultResource(const QString& name, ResourceType ty
     return result;
 }
 
-QString ResourceManager::resourceFileName(const QString& name, ResourceType type)
+QString ResourceManager::resourceTermination(ResourceType type)
 {
-    QString termination;
     switch (type) {
     case NoType:       break;
-    case BmpType:      termination = QLatin1String("bmp");      break;
-    case WavType:      termination = QLatin1String("wav");      break;
-    case BamType:      termination = QLatin1String("bam");      break;
-    case MosType:      termination = QLatin1String("mos");      break;
-    case ItmType:      termination = QLatin1String("itm");      break;
-    case SplType:      termination = QLatin1String("spl");      break;
-    case BcsType:      termination = QLatin1String("bcs");      break;
-    case IdsType:      termination = QLatin1String("ids");      break;
-    case CreType:      termination = QLatin1String("cre");      break;
-    case TdaType:      termination = QLatin1String("2da");      break;
-    case BsType:       termination = QLatin1String("bs");       break;
-    case PvrzType:     termination = QLatin1String("pvrz");     break;
-    case MenuType:     termination = QLatin1String("menu");     break;
+    case BmpType:      return QStringLiteral("bmp");
+    case WavType:      return QStringLiteral("wav");
+    case BamType:      return QStringLiteral("bam");
+    case MosType:      return QStringLiteral("mos");
+    case ItmType:      return QStringLiteral("itm");
+    case SplType:      return QStringLiteral("spl");
+    case BcsType:      return QStringLiteral("bcs");
+    case IdsType:      return QStringLiteral("ids");
+    case CreType:      return QStringLiteral("cre");
+    case TdaType:      return QStringLiteral("2da");
+    case BsType:       return QStringLiteral("bs");
+    case PvrzType:     return QStringLiteral("pvrz");
+    case MenuType:     return QStringLiteral("menu");
     }
-    return name + QLatin1Char('.') + termination;
+    return QString();
+}
+
+QString ResourceManager::resourceFileName(const QString& name, ResourceType type)
+{
+    return name + QLatin1Char('.') + resourceTermination(type);
 }
 
 // FIXME: This is one of the first cases where we find the case sensitivity

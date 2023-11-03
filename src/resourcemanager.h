@@ -69,6 +69,13 @@ public:
     QByteArray defaultResource(const QString& name, ResourceType type) const;
 
     /*!
+     * \brief Returns a file termination "xyz" from the type.
+     * \param type
+     * \return
+     */
+    static QString resourceTermination(ResourceType type);
+
+    /*!
      * \brief Returns a file name "abc.xyz" from "abc" and the type
      * \param name
      * \param type

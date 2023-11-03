@@ -88,6 +88,8 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
         const int type = model->data(model->index(row, Private::TypeColumn), Private::DataRole).toInt();
         QString resource = tr("Viewing this file is not implemented yet.");
         if (type == TdaType) {
+            // TODO: will need consideration when there are files to show in
+            // both the BIFF files and the override directory.
             const QByteArray resourceData = d->manager.resource(resourceName, static_cast<ResourceType>(type));
             resource = QString::fromUtf8(resourceData);
         }
@@ -127,10 +129,10 @@ void GameBrowserPage::Private::loaded()
         QList<QStandardItem*> row;
         row.append(new QStandardItem(resource.name));
 
-        const auto typeNameLiteral = resourceTypeName(resource.type);
-        const QString typeName = typeNameLiteral ? QString::fromLatin1(typeNameLiteral)
-                                                 : QString(QLatin1String("0x%1"))
-                                                       .arg(resource.type, 4, 16, QLatin1Char('0'));
+        const QString typeName = ResourceManager::resourceTermination(resource.type).toUpper();
+        const QString typeText = typeName.isEmpty() ? QString(QLatin1String("0x%1"))
+                                                          .arg(resource.type, 4, 16, QLatin1Char('0'))
+                                                    : typeName;
         QStandardItem* typeItem = new QStandardItem(typeName);
         typeItem->setData(resource.type, Private::DataRole);
         row.append(typeItem);
