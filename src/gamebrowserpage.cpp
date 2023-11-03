@@ -27,17 +27,10 @@
 
 #include <QDebug>
 #include <QStandardItemModel>
+#include <QSortFilterProxyModel>
 #ifndef Q_OS_WASM
 #include <QThreadPool>
 #endif
-
-enum Row {
-    BiffsRow = 0,
-    SpellsRow,
-    ItemsRow,
-    TdasRow,
-    CresRow,
-};
 
 struct GameBrowserPage::Private
 {
@@ -45,24 +38,25 @@ struct GameBrowserPage::Private
         : page(page_)
     {}
 
-    void start(const QString& name, const QString& location);
+    enum ColumnIndex {
+        NameColumn,
+        TypeColumn,
+        LocationColumn,
+    };
+
+    enum {
+        DataRole = Qt::UserRole + 1,
+    };
 
     GameBrowserPage& page;
     Ui::GameBrowserPage ui;
 
-    const QHash<Row, ResourceType> typeMapping = {
-        {BiffsRow, NoType},
-        {SpellsRow, SplType},
-        {ItemsRow, ItmType},
-        {TdasRow, TdaType},
-        {CresRow, CreType},
-    };
     QStandardItemModel model;
+    QSortFilterProxyModel filterModel;
 
     ResourceManager manager;
 
-    QVector<BiffFile> biffs;
-
+    void start(const QString& name, const QString& location);
     void loaded();
 };
 
@@ -72,29 +66,33 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
 {
     d->ui.setupUi(this);
     d->ui.log->setFontFamily(QLatin1String("monospace"));
-    d->ui.resources->setModel(&d->model);
-    d->model.setColumnCount(2);
-    d->model.setHorizontalHeaderLabels(QStringList() << tr("Resource") << tr("Location"));
-    d->model.insertRow(BiffsRow, new QStandardItem(tr("BIFFs")));
-    d->model.insertRow(SpellsRow, new QStandardItem(tr("Spells")));
-    d->model.insertRow(ItemsRow, new QStandardItem(tr("Items")));
-    d->model.insertRow(TdasRow, new QStandardItem(tr("2da")));
-    d->model.insertRow(CresRow, new QStandardItem(tr("Creature")));
+
+    d->model.setColumnCount(Private::LocationColumn+1);
+    d->model.setHorizontalHeaderLabels(QStringList() << tr("Resource") << tr("Type") << tr("Location"));
+
+    d->filterModel.setSourceModel(&d->model);
+    d->filterModel.setFilterKeyColumn(Private::NameColumn);
+    d->filterModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+    d->ui.resources->setModel(&d->filterModel);
+
+    connect(d->ui.resourcesFilter, &QLineEdit::textChanged, this, [this](const QString& text){
+        d->filterModel.setFilterFixedString(text);
+    });
 
     connect(&d->manager, &ResourceManager::loaded,
             this, [this]() { d->loaded(); });
 
     connect(d->ui.resources, &QAbstractItemView::clicked, [this](const QModelIndex& index) {
-        if (index.parent() != QModelIndex()) {
-            const ResourceType type = d->typeMapping.value(Row(index.parent().row()));
-            QString resource = tr("Not yet implemented");
-            if (type == TdaType) {
-                const QString resourceName = index.data().toString();
-                const QByteArray resourceData = d->manager.resource(resourceName, type);
-                resource = QString::fromUtf8(resourceData);
-            }
-            d->ui.log->setText(resource);
+        const int row = index.row();
+        const auto model = index.model();
+        const QString resourceName = model->data(model->index(row, Private::NameColumn)).toString();
+        const int type = model->data(model->index(row, Private::TypeColumn), Private::DataRole).toInt();
+        QString resource = tr("Viewing this file is not implemented yet.");
+        if (type == TdaType) {
+            const QByteArray resourceData = d->manager.resource(resourceName, static_cast<ResourceType>(type));
+            resource = QString::fromUtf8(resourceData);
         }
+        d->ui.log->setText(resource);
     });
 }
 
@@ -117,31 +115,34 @@ void GameBrowserPage::Private::loaded()
 {
     const KeyFile& chitinKey = manager.chitinKey();
 
-    QStandardItem* biffsItem = model.item(BiffsRow, 0);
+#if 0  // Should BIFF files be displayed? Not sure why it could be useful, but initially I had them.
     for (const KeyFile::BiffEntry& biff : chitinKey.biffEntries) {
         // TODO: Add if it's valid or not, size, etc. And do it from the biffs
         // that we REALLY have parsed.
-        biffsItem->appendRow(new QStandardItem(biff.name));
+        model.appendRow(new QStandardItem(biff.name));
     }
+#endif
+
 
     for (const KeyFile::ResourceEntry& resource : chitinKey.resourceEntries) {
-        const int rowEnum = resource.type == SplType ? SpellsRow
-                          : resource.type == ItmType ? ItemsRow
-                          : resource.type == TdaType ? TdasRow
-                          : resource.type == CreType ? CresRow
-                                                     : -1;
-        if (rowEnum == -1)
-            continue;
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(resource.name));
+
+        const auto typeNameLiteral = resourceTypeName(resource.type);
+        const QString typeName = typeNameLiteral ? QString::fromLatin1(typeNameLiteral)
+                                                 : QString(QLatin1String("0x%1"))
+                                                       .arg(resource.type, 4, 16, QLatin1Char('0'));
+        QStandardItem* typeItem = new QStandardItem(typeName);
+        typeItem->setData(resource.type, Private::DataRole);
+        row.append(typeItem);
 
         const int biffIndex = resource.source;
         const QString biffName = chitinKey.biffEntries.at(biffIndex).name;
+        row.append(new QStandardItem(biffName));
 
-        QStandardItem* item = model.item(rowEnum, 0);
-        item->appendRow(QList<QStandardItem*>()
-                             << new QStandardItem(resource.name)
-                             << new QStandardItem(biffName)
-                        );
+        model.appendRow(row);
     }
+    // TODO: add items from override.
 }
 
 void GameBrowserPage::Private::start(const QString& name, const QString& location)
