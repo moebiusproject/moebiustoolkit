@@ -1,6 +1,6 @@
 /*
  * This file is part of Moebius Toolkit.
- * Copyright (C) 2020-2021 Alejandro Exojo Piqueras
+ * Copyright (C) 2020-2023 Alejandro Exojo Piqueras
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "ui_gamebrowserpage.h"
 
+#include "gamebrowserresourcefilter.h"
 #include "keyfile.h"
 #include "resourcemanager.h"
 #include "resourcetype.h"
@@ -31,17 +32,46 @@
 #include <QThreadPool>
 #endif
 
+enum ColumnIndex {
+    NameColumn,
+    TypeColumn,
+    LocationColumn,
+};
+
+class FilterModel : public QSortFilterProxyModel {
+    Q_OBJECT
+
+public:
+    void setCustomFilter(const QString& filter)
+    {
+        m_filter.setFilter(filter);
+        invalidateFilter();
+    }
+
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
+    {
+        const QAbstractItemModel* source = sourceModel();
+        const QModelIndex nameIndex = source->index(sourceRow, NameColumn, sourceParent);
+        const QModelIndex typeIndex = source->index(sourceRow, TypeColumn, sourceParent);
+        const QModelIndex loctIndex = source->index(sourceRow, LocationColumn, sourceParent);
+
+        GameBrowserResourceFilter::Row row {
+            nameIndex.data().toString(),
+            typeIndex.data().toString(),
+            loctIndex.data().toString(),
+        };
+        return m_filter.accept(row);
+    }
+
+ private:
+    GameBrowserResourceFilter m_filter;
+};
+
 struct GameBrowserPage::Private
 {
     Private(GameBrowserPage& page_)
         : page(page_)
     {}
-
-    enum ColumnIndex {
-        NameColumn,
-        TypeColumn,
-        LocationColumn,
-    };
 
     enum {
         DataRole = Qt::UserRole + 1,
@@ -51,7 +81,7 @@ struct GameBrowserPage::Private
     Ui::GameBrowserPage ui;
 
     QStandardItemModel model;
-    QSortFilterProxyModel filterModel;
+    FilterModel filterModel;
 
     ResourceManager manager;
 
@@ -66,16 +96,16 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
     d->ui.setupUi(this);
     d->ui.log->setFontFamily(QLatin1String("monospace"));
 
-    d->model.setColumnCount(Private::LocationColumn+1);
+    d->model.setColumnCount(LocationColumn+1);
     d->model.setHorizontalHeaderLabels(QStringList() << tr("Resource") << tr("Type") << tr("Location"));
 
     d->filterModel.setSourceModel(&d->model);
-    d->filterModel.setFilterKeyColumn(Private::NameColumn);
+    d->filterModel.setFilterKeyColumn(NameColumn);
     d->filterModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
     d->ui.resources->setModel(&d->filterModel);
 
     connect(d->ui.resourcesFilter, &QLineEdit::textChanged, this, [this](const QString& text){
-        d->filterModel.setFilterFixedString(text);
+        d->filterModel.setCustomFilter(text);
     });
 
     connect(&d->manager, &ResourceManager::loaded,
@@ -84,8 +114,8 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
     connect(d->ui.resources, &QAbstractItemView::clicked, [this](const QModelIndex& index) {
         const int row = index.row();
         const auto model = index.model();
-        const QString resourceName = model->data(model->index(row, Private::NameColumn)).toString();
-        const int type = model->data(model->index(row, Private::TypeColumn), Private::DataRole).toInt();
+        const QString resourceName = model->data(model->index(row, NameColumn)).toString();
+        const int type = model->data(model->index(row, TypeColumn), Private::DataRole).toInt();
         QString resource = tr("Viewing this file is not implemented yet.");
         if (type == TdaType) {
             // TODO: will need consideration when there are files to show in
@@ -124,6 +154,8 @@ void GameBrowserPage::Private::loaded()
     }
 #endif
 
+    // TODO: Qt 6. Remove this workaround which is only for Qt 5.
+    filterModel.setSourceModel(nullptr);
 
     for (const KeyFile::ResourceEntry& resource : chitinKey.resourceEntries) {
         QList<QStandardItem*> row;
@@ -144,6 +176,9 @@ void GameBrowserPage::Private::loaded()
         model.appendRow(row);
     }
     // TODO: add items from override.
+
+    // TODO: Qt 6. Remove this workaround which is only for Qt 5.
+    filterModel.setSourceModel(&model);
 }
 
 void GameBrowserPage::Private::start(const QString& name, const QString& location)
@@ -158,3 +193,5 @@ void GameBrowserPage::Private::start(const QString& name, const QString& locatio
     load();
 #endif
 }
+
+#include "gamebrowserpage.moc"

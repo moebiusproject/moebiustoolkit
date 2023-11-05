@@ -5,6 +5,7 @@ QT = core gui widgets charts
 
 projectGlobals()
 useLibMoebius()
+useLibToolkit()
 
 DESTDIR = $$BUILD_TREE/bin
 linux {

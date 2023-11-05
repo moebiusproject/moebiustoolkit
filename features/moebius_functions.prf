@@ -21,16 +21,36 @@ defineTest(projectGlobals) {
 }
 
 defineTest(useLibMoebius) {
-    INCLUDEPATH += $$SOURCE_TREE/src
-    DEPENDPATH  += $$SOURCE_TREE/src
+    INCLUDEPATH *= $$SOURCE_TREE/src
+    DEPENDPATH  *= $$SOURCE_TREE/src
 
     libpath = $$BUILD_TREE/lib/
-    LIBS += -L$$libpath
+    LIBS *= -L$$libpath
     LIBS += -lmoebius
 
     win32 {
         libname = libmoebius.a
         !win32-g++: libname = moebius.lib
+        PRE_TARGETDEPS += $$libpath$$libname
+        export(PRE_TARGETDEPS)
+    }
+
+    export(INCLUDEPATH)
+    export(DEPENDPATH)
+    export(LIBS)
+}
+
+defineTest(useLibToolkit) {
+    INCLUDEPATH *= $$SOURCE_TREE/src
+    DEPENDPATH  *= $$SOURCE_TREE/src
+
+    libpath = $$BUILD_TREE/lib/
+    LIBS *= -L$$libpath
+    LIBS += -ltoolkit
+
+    win32 {
+        libname = libtoolkit.a
+        !win32-g++: libname = toolkit.lib
         PRE_TARGETDEPS += $$libpath$$libname
         export(PRE_TARGETDEPS)
     }
