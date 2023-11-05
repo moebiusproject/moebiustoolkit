@@ -92,6 +92,7 @@ public:
 
 signals:
     void loaded();
+    void failureLoading();
 
 private:
     struct Private;

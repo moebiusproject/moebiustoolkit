@@ -26,8 +26,9 @@
 #include "resourcetype.h"
 
 #include <QDebug>
-#include <QStandardItemModel>
+#include <QMessageBox>
 #include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 #ifndef Q_OS_WASM
 #include <QThreadPool>
 #endif
@@ -110,6 +111,12 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
 
     connect(&d->manager, &ResourceManager::loaded,
             this, [this]() { d->loaded(); });
+
+    connect(&d->manager, &ResourceManager::failureLoading, this, [this]() {
+        QMessageBox::critical(this, tr("Moebius Toolkit"),
+                             tr("The game could not be loaded.\n"
+                                "Confirm the game files like `chitin.key` are valid"));
+    });
 
     connect(d->ui.resources, &QAbstractItemView::clicked, [this](const QModelIndex& index) {
         const int row = index.row();
