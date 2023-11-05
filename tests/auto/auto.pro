@@ -5,6 +5,7 @@ SUBDIRS += \
     diceroll \
     gamebrowserresourcefilter \
     keyfile \
+    pathutils \
     resourcemanager \
     tdafile \
     tlkfile \

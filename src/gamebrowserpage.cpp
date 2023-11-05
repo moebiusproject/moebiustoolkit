@@ -22,6 +22,7 @@
 
 #include "gamebrowserresourcefilter.h"
 #include "keyfile.h"
+#include "pathutils.h"
 #include "resourcemanager.h"
 #include "resourcetype.h"
 
@@ -200,8 +201,8 @@ void GameBrowserPage::Private::loaded()
     }
 
     for (const QString& file : manager.overridden()) {
-        const QString base = file.section(QLatin1Char('.'), 0, 0);
-        const QString type = file.section(QLatin1Char('.'), -1).toUpper();
+        const QString base = path::baseName(file);
+        const QString type = path::suffix(file).toUpper();
         QList<QStandardItem*> row;
         row.append(new QStandardItem(base));
         row.append(new QStandardItem(type));

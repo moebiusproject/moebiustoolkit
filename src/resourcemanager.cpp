@@ -20,6 +20,7 @@
 
 #include "bifffile.h"
 #include "keyfile.h"
+#include "pathutils.h"
 
 #include <QDataStream>
 #include <QDebug>
@@ -180,11 +181,7 @@ QByteArray ResourceManager::resource(const QString& name) const
         }
     }
 
-    auto baseName = [](const QString& string) {
-        return string.section(QLatin1Char('.'), 0, 0);
-    };
-
-    return defaultResource(baseName(name), resourceType(name));
+    return defaultResource(path::baseName(name), resourceType(name));
 }
 
 QByteArray ResourceManager::overriddenResource(const QString &name) const
@@ -305,9 +302,6 @@ ResourceType ResourceManager::resourceType(const QString& name)
         {QLatin1String("pvrz"),     PvrzType},
         {QLatin1String("menu"),     PvrzType},
     };
-    auto termination = [](const QString& string) {
-        return string.section(QLatin1Char('.'), -1);
-    };
-    Q_ASSERT(table.contains(termination(name.toLower())));
-    return table.value(termination(name.toLower()));
+    Q_ASSERT(table.contains(path::suffix(name.toLower())));
+    return table.value(path::suffix(name.toLower()));
 }

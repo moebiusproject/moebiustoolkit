@@ -20,6 +20,7 @@ HEADERS = \
     diceroll.h \
     keyfile.h \
     packed.h \
+    pathutils.h \
     resourcemanager.h \
     resourcetype.h \
     tdafile.h \
@@ -32,6 +33,7 @@ SOURCES = \
     calculators.cpp \
     diceroll.cpp \
     keyfile.cpp \
+    pathutils.cpp \
     resourcemanager.cpp \
     tdafile.cpp \
     tlkfile.cpp \
