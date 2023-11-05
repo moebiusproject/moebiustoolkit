@@ -23,6 +23,7 @@
 
 #include <QDataStream>
 #include <QDebug>
+#include <QDir>
 #include <QElapsedTimer>
 #include <QFile>
 #include <QLoggingCategory>
@@ -66,6 +67,7 @@ struct ResourceManager::Private
     KeyFile chitinKey;
     QVector<Biff> biffs;
     QHash<Resource, quint32> resourceIndex;
+    QStringList overridden;
 };
 
 ResourceManager::ResourceManager(QObject* parentObject)
@@ -95,6 +97,7 @@ void ResourceManager::load(const QString& path)
     d.chitinKey = KeyFile();
     d.biffs.clear();
     d.resourceIndex.clear();
+    d.overridden.clear();
 
     QFile chitinFile(path);
     chitinFile.open(QIODevice::ReadOnly);
@@ -142,8 +145,17 @@ void ResourceManager::load(const QString& path)
         d.resourceIndex.insert(Resource{resource.name.toLower(), resource.type},
                                resource.locator);
 
+    QDir dir(d.root);
+    if (dir.cd(QLatin1String("override")))
+        d.overridden = dir.entryList(QDir::NoDotAndDotDot|QDir::Files);
+
     emit loaded();
     qCDebug(log) << "Loaded:" << timer.elapsed() << "ms";
+}
+
+QStringList ResourceManager::overridden() const
+{
+    return d.overridden;
 }
 
 // TODO: Probably sanitize a bit the name argument, and look for ".." or "/" in it.
@@ -173,6 +185,25 @@ QByteArray ResourceManager::resource(const QString& name) const
     };
 
     return defaultResource(baseName(name), resourceType(name));
+}
+
+QByteArray ResourceManager::overriddenResource(const QString &name) const
+{
+    QFile overridden(d.root + QLatin1String("override/") + name);
+    if (!overridden.exists())
+        overridden.setFileName(d.root + QLatin1String("override/") + name.toLower());
+    if (!overridden.exists())
+        overridden.setFileName(d.root + QLatin1String("override/") + name.toUpper());
+    if (overridden.exists()) {
+        if (!overridden.open(QIODevice::ReadOnly))
+            qWarning() << "Could not open overridden file"
+                       << overridden.fileName() << overridden.errorString();
+        else {
+            qCDebug(log) << "overridden:" << overridden.fileName();
+            return overridden.readAll();
+        }
+    }
+    return QByteArray();
 }
 
 QByteArray ResourceManager::resource(const QString& name, ResourceType type)

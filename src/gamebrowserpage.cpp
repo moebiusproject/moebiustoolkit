@@ -122,14 +122,29 @@ GameBrowserPage::GameBrowserPage(QWidget* parent)
         const int row = index.row();
         const auto model = index.model();
         const QString resourceName = model->data(model->index(row, NameColumn)).toString();
-        const int type = model->data(model->index(row, TypeColumn), Private::DataRole).toInt();
+        const QVariant typeValue = model->data(model->index(row, TypeColumn), Private::DataRole);
+
         QString resource = tr("Viewing this file is not implemented yet.");
-        if (type == TdaType) {
-            // TODO: will need consideration when there are files to show in
-            // both the BIFF files and the override directory.
-            const QByteArray resourceData = d->manager.resource(resourceName, static_cast<ResourceType>(type));
-            resource = QString::fromUtf8(resourceData);
+
+        auto isPlainText = [](ResourceType type) {
+            return type == TdaType || type == IdsType;
+        };
+
+        if (typeValue.isNull()) { // In override.
+            const QString typeString = model->data(model->index(row, TypeColumn)).toString();
+            const ResourceType type = ResourceManager::resourceType(typeString);
+            if (isPlainText(type)) {
+                const QString fileName = resourceName + QLatin1Char('.') + typeString;
+                resource = QString::fromUtf8(d->manager.overriddenResource(fileName));
+            }
+        } else {
+            const ResourceType type = static_cast<ResourceType>(typeValue.toInt());
+            if (isPlainText(type)) {
+                const QByteArray resourceData = d->manager.defaultResource(resourceName, static_cast<ResourceType>(type));
+                resource = QString::fromUtf8(resourceData);
+            }
         }
+
         d->ui.log->setText(resource);
     });
 }
@@ -173,6 +188,7 @@ void GameBrowserPage::Private::loaded()
                                                           .arg(resource.type, 4, 16, QLatin1Char('0'))
                                                     : typeName;
         QStandardItem* typeItem = new QStandardItem(typeName);
+        // The presence of this role also helps indicate that the file comes from a BIFF, not override.
         typeItem->setData(resource.type, Private::DataRole);
         row.append(typeItem);
 
@@ -182,7 +198,17 @@ void GameBrowserPage::Private::loaded()
 
         model.appendRow(row);
     }
-    // TODO: add items from override.
+
+    for (const QString& file : manager.overridden()) {
+        const QString base = file.section(QLatin1Char('.'), 0, 0);
+        const QString type = file.section(QLatin1Char('.'), -1).toUpper();
+        QList<QStandardItem*> row;
+        row.append(new QStandardItem(base));
+        row.append(new QStandardItem(type));
+        row.append(new QStandardItem(QLatin1String("override")));
+        model.appendRow(row);
+    }
+
 
     // TODO: Qt 6. Remove this workaround which is only for Qt 5.
     filterModel.setSourceModel(&model);

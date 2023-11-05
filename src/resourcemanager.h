@@ -37,6 +37,11 @@ public:
     void load(const QString& path);
 
     /*!
+     * \brief Returns the list of files found in the override directory.
+     */
+    QStringList overridden() const;
+
+    /*!
      * \brief Returns the contents of a resource from a full file name ("abc.xyz").
      *
      * Searches a file by name, and retrieves its contents either from a BIFF
@@ -46,6 +51,16 @@ public:
      * \return Contents of the file
      */
     QByteArray resource(const QString& name) const;
+
+    /*!
+     * \brief Returns the contents of a resource from a full file name ("abc.xyz").
+     *
+     * Searches a file by name in the override directory, and retrieves its contents.
+     *
+     * \param name Name of the file
+     * \return Contents of the file
+     */
+    QByteArray overriddenResource(const QString& name) const;
 
     /*!
      * \brief Returns the contents of a resource from a base name and type.
