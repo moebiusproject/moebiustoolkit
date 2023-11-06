@@ -758,10 +758,12 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
     connect(d->minimumX, qOverload<int>(&QSpinBox::valueChanged), d->minimumX, [this](int value) {
         d->setupAxes();
         d->maximumX->setMinimum(value);
+        d->chartRefresher.start(1000);
     });
     connect(d->maximumX, qOverload<int>(&QSpinBox::valueChanged), d->maximumX, [this](int value) {
         d->setupAxes();
         d->minimumX->setMaximum(value);
+        d->chartRefresher.start(1000);
     });
 
     d->reverse = new QCheckBox(tr("AC: worst to best"));
@@ -771,6 +773,7 @@ DamageCalculatorPage::DamageCalculatorPage(QWidget* parent)
         // FIXME: assumption on QLineSeries
         if (auto axis = qobject_cast<QValueAxis*>(d->chart->axes(Qt::Horizontal).constFirst())) {
             axis->setReverse(value);
+            d->chartRefresher.start(1000);
         }
     });
 
