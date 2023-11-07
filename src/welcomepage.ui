@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>464</width>
-    <height>686</height>
+    <width>499</width>
+    <height>802</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,6 @@
      <property name="font">
       <font>
        <pointsize>20</pointsize>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -33,6 +32,12 @@
    </item>
    <item>
     <widget class="QLabel" name="browserIntroductionLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="text">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
 &lt;p&gt;Some of the modules of the application (for example, the Game Browser) need to read the data of an installed game to work. Other modules don't require an installed game at all.&lt;/p&gt;
@@ -51,21 +56,21 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1,0,0,0">
-     <item>
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,1,0,0,0,0">
+     <item row="0" column="0">
       <widget class="QLabel" name="configuredGamesLabel">
        <property name="text">
-        <string>Configured games:</string>
+        <string>Games:</string>
        </property>
        <property name="buddy">
         <cstring>configuredGames</cstring>
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="1">
       <widget class="QComboBox" name="configuredGames"/>
      </item>
-     <item>
+     <item row="0" column="2">
       <widget class="QPushButton" name="addNew">
        <property name="text">
         <string>New</string>
@@ -76,7 +81,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="3">
       <widget class="QPushButton" name="save">
        <property name="text">
         <string>Save</string>
@@ -87,7 +92,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="0" column="4">
       <widget class="QPushButton" name="remove">
        <property name="text">
         <string>Remove</string>
@@ -98,11 +103,18 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
+     <item row="0" column="5">
+      <widget class="QPushButton" name="manage">
+       <property name="text">
+        <string>Manage...</string>
+       </property>
+       <property name="icon">
+        <iconset theme="preferences-other">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QLabel" name="locationLabel">
        <property name="text">
         <string>Location:</string>
@@ -112,7 +124,14 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="1" column="1" colspan="3">
+      <widget class="QLineEdit" name="location">
+       <property name="placeholderText">
+        <string>Location of the root game installation where &quot;chitin.key&quot; file is</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
       <widget class="QPushButton" name="locationOpen">
        <property name="text">
         <string>Change...</string>
@@ -123,7 +142,18 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="1" column="5">
+      <widget class="QPushButton" name="search">
+       <property name="text">
+        <string>Search...</string>
+       </property>
+       <property name="icon">
+        <iconset theme="system-search">
+         <normaloff>.</normaloff>.</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
       <widget class="QLabel" name="nameLabel">
        <property name="text">
         <string>Name:</string>
@@ -133,34 +163,24 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="location">
-       <property name="placeholderText">
-        <string>Location of the root game installation where &quot;chitin.key&quot; file is</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1" colspan="2">
+     <item row="2" column="1" colspan="5">
       <widget class="QLineEdit" name="name">
        <property name="placeholderText">
         <string>Give a name for the game, for example &quot;Unmodded BG2EE&quot;</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="locationError">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3"/>
+    <widget class="QLabel" name="locationError">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_2">
+    <spacer name="verticalSpacerSeparator1">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
@@ -180,7 +200,6 @@
      <property name="font">
       <font>
        <pointsize>20</pointsize>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -193,7 +212,7 @@
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer_3">
+    <spacer name="verticalSpacerSeparator2">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
@@ -311,14 +330,14 @@ Calculator</string>
     </layout>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="verticalSpacerEnd">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>32</height>
+       <height>10</height>
       </size>
      </property>
     </spacer>
@@ -330,15 +349,18 @@ Calculator</string>
   <tabstop>addNew</tabstop>
   <tabstop>save</tabstop>
   <tabstop>remove</tabstop>
-  <tabstop>name</tabstop>
+  <tabstop>manage</tabstop>
   <tabstop>location</tabstop>
   <tabstop>locationOpen</tabstop>
+  <tabstop>search</tabstop>
+  <tabstop>name</tabstop>
   <tabstop>gameBrowser</tabstop>
   <tabstop>damageCalculator</tabstop>
   <tabstop>backstabCalculator</tabstop>
   <tabstop>buffCalculator</tabstop>
   <tabstop>repeatedProbability</tabstop>
   <tabstop>progressionCharts</tabstop>
+  <tabstop>dualCalculator</tabstop>
  </tabstops>
  <resources/>
  <connections/>
