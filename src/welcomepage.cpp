@@ -244,8 +244,14 @@ void WelcomePage::Private::configuredGamesChanged(int index)
 void WelcomePage::Private::openChitinKeyDialog()
 {
     auto dialog = new QFileDialog(&parent, tr("Choose a \"chitin.key\" file"));
-    if (QFileInfo(ui.location->text()).isDir())
-        dialog->setDirectory(ui.location->text());
+    const QString location = parent.gameLocation();
+    // NB: absoluteFilePath() means "the whole path, even if the name after the
+    // last slash is a directory", while absolutePath() means "the absolute path
+    // where the name after the last slash (file or directory) resides".
+    if (const QFileInfo info(location); info.isDir())
+        dialog->setDirectory(location);
+    else if (QFileInfo parentDir(info.absolutePath()); parentDir.isDir())
+        dialog->setDirectory(parentDir.absoluteFilePath());
     dialog->setNameFilter(QLatin1String("chitin.key"));
     dialog->show();
 
