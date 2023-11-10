@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pagetype.h"
 #include "welcomepage.h"
+
+#include "pagetype.h"
+#include "searchgamedialog.h"
 
 #include "ui_welcomepage.h"
 
@@ -45,6 +47,7 @@ struct WelcomePage::Private
 
     void configuredGamesChanged(int index);
     void openChitinKeyDialog();
+    void searchDialog();
 };
 
 static const auto keyConfiguredGames = QStringLiteral("ConfiguredGames");
@@ -129,9 +132,12 @@ WelcomePage::WelcomePage(QWidget* parent)
         d->saveGameList();
         d->updateUi();
     });
+    // TODO: Convert it into a "manage games" dialog.
+    connect(d->ui.manage, &QPushButton::clicked, std::bind(&Private::searchDialog, d));
 
     connect(d->ui.location, &QLineEdit::textChanged, std::bind(&Private::updateUi, d));
     connect(d->ui.locationOpen, &QPushButton::clicked, std::bind(&Private::openChitinKeyDialog, d));
+    connect(d->ui.search, &QPushButton::clicked, std::bind(&Private::searchDialog, d));
 
     connect(d->ui.save, &QPushButton::clicked, [this] {
         const int selected = d->ui.configuredGames->currentIndex();
@@ -259,5 +265,15 @@ void WelcomePage::Private::openChitinKeyDialog()
                      &parent, [this, dialog](const QString& file) {
         ui.location->setText(file);
         dialog->deleteLater();
+    });
+}
+
+void WelcomePage::Private::searchDialog()
+{
+    auto dialog = new SearchGameDialog(&parent);
+    dialog->setConfiguredGames(games);
+    dialog->show();
+    QObject::connect(dialog, &QDialog::finished, &parent, [dialog] {
+        qDebug() << "search dialog result" << dialog->result();
     });
 }

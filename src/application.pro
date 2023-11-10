@@ -48,6 +48,7 @@ HEADERS = \
     pagetype.h \
     progressionchartspage.h \
     repeatedprobabilitypage.h \
+    searchgamedialog.h \
     specialdamagewidget.h \
     tomlplusplus.h \
     weaponarrangementwidget.h \
@@ -65,6 +66,7 @@ SOURCES = main.cpp \
     pageselector.cpp \
     progressionchartspage.cpp \
     repeatedprobabilitypage.cpp \
+    searchgamedialog.cpp \
     specialdamagewidget.cpp \
     tomlplusplus.cpp \
     weaponarrangementwidget.cpp \
@@ -77,6 +79,7 @@ FORMS += \
     enemy.ui \
     gamebrowserpage.ui \
     progressionchartswidget.ui \
+    searchgamedialog.ui \
     specialdamagewidget.ui \
     weaponarrangementwidget.ui \
     welcomepage.ui \
