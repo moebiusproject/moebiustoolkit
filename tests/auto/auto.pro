@@ -4,6 +4,7 @@ SUBDIRS += \
     calculators \
     diceroll \
     gamebrowserresourcefilter \
+    gamesearcher \
     keyfile \
     pathutils \
     resourcemanager \

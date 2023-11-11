@@ -15,6 +15,8 @@ win32:!win32-g++:QMAKE_CXXFLAGS += /Zi
 
 HEADERS = \
     gamebrowserresourcefilter.h \
+    gamesearcher.h \
 
 SOURCES = \
     gamebrowserresourcefilter.cpp \
+    gamesearcher.cpp \

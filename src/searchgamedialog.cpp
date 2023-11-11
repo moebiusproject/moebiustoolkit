@@ -18,16 +18,19 @@
 
 #include "searchgamedialog.h"
 
+#include "gamesearcher.h"
 #include "ui_searchgamedialog.h"
 
 #include <QDebug>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QThreadPool>
 
 struct SearchGameDialog::Private {
     Ui::SearchGameDialog ui;
     SearchGameDialog& parent;
     QAbstractItemModel* configuredGamesModel = nullptr;
+    GameSearcher searcher;
 
     Private(SearchGameDialog* dialog) : parent(*dialog) {}
     void changeStartingLocation();
@@ -45,6 +48,8 @@ SearchGameDialog::SearchGameDialog(QWidget* parentObject)
     auto startStop = d.ui.buttonBox->addButton(tr("Start"), QDialogButtonBox::ActionRole);
     connect(startStop, &QPushButton::clicked, this, [=, this] {
         running = !running;
+        d.searcher.setStart(d.ui.startLocation->text());
+        QThreadPool::globalInstance()->start(&d.searcher);
         startStop->setText(running ? tr("Stop") : tr("Start"));
         d.ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(!running);
         d.ui.buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(!running);
@@ -64,6 +69,18 @@ SearchGameDialog::SearchGameDialog(QWidget* parentObject)
 #else
     d.ui.startLocation->setText(QLatin1String("C:/"));
 #endif
+
+    connect(&d.searcher, &GameSearcher::progress, this, [this](const QString& name) {
+        const int width = d.ui.progressLabel->width();
+        QFontMetrics metrics(d.ui.progressLabel->fontMetrics());
+        d.ui.progressLabel->setText(metrics.elidedText(name, Qt::ElideMiddle, width));
+    });
+    connect(&d.searcher, &GameSearcher::finished, this, [=, this]() {
+        running = false;
+        startStop->setText(running ? tr("Stop") : tr("Start"));
+        d.ui.buttonBox->button(QDialogButtonBox::Save)->setEnabled(!running);
+        d.ui.buttonBox->button(QDialogButtonBox::Cancel)->setEnabled(!running);
+    });
 }
 
 SearchGameDialog::~SearchGameDialog()
