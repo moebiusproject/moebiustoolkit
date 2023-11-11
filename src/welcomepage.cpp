@@ -59,7 +59,6 @@ WelcomePage::WelcomePage(QWidget* parent)
     , d(new Private(*this))
 {
     d->ui.setupUi(this);
-    d->ui.locationError->hide();
 
     d->games = qobject_cast<QStandardItemModel*>(d->ui.configuredGames->model());
     Q_ASSERT(d->games); // QComboBox has this model by default, but just in case.
@@ -235,7 +234,6 @@ void WelcomePage::Private::updateUi()
     ui.locationOpen->setEnabled(enable);
 
     const bool validLocation = ui.locationError->text().isEmpty();
-    ui.locationError->setVisible(!validLocation);
     ui.gameBrowser->setEnabled(validLocation && !location.isEmpty());
     ui.progressionCharts->setEnabled(validLocation && !location.isEmpty());
     ui.dualCalculator->setEnabled(validLocation && !location.isEmpty());
