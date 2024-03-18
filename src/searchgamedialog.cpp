@@ -32,7 +32,6 @@
 struct SearchGameDialog::Private {
     SearchGameDialog& parent;
     Ui::SearchGameDialog ui;
-    QPushButton* startStop = nullptr;
     QPushButton* save = nullptr;
     QPushButton* cancel = nullptr;
 
@@ -57,27 +56,21 @@ SearchGameDialog::SearchGameDialog(QWidget* parentObject)
     setAttribute(Qt::WA_DeleteOnClose);
     d.ui.setupUi(this);
 
-    d.startStop = new QPushButton(tr("Start"), this);
     d.save = d.ui.buttonBox->button(QDialogButtonBox::Save);
     d.cancel = d.ui.buttonBox->button(QDialogButtonBox::Cancel);
-    d.startStop->setObjectName(QLatin1String("Start"));
-    d.save->setObjectName(QLatin1String("Save"));
-    d.cancel->setObjectName(QLatin1String("Cancel"));
-
-    d.ui.buttonBox->addButton(d.startStop, QDialogButtonBox::ActionRole);
 
     connect(d.ui.startLocation, &QLineEdit::textChanged,
             this, [this] { d.updateUi(); });
     connect(d.ui.change, &QPushButton::clicked,
             this, [this] { d.changeStartingLocation(); });
 
-    connect(d.startStop, &QPushButton::clicked, this, [=, this] {
+    connect(d.ui.startStop, &QPushButton::clicked, this, [this] {
         d.running = !d.running;
         d.searcher.setStart(d.ui.startLocation->text());
         QThreadPool::globalInstance()->start(&d.searcher);
         d.updateUi();
         // TODO: implement stop!
-        d.startStop->setEnabled(!d.running);
+        d.ui.startStop->setEnabled(!d.running);
     });
 
     const QStringList homeLocations = QStandardPaths::standardLocations(QStandardPaths::HomeLocation);
@@ -209,7 +202,7 @@ void SearchGameDialog::Private::onSearchFinished()
 
 void SearchGameDialog::Private::updateUi()
 {
-    startStop->setText(running ? tr("Stop") : tr("Start"));
+    ui.startStop->setText(running ? tr("Stop search") : tr("Start search"));
     save->setEnabled(!running);
     cancel->setEnabled(!running);
 
@@ -220,5 +213,5 @@ void SearchGameDialog::Private::updateUi()
         ui.progressLabel->setText(tr("The location is not a directory"));
     else
         ui.progressLabel->clear();
-    startStop->setEnabled(ui.progressLabel->text().isEmpty());
+    ui.startStop->setEnabled(ui.progressLabel->text().isEmpty());
 }
