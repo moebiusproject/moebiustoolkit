@@ -131,8 +131,10 @@ WelcomePage::WelcomePage(QWidget* parent)
         d->saveGameList();
         d->updateUi();
     });
-    // TODO: Convert it into a "manage games" dialog.
-    connect(d->ui.manage, &QPushButton::clicked, std::bind(&Private::searchDialog, d));
+
+    // TODO: Convert it into a "manage games" dialog that reuses the SearchDialog.
+    // connect(d->ui.manage, &QPushButton::clicked, std::bind(&Private::searchDialog, d));
+    d->ui.manage->setEnabled(false);
 
     connect(d->ui.location, &QLineEdit::textChanged, std::bind(&Private::updateUi, d));
     connect(d->ui.locationOpen, &QPushButton::clicked, std::bind(&Private::openChitinKeyDialog, d));
@@ -268,10 +270,13 @@ void WelcomePage::Private::openChitinKeyDialog()
 
 void WelcomePage::Private::searchDialog()
 {
+    // The search dialog alters the model, but doesn't save the changes.
     auto dialog = new SearchGameDialog(&parent);
     dialog->setConfiguredGames(games);
     dialog->show();
-    QObject::connect(dialog, &QDialog::finished, &parent, [dialog] {
-        qDebug() << "search dialog result" << dialog->result();
+    QObject::connect(dialog, &QDialog::finished, &parent, [this](int result) {
+        if (result == QDialog::Rejected)
+            return;
+        saveGameList();
     });
 }
